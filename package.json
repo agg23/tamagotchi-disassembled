@@ -1,0 +1,17 @@
+{
+  "name": "tamagotchi-decompiled",
+  "version": "1.0.0",
+  "description": "Disassembles microcode for 6200",
+  "main": "index.js",
+  "scripts": {
+    "assemble": "ts-node src/assembler.ts test/fib.asm test/fib.bin true"
+  },
+  "author": "agg23",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^18.15.5",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.2"
+  }
+}
