@@ -296,32 +296,34 @@ label_20:
   ld    x,   0x48      // 0xFD   (0xB48)
   fan   mx,  0x8       // 0xFE   (0xDA8)
   ret                  // 0xFF   (0xFDF)
-  jp    label_21       // 0x100  (0x10)
-  jp    label_22       // 0x101  (0x16)
-  jp    label_23       // 0x102  (0x1D)
-  jp    label_22       // 0x103  (0x16)
-  jp    label_22       // 0x104  (0x16)
-  jp    label_22       // 0x105  (0x16)
-  jp    label_22       // 0x106  (0x16)
-  jp    label_22       // 0x107  (0x16)
-  jp    label_22       // 0x108  (0x16)
-  jp    label_22       // 0x109  (0x16)
-  jp    label_22       // 0x10A  (0x16)
-  jp    label_22       // 0x10B  (0x16)
-  jp    label_31       // 0x10C  (0x6F)
-  jp    label_22       // 0x10D  (0x16)
-  jp    label_22       // 0x10E  (0x16)
-  jp    label_22       // 0x10F  (0x16)
 
-label_21:
+// Vector table
+  jp    reset_vector   // 0x100  (0x10)
+  jp    generic_int    // 0x101  (0x16)
+  jp    clock_timer_int// 0x102  (0x1D)
+  jp    generic_int    // 0x103  (0x16)
+  jp    generic_int    // 0x104  (0x16)
+  jp    generic_int    // 0x105  (0x16)
+  jp    generic_int    // 0x106  (0x16)
+  jp    generic_int    // 0x107  (0x16)
+  jp    generic_int    // 0x108  (0x16)
+  jp    generic_int    // 0x109  (0x16)
+  jp    generic_int    // 0x10A  (0x16)
+  jp    generic_int    // 0x10B  (0x16)
+  jp    prog_timer_int // 0x10C  (0x6F)
+  jp    generic_int    // 0x10D  (0x16)
+  jp    generic_int    // 0x10E  (0x16)
+  jp    generic_int    // 0x10F  (0x16)
+
+reset_vector:
   rst   f,   0x0       // 0x110  (0xF50)
   ld    a,   0xF       // 0x111  (0xE0F)
   ld    sph, a         // 0x112  (0xFE0)
   ld    spl, a         // 0x113  (0xFF0)
   pset  0x2            // 0x114  (0xE42)
-  jp    label_56       // 0x115  (0x2A)
+  jp    reset_vect_cont// 0x115  (0x2A)
 
-label_22:
+generic_int:
   push  f              // 0x116  (0xFCA)
   push  a              // 0x117  (0xFC0)
   push  b              // 0x118  (0xFC1)
@@ -330,7 +332,7 @@ label_22:
   push  xl             // 0x11B  (0xFC6)
   jp    label_29       // 0x11C  (0x5B)
 
-label_23:
+clock_timer_int:
   push  f              // 0x11D  (0xFCA)
   push  a              // 0x11E  (0xFC0)
   push  b              // 0x11F  (0xFC1)
@@ -428,7 +430,7 @@ label_30:
   pop   f              // 0x16D  (0xFDA)
   ret                  // 0x16E  (0xFDF)
 
-label_31:
+prog_timer_int:
   push  f              // 0x16F  (0xFCA)
   push  a              // 0x170  (0xFC0)
   push  b              // 0x171  (0xFC1)
@@ -665,7 +667,7 @@ label_54:
 label_55:
   ret                  // 0x229  (0xFDF)
 
-label_56:
+reset_vect_cont:
   pset  0x1            // 0x22A  (0xE41)
   call  label_40       // 0x22B  (0x4E3)
   jp    nz,  label_57  // 0x22C  (0x72F)

@@ -18,6 +18,7 @@
     "noImplicitReturns": true,
     "noUncheckedIndexedAccess": true
   },
+  "ts-node": { "files": true },
   "include": ["./**/*.ts"],
   "exclude": ["node_modules"]
 }

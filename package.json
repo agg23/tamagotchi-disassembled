@@ -5,11 +5,14 @@
   "main": "index.js",
   "scripts": {
     "assemble": "ts-node src/assembler.ts test/tama.asm test/tama_out.bin",
-    "disassemble": "ts-node src/disassembler.ts test/tama.bin test/tama.asm"
+    "disassemble": "ts-node src/disassembler.ts test/tama.bin test/tama.asm",
+    "extract": "ts-node src/extractIcons.ts test/tama.bin"
   },
   "author": "agg23",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "image-encode": "^1.3.1"
+  },
   "devDependencies": {
     "@types/node": "^18.15.5",
     "ts-node": "^10.9.1",
