@@ -6,6 +6,8 @@
 #directive dd 4
 #directive dq 8
 
+// WARNING: DO NOT USE WITH BASS
+// BASS doesn't like the 12 bit instructions
 // Expressions are reordered so that BASS can properly match instructions
 
 retd *08					;%0001 =a
