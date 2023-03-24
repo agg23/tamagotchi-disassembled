@@ -137,7 +137,11 @@ const copyToOutputBuffer = (
  * @param argument The actual data to pass as an argument to the opcode, if any
  * @returns The output opcode as a 12 bit word
  */
-const buildOpcode = (template: string, argSize: number, argument: number) => {
+export const buildOpcode = (
+  template: string,
+  argSize: number,
+  argument: number
+) => {
   let index = 0;
   let outputWord = 0;
 
@@ -145,13 +149,28 @@ const buildOpcode = (template: string, argSize: number, argument: number) => {
     const char = template[index];
 
     if (char === "%") {
+      // Consume chars until whitespace
+      let data = 0;
+      let count = 0;
+      for (let i = 1; i < Math.min(13, template.length - index); i++) {
+        const nextChar = template[index + i]!;
+
+        if (nextChar !== "1" && nextChar !== "0") {
+          // Stop consuming
+          break;
+        }
+
+        data <<= 1;
+        data |= nextChar === "1" ? 1 : 0;
+        count += 1;
+      }
+
       // Consume the next four chars as bits
-      const nibble = parseInt(template.substring(index + 1, index + 1 + 4), 2);
 
-      outputWord <<= 4;
-      outputWord |= nibble;
+      outputWord <<= count;
+      outputWord |= data;
 
-      index += 4;
+      index += count + 1;
     } else if (char === "=") {
       if (template[index + 1] !== "a") {
         console.log(

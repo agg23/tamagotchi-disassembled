@@ -25,3 +25,11 @@ export const maskOfSize = (size: number) => {
 
   return mask;
 };
+
+/**
+ * Checks whether a string is a single letter
+ * @param string The string to check
+ * @returns True if a letter, false otherwise
+ */
+export const isLetterChar = (string: string) =>
+  string.length === 1 && string.match(/[a-z]/i);

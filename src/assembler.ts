@@ -10,6 +10,7 @@ import { AssembledProgram } from "./lib/types";
 import { commentRegex, labelRegex } from "./lib/regex";
 import { outputInstructions } from "./lib/opcodeOutput";
 import { log } from "./lib/log";
+import { readArch, readByLines } from "./lib/fs";
 
 interface ComamndEntry {
   regex: RegExp;
@@ -120,7 +121,7 @@ const parseAsmLine = (
           line,
           immediate: parseNumber(matches[1]),
           opcodeString: instruction.opcodeString,
-          bitCount: instruction.bitCount,
+          bitCount: instruction.immediate.bitCount,
           lineNumber,
           address,
         });
@@ -139,7 +140,7 @@ const parseAsmLine = (
           line,
           label: matches[2],
           opcodeString: instruction.opcodeString,
-          bitCount: instruction.bitCount,
+          bitCount: instruction.immediate.bitCount,
           lineNumber,
           address,
         });
@@ -228,22 +229,6 @@ const parseAsmLine = (
   }
 };
 
-const readByLines = async (
-  path: string,
-  onLine: (line: string, lineNumber: number) => void
-) => {
-  const rl = readline.createInterface({
-    input: fs.createReadStream(path),
-    crlfDelay: Infinity,
-  });
-
-  let lineNumber = 0;
-
-  rl.on("line", (line) => onLine(line.toLowerCase().trim(), ++lineNumber));
-
-  await events.once(rl, "close");
-};
-
 if (argv.length != 4 && argv.length != 5) {
   console.log(`Received ${argv.length - 2} arguments. Expected 2-3\n`);
   console.log(
@@ -260,10 +245,6 @@ const outputFile = argv[3] as string;
 const word16Align = argv[4] !== "true";
 
 const build = async () => {
-  const instructionSet: InstructionSet = {
-    instructions: [],
-  };
-
   const program: AssembledProgram = {
     currentAddress: 0,
     matchedInstructions: [],
@@ -271,9 +252,7 @@ const build = async () => {
     unmatchedLabels: [],
   };
 
-  await readByLines(archPath, (line, lineNumber) =>
-    parseArchLine(line, lineNumber, instructionSet)
-  );
+  const instructionSet = await readArch(archPath);
 
   await readByLines(inputFile, (line, lineNumber) =>
     parseAsmLine(line, lineNumber, instructionSet, program)

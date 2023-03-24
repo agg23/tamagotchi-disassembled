@@ -1,19 +1,34 @@
-import { numberRegex, whitespaceRegex } from "./regex";
+import { bassNumberRegex, whitespaceRegex } from "./regex";
 import { log } from "./log";
 import { parseNumber } from "./util";
+import { buildOpcode } from "./opcodeOutput";
 
 export interface InstructionSet {
-  instructions: Array<ImmediateInstruction | LiteralInstruction>;
+  instructions: Array<Instruction>;
 }
+
+export type Instruction = ImmediateInstruction | LiteralInstruction;
 
 export interface InstructionBase {
   regex: RegExp;
   opcodeString: string;
+  sortableOpcode: number;
+  originalInstruction: string;
 }
 
 export type ImmediateInstruction = InstructionBase & {
   type: "immediate";
-  bitCount: number;
+  immediate: {
+    bitCount: number;
+    /**
+     * The index in the originalInstruction the immediate occurs
+     */
+    stringIndex: number;
+    /**
+     * The length of the immediate in the originalInstruction string
+     */
+    stringLength: number;
+  };
 };
 
 export type LiteralInstruction = InstructionBase & {
@@ -55,7 +70,9 @@ export const parseArchLine = (
     return;
   }
 
-  let numberMatch = originalInstruction.match(numberRegex);
+  const opcodeString = opcode.trim();
+
+  let numberMatch = originalInstruction.match(bassNumberRegex);
 
   if (!!numberMatch && numberMatch.index) {
     // This instruction contains a star followed by a number
@@ -74,11 +91,19 @@ export const parseArchLine = (
       .trim()
       .replace(whitespaceRegex, whitespaceRegex.source);
 
+    const sortableOpcode = buildSortableOpcode(opcodeString, bitCount);
+
     config.instructions.push({
       type: "immediate",
       regex: new RegExp(instructionLine),
-      bitCount,
-      opcodeString: opcode.trim(),
+      immediate: {
+        bitCount,
+        stringIndex: index,
+        stringLength: matchString.length,
+      },
+      opcodeString,
+      sortableOpcode,
+      originalInstruction: originalInstruction.trim(),
     });
   } else {
     // This is a literal
@@ -86,10 +111,17 @@ export const parseArchLine = (
       .trim()
       .replace(whitespaceRegex, whitespaceRegex.source);
 
+    const sortableOpcode = buildSortableOpcode(opcodeString, 0);
+
     config.instructions.push({
       type: "literal",
       regex: new RegExp(instructionLine),
-      opcodeString: opcode.trim(),
+      opcodeString,
+      sortableOpcode,
+      originalInstruction: originalInstruction.trim(),
     });
   }
 };
+
+const buildSortableOpcode = (template: string, bitCount: number) =>
+  buildOpcode(template, bitCount, 0);

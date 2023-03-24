@@ -1,3 +1,5 @@
+import { Instruction } from "./bass";
+
 export interface MatchedInstructionBase {
   line: string;
   lineNumber: number;
@@ -56,6 +58,14 @@ export interface AssembledProgram {
     label: string;
     lineNumber: number;
   }>;
+}
+
+/// Disassembly ///
+
+export interface DisassembledInstruction {
+  instruction: Instruction;
+  actualWord: number;
+  address: number;
 }
 
 export interface Some<T> {
