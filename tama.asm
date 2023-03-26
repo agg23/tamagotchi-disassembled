@@ -122,7 +122,7 @@ label_7:
   ld    xp,  a                                                                     // 0x45   (0xE80)
   ld    x,   0x0                                                                   // 0x46   (0xB00)
 
-label_8:
+loop_clear_0x100:
   lbpx  mx,  0x0                                                                   // 0x47   (0x900)
   lbpx  mx,  0x0                                                                   // 0x48   (0x900)
   lbpx  mx,  0x0                                                                   // 0x49   (0x900)
@@ -132,8 +132,9 @@ label_8:
   lbpx  mx,  0x0                                                                   // 0x4D   (0x900)
   lbpx  mx,  0x0                                                                   // 0x4E   (0x900)
   add   b,   0xF                                                                   // 0x4F   (0xC1F)
-  jp    nz,  label_8                                                               // 0x50   (0x747)
+  jp    nz,  loop_clear_0x100                                                      // 0x50   (0x747)
   ret                                                                              // 0x51   (0xFDF)
+
   pset  0x4                                                                        // 0x52   (0xE44)
   call  label_150                                                                  // 0x53   (0x486)
   pset  0x4                                                                        // 0x54   (0xE44)

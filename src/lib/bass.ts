@@ -1,4 +1,9 @@
-import { bassNumberRegex, whitespaceRegex } from "./regex";
+import {
+  bassNumberRegex,
+  instructionPrefixRegex,
+  instructionSuffixRegex,
+  whitespaceRegex,
+} from "./regex";
 import { log } from "./log";
 import { parseNumber } from "./util";
 import { buildOpcode } from "./opcodeOutput";
@@ -82,20 +87,16 @@ export const parseArchLine = (
     const bitCount = parseNumber(numberMatch[1]!);
     const index = numberMatch.index;
 
-    let instructionLine =
+    const instructionLine =
       originalInstruction.substring(0, index) +
       "(?:(0x[a-f0-9]+|[0-9]+)|([a-z0-9_]+))" +
       originalInstruction.substring(index + matchString.length);
-
-    instructionLine = instructionLine
-      .trim()
-      .replace(whitespaceRegex, whitespaceRegex.source);
 
     const sortableOpcode = buildSortableOpcode(opcodeString, bitCount);
 
     config.instructions.push({
       type: "immediate",
-      regex: new RegExp(instructionLine),
+      regex: cleanAndFinishInstructionRegex(instructionLine),
       immediate: {
         bitCount,
         stringIndex: index,
@@ -107,15 +108,11 @@ export const parseArchLine = (
     });
   } else {
     // This is a literal
-    const instructionLine = originalInstruction
-      .trim()
-      .replace(whitespaceRegex, whitespaceRegex.source);
-
     const sortableOpcode = buildSortableOpcode(opcodeString, 0);
 
     config.instructions.push({
       type: "literal",
-      regex: new RegExp(instructionLine),
+      regex: cleanAndFinishInstructionRegex(originalInstruction),
       opcodeString,
       sortableOpcode,
       originalInstruction: originalInstruction.trim(),
@@ -125,3 +122,15 @@ export const parseArchLine = (
 
 const buildSortableOpcode = (template: string, bitCount: number) =>
   buildOpcode(template, bitCount, 0);
+
+const cleanAndFinishInstructionRegex = (instruction: string): RegExp => {
+  const cleaned = instruction
+    .trim()
+    .replace(whitespaceRegex, whitespaceRegex.source);
+
+  // Force nothing but whitespace from beginning of string to instruction
+  // Force nothing but whitespace and a comment from instruction to end of string
+  return new RegExp(
+    instructionPrefixRegex.source + cleaned + instructionSuffixRegex.source
+  );
+};
