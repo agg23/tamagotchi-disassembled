@@ -1,12 +1,16 @@
+# Interrupts
+
+Only clock timer and prog timer interrupts are specially handled. All other interrupts go to a generic handler that checks to see if `0x07D` is 0, and if so, restores state without re-enabling interrupts
+
 # Memory
 
-| Address  | Description                                                                                             |
-| -------- | ------------------------------------------------------------------------------------------------------- |
-| 0x0 (M0) | Lower PC for graphics draw                                                                              |
-| 0x1 (M1) | Upper PC for graphics draw                                                                              |
-| 0x2 (M2) | Value <= 7 that indicates which graphics page is used                                                   |
-| 0x07D    | Possible some sort of counter until rerender happens? Is cleared before rendering, and set to 0xF after |
-|          |                                                                                                         |
+| Address  | Description                                                                                                                   |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 0x0 (M0) | Lower PC for graphics draw                                                                                                    |
+| 0x1 (M1) | Upper PC for graphics draw                                                                                                    |
+| 0x2 (M2) | Value <= 7 that indicates which graphics page is used                                                                         |
+| 0x07D    | Possible some sort of counter until rerender happens? Is cleared before rendering, and set to 0xF after. 0 means in rendering |
+|          |                                                                                                                               |
 
 # Graphics
 

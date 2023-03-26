@@ -1,7 +1,8 @@
                        // Addr   (inst)
 /*
   Draws one of the asset graphics in the 0x1000 - 0x1800
-  Ends up in set_f_0x07D
+  Toggles 0x07D to 0, then 0xF
+  Disables interrupts until through rendering
 */
 render_asset:
   ld    a,   m2        // 0x0    (0xFA2)
@@ -367,7 +368,7 @@ generic_int:
   push  xp             // 0x119  (0xFC4)
   push  xh             // 0x11A  (0xFC5)
   push  xl             // 0x11B  (0xFC6)
-  jp    label_29       // 0x11C  (0x5B)
+  jp    int_restore_ret// 0x11C  (0x5B)
 
 clock_timer_int:
   push  f              // 0x11D  (0xFCA)
@@ -375,42 +376,66 @@ clock_timer_int:
   push  b              // 0x11F  (0xFC1)
   push  xp             // 0x120  (0xFC4)
 
+// Falls through from clock_timer_int
 label_24:
   push  xh             // 0x121  (0xFC5)
   push  xl             // 0x122  (0xFC6)
+  // Disable decimal
   rst   f,   0xB       // 0x123  (0xF5B)
   ld    a,   0xF       // 0x124  (0xE0F)
   ld    xp,  a         // 0x125  (0xE80)
   ld    x,   0x0       // 0x126  (0xB00)
+  // a = 0xF00. Clear clock timer factor flag
   ld    a,   mx        // 0x127  (0xEC2)
   ld    x,   0x76      // 0x128  (0xB76)
+
+  // Set 0xF77-6 to 0x01. Reset watchdog timer
   lbpx  mx,  0x1       // 0x129  (0x901)
+  // Set 0xF79-8 to 0x21
+  // 0xF78: Start progamable timer
+  // 0xF79: Choose prog timer clock interval 256Hz
   lbpx  mx,  0x21      // 0x12A  (0x921)
   ld    x,   0x12      // 0x12B  (0xB12)
+  // Set 0xF12 to 1. Enable prog timer interrupt mask
   ld    mx,  0x1       // 0x12C  (0xE21)
   ld    a,   0x0       // 0x12D  (0xE00)
   ld    xp,  a         // 0x12E  (0xE80)
   ld    x,   0x57      // 0x12F  (0xB57)
+  // Check if 0x057 is 0
   cp    mx,  0x0       // 0x130  (0xDE0)
-  jp    z,   label_25  // 0x131  (0x633)
+  // If so, skip add
+  jp    z,   label_24_skip_add// 0x131  (0x633)
+  // Otherwise, add F to 0x057
   add   mx,  0xF       // 0x132  (0xC2F)
 
-label_25:
+label_24_skip_add:
   ld    x,   0x3C      // 0x133  (0xB3C)
+  // Check if 0x03C is 0
   cp    mx,  0x0       // 0x134  (0xDE0)
+  // If so, jump
   jp    z,   label_28  // 0x135  (0x64A)
+  // Enable decimal
   set   f,   0x4       // 0x136  (0xF44)
   ld    x,   0x2E      // 0x137  (0xB2E)
+  // Set 0x02E to 1
   ld    mx,  0x1       // 0x138  (0xE21)
   ld    x,   0x10      // 0x139  (0xB10)
+  // Add 1 to 0x010
   add   mx,  0x1       // 0x13A  (0xC21)
+  // Increment X
   ldpx  a,   a         // 0x13B  (0xEE0)
+  // Add carry from 0x010 add to 0x011
   adc   mx,  0x0       // 0x13C  (0xC60)
+  // Check if 0x011 is 6
   cp    mx,  0x6       // 0x13D  (0xDE6)
+  // If so, jump
   jp    c,   label_27  // 0x13E  (0x249)
+  // Set 0x011 to 0
   ldpx  mx,  0x0       // 0x13F  (0xE60)
   calz  label_41       // 0x140  (0x5E4)
   jp    c,   label_26  // 0x141  (0x247)
+
+  // TODO: Unused?
   ld    x,   0x14      // 0x142  (0xB14)
   ldpx  a,   mx        // 0x143  (0xEE2)
   ldpx  b,   mx        // 0x144  (0xEE6)
@@ -432,33 +457,36 @@ label_28:
   ldpx  a,   a         // 0x14E  (0xEE0)
   acpx  mx,  a         // 0x14F  (0xF28)
   adc   mx,  0x0       // 0x150  (0xC60)
-  jp    nc,  label_29  // 0x151  (0x35B)
+  jp    nc,  int_restore_ret  // 0x151  (0x35B)
   ld    a,   0xF       // 0x152  (0xE0F)
   ld    xp,  a         // 0x153  (0xE80)
   ld    x,   0x70      // 0x154  (0xB70)
   fan   mx,  0x3       // 0x155  (0xDA3)
-  jp    z,   label_29  // 0x156  (0x65B)
+  jp    z,   int_restore_ret// 0x156  (0x65B)
   call  label_42       // 0x157  (0x4E5)
-  jp    z,   label_29  // 0x158  (0x65B)
+  jp    z,   int_restore_ret// 0x158  (0x65B)
   ld    x,   0x70      // 0x159  (0xB70)
   ld    mx,  0x0       // 0x15A  (0xE20)
 
-label_29:
+int_restore_ret:
   ld    a,   0x0       // 0x15B  (0xE00)
   ld    xp,  a         // 0x15C  (0xE80)
   ld    x,   0x7D      // 0x15D  (0xB7D)
+  // Check if 0x07D is 0
   cp    mx,  0x0       // 0x15E  (0xDE0)
-  jp    z,   label_30  // 0x15F  (0x668)
+  // If so, jump, and don't re-enable interrupts
+  jp    z,   gen_int_dis_int// 0x15F  (0x668)
   pop   xl             // 0x160  (0xFD6)
   pop   xh             // 0x161  (0xFD5)
   pop   xp             // 0x162  (0xFD4)
   pop   b              // 0x163  (0xFD1)
   pop   a              // 0x164  (0xFD0)
   pop   f              // 0x165  (0xFDA)
+  // Enable interrupts
   set   f,   0x8       // 0x166  (0xF48)
   ret                  // 0x167  (0xFDF)
 
-label_30:
+gen_int_dis_int:
   pop   xl             // 0x168  (0xFD6)
   pop   xh             // 0x169  (0xFD5)
   pop   xp             // 0x16A  (0xFD4)
@@ -522,7 +550,7 @@ label_33:
   or    mx,  b         // 0x19E  (0xAD9)
 
 label_34:
-  jp    label_29       // 0x19F  (0x5B)
+  jp    int_restore_ret       // 0x19F  (0x5B)
 
 label_35:
   ld    a,   0x0       // 0x1A0  (0xE00)
@@ -3597,6 +3625,7 @@ label_371:
   adc   mx,  0x0       // 0xAFD  (0xC60)
   jp    label_371      // 0xAFE  (0xF4)
 
+// TODO: Is this a special `jpba` table for different return set values?
 label_372:
   ret                  // 0xAFF  (0xFDF)
   retd  0x0            // 0xB00  (0x100)
