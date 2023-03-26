@@ -1,6 +1,16 @@
+# Memory
+
+| Address  | Description                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------------------- |
+| 0x0 (M0) | Lower PC for graphics draw                                                                              |
+| 0x1 (M1) | Upper PC for graphics draw                                                                              |
+| 0x2 (M2) | Value <= 7 that indicates which graphics page is used                                                   |
+| 0x07D    | Possible some sort of counter until rerender happens? Is cleared before rendering, and set to 0xF after |
+|          |                                                                                                         |
+
 # Graphics
 
-Table generated with regex:
+Table generated via regex:
 `^  \/\/\s+(.*)\n(?:\s+\/\/.*\n)?\s+lbpx.*\/\/ (0x[a-f0-9]{3,4})`
 
 | Address | Description                                                           |
