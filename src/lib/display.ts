@@ -59,7 +59,7 @@ export const buildDisassembledInstructionString = (
     .toUpperCase()
     .padEnd(4)} (0x${actualWord.toString(16).toUpperCase()})`;
 
-  return `${formattedInstructionString}${comment}`;
+  return `${formattedInstructionString.padEnd(81)}${comment}`;
 };
 
 const columnPadWidth = (column: number) => {

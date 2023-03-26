@@ -4,7 +4,7 @@
   "description": "Disassembles microcode for 6200",
   "main": "index.js",
   "scripts": {
-    "assemble": "ts-node src/assembler.ts test/tama.asm test/tama_out.bin",
+    "assemble": "ts-node src/assembler.ts tama.asm test/tama_out.bin",
     "disassemble": "ts-node src/disassembler.ts test/tama.bin test/tama.asm",
     "extract": "ts-node src/extractIcons.ts test/tama.bin"
   },

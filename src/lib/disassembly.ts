@@ -33,12 +33,17 @@ export const parseBinaryBuffer = (
 
       let pcUpperFive = (address >> 8) & 0x1f;
 
-      const lastInstruction =
-        disassembledInstructions[disassembledInstructions.length - 1]!;
+      if (isCalz(instruction)) {
+        // calz is only zero page and prevents pset
+        pcUpperFive = 0;
+      } else {
+        const lastInstruction =
+          disassembledInstructions[disassembledInstructions.length - 1]!;
 
-      if (isPset(lastInstruction.instruction)) {
-        // PSET immediate determines our upper 5 bits
-        pcUpperFive = lastInstruction.actualWord & 0x1f;
+        if (isPset(lastInstruction.instruction)) {
+          // PSET immediate determines our upper 5 bits
+          pcUpperFive = lastInstruction.actualWord & 0x1f;
+        }
       }
 
       const pc = (pcUpperFive << 8) | pcLowerByte;
@@ -144,4 +149,10 @@ const isPset = (instruction: Instruction): boolean => {
   const mnemonic = extractMnemonic(instruction);
 
   return mnemonic === "pset";
+};
+
+const isCalz = (instruction: Instruction) => {
+  const mnemonic = extractMnemonic(instruction);
+
+  return mnemonic === "calz";
 };

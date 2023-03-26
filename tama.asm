@@ -12,14 +12,13 @@ render_asset:
   add   a,   a                                                                     // 0x3    (0xA80)
   add   a,   a                                                                     // 0x4    (0xA80)
   adc   b,   b                                                                     // 0x5    (0xA95)
-
+  
   calz  clear_0x07D                                                                // 0x6    (0x512)
-
+  
   // Call with
   // a = (m2 & 0x7) * 4
   // This is the only way to reach the page of the jump table at 0x1000
   pset  0x10                                                                       // 0x7    (0xE50)
-
   // This will jp to set_f_0x07D
   jp    gfx_jp_ret_zp                                                              // 0x8    (0x20)
 
@@ -39,7 +38,7 @@ set_f_0x07D:
   ld    mx,  0xF                                                                   // 0xF    (0xE2F)
   // Turn on interrupts
   set   f,   0x8                                                                   // 0x10   (0xF48)
-
+  
   // Returns to caller
   jp    pop_a_x                                                                    // 0x11   (0x1A)
 
@@ -60,21 +59,23 @@ clear_0x07D:
   // Clear interrupt
   rst   f,   0x7                                                                   // 0x19   (0xF57)
 
-// Fallthrough from label_2
+// Fallthrough from clear_0x07D
 // 
-// Pops A, and XP, XH, XL, then returns to caller of label_1/2
+// Pops A, and XP, XH, XL, then returns to caller of set_f_0x07D/clear_0x07D
 // 
 pop_a_x:
   pop   a                                                                          // 0x1A   (0xFD0)
   pop   xl                                                                         // 0x1B   (0xFD6)
   pop   xh                                                                         // 0x1C   (0xFD5)
   pop   xp                                                                         // 0x1D   (0xFD4)
-  // Return to caller of label_1/2
+  // Return to caller of set_f_0x07D/clear_0x07D
   ret                                                                              // 0x1E   (0xFDF)
 
-  // TODO: Unknown block
+label_4:
   ld    x,   0x2                                                                   // 0x1F   (0xB02)
-  calz  label_6                                                                    // 0x20   (0x53C)
+  calz  label_8                                                                    // 0x20   (0x53C)
+
+label_5:
   ld    a,   0x0                                                                   // 0x21   (0xE00)
   ld    xp,  a                                                                     // 0x22   (0xE80)
   ld    x,   0x26                                                                  // 0x23   (0xB26)
@@ -87,7 +88,7 @@ pop_a_x:
   ld    mx,  b                                                                     // 0x2A   (0xEC9)
   ret                                                                              // 0x2B   (0xFDF)
 
-label_4:
+label_6:
   ld    a,   0x0                                                                   // 0x2C   (0xE00)
   ld    yp,  a                                                                     // 0x2D   (0xE90)
   ld    y,   0x22                                                                  // 0x2E   (0x822)
@@ -98,7 +99,7 @@ label_4:
   calz  set_f_0x07D                                                                // 0x33   (0x509)
   ret                                                                              // 0x34   (0xFDF)
 
-label_5:
+label_7:
   ld    a,   0x0                                                                   // 0x35   (0xE00)
   ld    yp,  a                                                                     // 0x36   (0xE90)
   ld    y,   0x23                                                                  // 0x37   (0x823)
@@ -107,18 +108,22 @@ label_5:
   or    a,   my                                                                    // 0x3A   (0xAD3)
   ret                                                                              // 0x3B   (0xFDF)
 
-label_6:
-  call  label_4                                                                    // 0x3C   (0x42C)
+label_8:
+  call  label_6                                                                    // 0x3C   (0x42C)
 
-label_7:
-  call  label_5                                                                    // 0x3D   (0x435)
-  jp    nz,  label_7                                                               // 0x3E   (0x73D)
+label_9:
+  call  label_7                                                                    // 0x3D   (0x435)
+  jp    nz,  label_9                                                               // 0x3E   (0x73D)
   ret                                                                              // 0x3F   (0xFDF)
+
+label_10:
   calz  zero_a_xp                                                                  // 0x40   (0x5EF)
   ld    x,   0x2A                                                                  // 0x41   (0xB2A)
   lbpx  mx,  0x0                                                                   // 0x42   (0x900)
   ld    a,   0x1                                                                   // 0x43   (0xE01)
   ld    b,   0x0                                                                   // 0x44   (0xE10)
+
+label_11:
   ld    xp,  a                                                                     // 0x45   (0xE80)
   ld    x,   0x0                                                                   // 0x46   (0xB00)
 
@@ -135,10 +140,15 @@ loop_clear_0x100:
   jp    nz,  loop_clear_0x100                                                      // 0x50   (0x747)
   ret                                                                              // 0x51   (0xFDF)
 
+label_13:
   pset  0x4                                                                        // 0x52   (0xE44)
-  call  label_150                                                                  // 0x53   (0x486)
+  call  label_145                                                                  // 0x53   (0x486)
+
+label_14:
   pset  0x4                                                                        // 0x54   (0xE44)
-  call  label_135                                                                  // 0x55   (0x400)
+  call  label_130                                                                  // 0x55   (0x400)
+
+label_15:
   calz  zero_a_xp                                                                  // 0x56   (0x5EF)
   ld    x,   0x2A                                                                  // 0x57   (0xB2A)
   ld    yl,  mx                                                                    // 0x58   (0xE9A)
@@ -149,57 +159,57 @@ loop_clear_0x100:
   ld    a,   0xE                                                                   // 0x5D   (0xE0E)
   ld    xp,  a                                                                     // 0x5E   (0xE80)
   ld    x,   0x0                                                                   // 0x5F   (0xB00)
-  call  label_9                                                                    // 0x60   (0x48D)
+  call  label_16                                                                   // 0x60   (0x48D)
   rst   f,   0xE                                                                   // 0x61   (0xF5E)
   adc   yh,  0x7                                                                   // 0x62   (0xA27)
   ld    x,   0x80                                                                  // 0x63   (0xB80)
-  call  label_9                                                                    // 0x64   (0x48D)
+  call  label_16                                                                   // 0x64   (0x48D)
   rst   f,   0xE                                                                   // 0x65   (0xF5E)
   adc   yh,  0x8                                                                   // 0x66   (0xA28)
   ld    x,   0x12                                                                  // 0x67   (0xB12)
-  call  label_9                                                                    // 0x68   (0x48D)
+  call  label_16                                                                   // 0x68   (0x48D)
   rst   f,   0xE                                                                   // 0x69   (0xF5E)
   adc   yh,  0x7                                                                   // 0x6A   (0xA27)
   ld    x,   0x92                                                                  // 0x6B   (0xB92)
-  call  label_9                                                                    // 0x6C   (0x48D)
+  call  label_16                                                                   // 0x6C   (0x48D)
   rst   f,   0xE                                                                   // 0x6D   (0xF5E)
   adc   yh,  0x8                                                                   // 0x6E   (0xA28)
   ld    x,   0x48                                                                  // 0x6F   (0xB48)
   set   f,   0x1                                                                   // 0x70   (0xF41)
-  call  label_11                                                                   // 0x71   (0x49F)
+  call  label_20                                                                   // 0x71   (0x49F)
   ld    x,   0x3E                                                                  // 0x72   (0xB3E)
   set   f,   0x1                                                                   // 0x73   (0xF41)
-  call  label_13                                                                   // 0x74   (0x4A7)
+  call  label_22                                                                   // 0x74   (0x4A7)
   rst   f,   0xE                                                                   // 0x75   (0xF5E)
   adc   yh,  0x7                                                                   // 0x76   (0xA27)
   ld    x,   0xC8                                                                  // 0x77   (0xBC8)
   set   f,   0x1                                                                   // 0x78   (0xF41)
-  call  label_11                                                                   // 0x79   (0x49F)
+  call  label_20                                                                   // 0x79   (0x49F)
   ld    x,   0xBE                                                                  // 0x7A   (0xBBE)
   set   f,   0x1                                                                   // 0x7B   (0xF41)
-  call  label_13                                                                   // 0x7C   (0x4A7)
+  call  label_22                                                                   // 0x7C   (0x4A7)
   rst   f,   0xE                                                                   // 0x7D   (0xF5E)
   adc   yh,  0x8                                                                   // 0x7E   (0xA28)
   ld    x,   0x36                                                                  // 0x7F   (0xB36)
   set   f,   0x1                                                                   // 0x80   (0xF41)
-  call  label_12                                                                   // 0x81   (0x4A3)
+  call  label_21                                                                   // 0x81   (0x4A3)
   ld    x,   0x2E                                                                  // 0x82   (0xB2E)
   set   f,   0x1                                                                   // 0x83   (0xF41)
-  call  label_12                                                                   // 0x84   (0x4A3)
+  call  label_21                                                                   // 0x84   (0x4A3)
   rst   f,   0xE                                                                   // 0x85   (0xF5E)
   adc   yh,  0x7                                                                   // 0x86   (0xA27)
   ld    x,   0xB6                                                                  // 0x87   (0xBB6)
   set   f,   0x1                                                                   // 0x88   (0xF41)
-  call  label_12                                                                   // 0x89   (0x4A3)
+  call  label_21                                                                   // 0x89   (0x4A3)
   ld    x,   0xAE                                                                  // 0x8A   (0xBAE)
   set   f,   0x1                                                                   // 0x8B   (0xF41)
-  jp    label_12                                                                   // 0x8C   (0xA3)
+  jp    label_21                                                                   // 0x8C   (0xA3)
 
-label_9:
-  call  label_10                                                                   // 0x8D   (0x48F)
+label_16:
+  call  label_17                                                                   // 0x8D   (0x48F)
   ldpx  a,   a                                                                     // 0x8E   (0xEE0)
 
-label_10:
+label_17:
   ldpy  mx,  my                                                                    // 0x8F   (0xEFB)
   ldpx  a,   a                                                                     // 0x90   (0xEE0)
   ldpy  mx,  my                                                                    // 0x91   (0xEFB)
@@ -210,26 +220,30 @@ label_10:
   ldpx  a,   a                                                                     // 0x96   (0xEE0)
   ldpy  mx,  my                                                                    // 0x97   (0xEFB)
   ldpx  a,   a                                                                     // 0x98   (0xEE0)
+
+label_18:
   ldpy  mx,  my                                                                    // 0x99   (0xEFB)
   ldpx  a,   a                                                                     // 0x9A   (0xEE0)
+
+label_19:
   ldpy  mx,  my                                                                    // 0x9B   (0xEFB)
   ldpx  a,   a                                                                     // 0x9C   (0xEE0)
   ldpy  mx,  my                                                                    // 0x9D   (0xEFB)
   ret                                                                              // 0x9E   (0xFDF)
 
-label_11:
+label_20:
   ldpy  mx,  my                                                                    // 0x9F   (0xEFB)
   ldpx  a,   a                                                                     // 0xA0   (0xEE0)
   ldpy  mx,  my                                                                    // 0xA1   (0xEFB)
   adc   xl,  0xC                                                                   // 0xA2   (0xA1C)
 
-label_12:
+label_21:
   ldpy  mx,  my                                                                    // 0xA3   (0xEFB)
   ldpx  a,   a                                                                     // 0xA4   (0xEE0)
   ldpy  mx,  my                                                                    // 0xA5   (0xEFB)
   adc   xl,  0xC                                                                   // 0xA6   (0xA1C)
 
-label_13:
+label_22:
   ldpy  mx,  my                                                                    // 0xA7   (0xEFB)
   ldpx  a,   a                                                                     // 0xA8   (0xEE0)
   ldpy  mx,  my                                                                    // 0xA9   (0xEFB)
@@ -242,23 +256,33 @@ label_13:
   ldpx  a,   a                                                                     // 0xB0   (0xEE0)
   ldpy  mx,  my                                                                    // 0xB1   (0xEFB)
   ret                                                                              // 0xB2   (0xFDF)
+
+label_23:
   calz  zero_a_xp                                                                  // 0xB3   (0x5EF)
   ld    x,   0x4A                                                                  // 0xB4   (0xB4A)
   fan   mx,  0x8                                                                   // 0xB5   (0xDA8)
   ret                                                                              // 0xB6   (0xFDF)
-  calz  label_20                                                                   // 0xB7   (0x5F2)
-  jp    label_14                                                                   // 0xB8   (0xBF)
+
+label_24:
+  calz  label_41                                                                   // 0xB7   (0x5F2)
+  jp    label_27                                                                   // 0xB8   (0xBF)
   calz  zero_a_xp                                                                  // 0xB9   (0x5EF)
-  jp    label_14                                                                   // 0xBA   (0xBF)
+  jp    label_27                                                                   // 0xBA   (0xBF)
+
+label_25:
   ld    y,   0x94                                                                  // 0xBB   (0x894)
+
+label_26:
   ld    b,   0xF                                                                   // 0xBC   (0xE1F)
   ld    a,   0x0                                                                   // 0xBD   (0xE00)
   ld    xp,  a                                                                     // 0xBE   (0xE80)
 
-label_14:
+label_27:
   ld    x,   0x7B                                                                  // 0xBF   (0xB7B)
   cp    mx,  0x0                                                                   // 0xC0   (0xDE0)
-  jp    z,   label_15                                                              // 0xC1   (0x6CD)
+  jp    z,   label_29                                                              // 0xC1   (0x6CD)
+
+label_28:
   ld    x,   0x32                                                                  // 0xC2   (0xB32)
   calz  clear_0x07D                                                                // 0xC3   (0x512)
   lbpx  mx,  0x0                                                                   // 0xC4   (0x900)
@@ -271,47 +295,61 @@ label_14:
   ld    mx,  b                                                                     // 0xCB   (0xEC9)
   calz  set_f_0x07D                                                                // 0xCC   (0x509)
 
-label_15:
+label_29:
   ret                                                                              // 0xCD   (0xFDF)
 
-label_16:
+label_30:
   ld    a,   0x0                                                                   // 0xCE   (0xE00)
   ld    xp,  a                                                                     // 0xCF   (0xE80)
   ld    x,   0x2A                                                                  // 0xD0   (0xB2A)
   lbpx  mx,  0x40                                                                  // 0xD1   (0x940)
   ld    x,   0x3A                                                                  // 0xD2   (0xB3A)
   ret                                                                              // 0xD3   (0xFDF)
+
+label_31:
   calz  clear_0x07D                                                                // 0xD4   (0x512)
   ldpy  a,   my                                                                    // 0xD5   (0xEF3)
-  jp    label_17                                                                   // 0xD6   (0xDB)
+  jp    label_33                                                                   // 0xD6   (0xDB)
+
+label_32:
   calz  clear_0x07D                                                                // 0xD7   (0x512)
   ldpy  a,   my                                                                    // 0xD8   (0xEF3)
   or    a,   my                                                                    // 0xD9   (0xAD3)
   ldpy  a,   a                                                                     // 0xDA   (0xEF0)
 
-label_17:
+label_33:
   or    a,   my                                                                    // 0xDB   (0xAD3)
   calz  set_f_0x07D                                                                // 0xDC   (0x509)
   ret                                                                              // 0xDD   (0xFDF)
-  calz  label_16                                                                   // 0xDE   (0x5CE)
+
+label_34:
+  calz  label_30                                                                   // 0xDE   (0x5CE)
   lbpx  mx,  0x40                                                                  // 0xDF   (0x940)
   pset  0x7                                                                        // 0xE0   (0xE47)
-  jp    label_272                                                                  // 0xE1   (0x92)
+  jp    label_233                                                                  // 0xE1   (0x92)
+
+label_35:
   ld    x,   0x12                                                                  // 0xE2   (0xB12)
   set   f,   0x4                                                                   // 0xE3   (0xF44)
+
+label_36:
   add   mx,  0x1                                                                   // 0xE4   (0xC21)
   ldpx  a,   a                                                                     // 0xE5   (0xEE0)
   adc   mx,  0x0                                                                   // 0xE6   (0xC60)
   cp    mx,  0x6                                                                   // 0xE7   (0xDE6)
-  jp    c,   label_18                                                              // 0xE8   (0x2EA)
+  jp    c,   label_37                                                              // 0xE8   (0x2EA)
   ld    mx,  0x0                                                                   // 0xE9   (0xE20)
 
-label_18:
+label_37:
   rst   f,   0xB                                                                   // 0xEA   (0xF5B)
   ret                                                                              // 0xEB   (0xFDF)
+
+label_38:
   ld    a,   0x0                                                                   // 0xEC   (0xE00)
+
+label_39:
   pset  0x7                                                                        // 0xED   (0xE47)
-  jp    label_278                                                                  // 0xEE   (0xC0)
+  jp    label_238                                                                  // 0xEE   (0xC0)
 
 // 
 // Zeros the A and XP regs, then returns
@@ -321,22 +359,30 @@ zero_a_xp:
   ld    xp,  a                                                                     // 0xF0   (0xE80)
   ret                                                                              // 0xF1   (0xFDF)
 
-label_20:
+label_41:
   ld    b,   0x0                                                                   // 0xF2   (0xE10)
   ld    xp,  b                                                                     // 0xF3   (0xE81)
   ret                                                                              // 0xF4   (0xFDF)
+
+label_42:
   ld    a,   0x1                                                                   // 0xF5   (0xE01)
   ld    xp,  a                                                                     // 0xF6   (0xE80)
   ret                                                                              // 0xF7   (0xFDF)
+
+label_43:
   ld    x,   0x5D                                                                  // 0xF8   (0xB5D)
   cp    mx,  0x1                                                                   // 0xF9   (0xDE1)
   ret                                                                              // 0xFA   (0xFDF)
+
+label_44:
   ld    a,   0x0                                                                   // 0xFB   (0xE00)
   ld    xp,  a                                                                     // 0xFC   (0xE80)
+
+label_45:
   ld    x,   0x48                                                                  // 0xFD   (0xB48)
   fan   mx,  0x8                                                                   // 0xFE   (0xDA8)
   ret                                                                              // 0xFF   (0xFDF)
-
+  
 // Vector table
   jp    reset_vector                                                               // 0x100  (0x10)
   jp    generic_int                                                                // 0x101  (0x16)
@@ -377,9 +423,6 @@ clock_timer_int:
   push  a                                                                          // 0x11E  (0xFC0)
   push  b                                                                          // 0x11F  (0xFC1)
   push  xp                                                                         // 0x120  (0xFC4)
-
-// Falls through from clock_timer_int
-label_24:
   push  xh                                                                         // 0x121  (0xFC5)
   push  xl                                                                         // 0x122  (0xFC6)
   // Disable decimal
@@ -390,7 +433,7 @@ label_24:
   // a = 0xF00. Clear clock timer factor flag
   ld    a,   mx                                                                    // 0x127  (0xEC2)
   ld    x,   0x76                                                                  // 0x128  (0xB76)
-
+  
   // Set 0xF77-6 to 0x01. Reset watchdog timer
   lbpx  mx,  0x1                                                                   // 0x129  (0x901)
   // Set 0xF79-8 to 0x21
@@ -406,16 +449,16 @@ label_24:
   // Check if 0x057 is 0
   cp    mx,  0x0                                                                   // 0x130  (0xDE0)
   // If so, skip add
-  jp    z,   label_24_skip_add                                                     // 0x131  (0x633)
+  jp    z,   clock_timer_int_skip_add                                              // 0x131  (0x633)
   // Otherwise, add F to 0x057
   add   mx,  0xF                                                                   // 0x132  (0xC2F)
 
-label_24_skip_add:
+clock_timer_int_skip_add:
   ld    x,   0x3C                                                                  // 0x133  (0xB3C)
   // Check if 0x03C is 0
   cp    mx,  0x0                                                                   // 0x134  (0xDE0)
   // If so, jump
-  jp    z,   label_28                                                              // 0x135  (0x64A)
+  jp    z,   label_52                                                              // 0x135  (0x64A)
   // Enable decimal
   set   f,   0x4                                                                   // 0x136  (0xF44)
   ld    x,   0x2E                                                                  // 0x137  (0xB2E)
@@ -431,27 +474,27 @@ label_24_skip_add:
   // Check if 0x011 is 6
   cp    mx,  0x6                                                                   // 0x13D  (0xDE6)
   // If so, jump
-  jp    c,   label_27                                                              // 0x13E  (0x249)
+  jp    c,   label_51                                                              // 0x13E  (0x249)
   // Set 0x011 to 0
   ldpx  mx,  0x0                                                                   // 0x13F  (0xE60)
-  calz  label_41                                                                   // 0x140  (0x5E4)
-  jp    c,   label_26                                                              // 0x141  (0x247)
-
+  calz  label_36                                                                   // 0x140  (0x5E4)
+  jp    c,   label_50                                                              // 0x141  (0x247)
+  
   // TODO: Unused?
   ld    x,   0x14                                                                  // 0x142  (0xB14)
   ldpx  a,   mx                                                                    // 0x143  (0xEE2)
   ldpx  b,   mx                                                                    // 0x144  (0xEE6)
   ld    x,   0x14                                                                  // 0x145  (0xB14)
-  call  label_44                                                                   // 0x146  (0x4F4)
+  call  label_67                                                                   // 0x146  (0x4F4)
 
-label_26:
+label_50:
   pset  0xC                                                                        // 0x147  (0xE4C)
-  call  label_377                                                                  // 0x148  (0x47A)
+  call  label_312                                                                  // 0x148  (0x47A)
 
-label_27:
+label_51:
   rst   f,   0xB                                                                   // 0x149  (0xF5B)
 
-label_28:
+label_52:
   ld    a,   0x0                                                                   // 0x14A  (0xE00)
   ld    xp,  a                                                                     // 0x14B  (0xE80)
   ld    x,   0x2F                                                                  // 0x14C  (0xB2F)
@@ -465,7 +508,7 @@ label_28:
   ld    x,   0x70                                                                  // 0x154  (0xB70)
   fan   mx,  0x3                                                                   // 0x155  (0xDA3)
   jp    z,   int_restore_ret                                                       // 0x156  (0x65B)
-  call  label_42                                                                   // 0x157  (0x4E5)
+  call  label_65                                                                   // 0x157  (0x4E5)
   jp    z,   int_restore_ret                                                       // 0x158  (0x65B)
   ld    x,   0x70                                                                  // 0x159  (0xB70)
   ld    mx,  0x0                                                                   // 0x15A  (0xE20)
@@ -505,7 +548,7 @@ prog_timer_int:
   push  xh                                                                         // 0x173  (0xFC5)
   push  xl                                                                         // 0x174  (0xFC6)
   rst   f,   0xB                                                                   // 0x175  (0xF5B)
-  call  label_35                                                                   // 0x176  (0x4A0)
+  call  label_59                                                                   // 0x176  (0x4A0)
   ld    a,   0xF                                                                   // 0x177  (0xE0F)
   ld    xp,  a                                                                     // 0x178  (0xE80)
   ld    x,   0x2                                                                   // 0x179  (0xB02)
@@ -522,11 +565,11 @@ prog_timer_int:
   add   mx,  0xF                                                                   // 0x184  (0xC2F)
   ldpx  a,   a                                                                     // 0x185  (0xEE0)
   adc   mx,  0xF                                                                   // 0x186  (0xC6F)
-  jp    c,   label_32                                                              // 0x187  (0x28A)
+  jp    c,   label_56                                                              // 0x187  (0x28A)
   ld    x,   0x22                                                                  // 0x188  (0xB22)
   lbpx  mx,  0x0                                                                   // 0x189  (0x900)
 
-label_32:
+label_56:
   ld    x,   0x26                                                                  // 0x18A  (0xB26)
   ld    a,   mx                                                                    // 0x18B  (0xEC2)
   ldpx  mx,  b                                                                     // 0x18C  (0xEE9)
@@ -535,39 +578,39 @@ label_32:
   or    mx,  a                                                                     // 0x18F  (0xAD8)
   ld    x,   0x3D                                                                  // 0x190  (0xB3D)
   cp    mx,  b                                                                     // 0x191  (0xF09)
-  jp    z,   label_33                                                              // 0x192  (0x697)
+  jp    z,   label_57                                                              // 0x192  (0x697)
   ld    mx,  b                                                                     // 0x193  (0xEC9)
   ld    x,   0x3E                                                                  // 0x194  (0xB3E)
   ld    mx,  0x0                                                                   // 0x195  (0xE20)
-  jp    label_34                                                                   // 0x196  (0x9F)
+  jp    label_58                                                                   // 0x196  (0x9F)
 
-label_33:
+label_57:
   ld    x,   0x3E                                                                  // 0x197  (0xB3E)
   add   mx,  0x1                                                                   // 0x198  (0xC21)
-  jp    nz,  label_34                                                              // 0x199  (0x79F)
+  jp    nz,  label_58                                                              // 0x199  (0x79F)
   ld    mx,  0x8                                                                   // 0x19A  (0xE28)
   ld    x,   0x3F                                                                  // 0x19B  (0xB3F)
   and   b,   mx                                                                    // 0x19C  (0xAC6)
   ld    x,   0x27                                                                  // 0x19D  (0xB27)
   or    mx,  b                                                                     // 0x19E  (0xAD9)
 
-label_34:
+label_58:
   jp    int_restore_ret                                                            // 0x19F  (0x5B)
 
-label_35:
+label_59:
   ld    a,   0x0                                                                   // 0x1A0  (0xE00)
   ld    xp,  a                                                                     // 0x1A1  (0xE80)
   ld    x,   0x32                                                                  // 0x1A2  (0xB32)
   add   mx,  0xF                                                                   // 0x1A3  (0xC2F)
   ldpx  a,   a                                                                     // 0x1A4  (0xEE0)
   adc   mx,  0xF                                                                   // 0x1A5  (0xC6F)
-  jp    nc,  label_36                                                              // 0x1A6  (0x3AB)
+  jp    nc,  label_60                                                              // 0x1A6  (0x3AB)
   ld    x,   0x34                                                                  // 0x1A7  (0xB34)
   fan   mx,  0x8                                                                   // 0x1A8  (0xDA8)
-  jp    nz,  label_38                                                              // 0x1A9  (0x7D7)
+  jp    nz,  label_62                                                              // 0x1A9  (0x7D7)
   ret                                                                              // 0x1AA  (0xFDF)
 
-label_36:
+label_60:
   ld    x,   0x36                                                                  // 0x1AB  (0xB36)
   ld    a,   mx                                                                    // 0x1AC  (0xEC2)
   add   mx,  0x2                                                                   // 0x1AD  (0xC22)
@@ -576,25 +619,25 @@ label_36:
   adc   mx,  0x0                                                                   // 0x1B0  (0xC60)
   ld    x,   0x32                                                                  // 0x1B1  (0xB32)
   pset  0xE                                                                        // 0x1B2  (0xE4E)
-  call  label_432                                                                  // 0x1B3  (0x47C)
+  call  label_356                                                                  // 0x1B3  (0x47C)
   cp    xl,  0x6                                                                   // 0x1B4  (0xA56)
-  jp    z,   label_37                                                              // 0x1B5  (0x6C1)
+  jp    z,   label_61                                                              // 0x1B5  (0x6C1)
   ld    x,   0x59                                                                  // 0x1B6  (0xB59)
   cp    mx,  0xF                                                                   // 0x1B7  (0xDEF)
-  jp    z,   label_37                                                              // 0x1B8  (0x6C1)
+  jp    z,   label_61                                                              // 0x1B8  (0x6C1)
   ld    x,   0x58                                                                  // 0x1B9  (0xB58)
   add   mx,  0xF                                                                   // 0x1BA  (0xC2F)
   ldpx  a,   a                                                                     // 0x1BB  (0xEE0)
   adc   mx,  0xF                                                                   // 0x1BC  (0xC6F)
-  jp    c,   label_37                                                              // 0x1BD  (0x2C1)
+  jp    c,   label_61                                                              // 0x1BD  (0x2C1)
   ld    x,   0x36                                                                  // 0x1BE  (0xB36)
   lbpx  mx,  0x7D                                                                  // 0x1BF  (0x97D)
-  jp    label_36                                                                   // 0x1C0  (0xAB)
+  jp    label_60                                                                   // 0x1C0  (0xAB)
 
-label_37:
+label_61:
   ld    x,   0x34                                                                  // 0x1C1  (0xB34)
   fan   mx,  0x8                                                                   // 0x1C2  (0xDA8)
-  jp    nz,  label_38                                                              // 0x1C3  (0x7D7)
+  jp    nz,  label_62                                                              // 0x1C3  (0x7D7)
   ld    x,   0x38                                                                  // 0x1C4  (0xB38)
   lbpx  mx,  0x58                                                                  // 0x1C5  (0x958)
   ld    a,   0xF                                                                   // 0x1C6  (0xE0F)
@@ -615,29 +658,27 @@ label_37:
   and   mx,  0x7                                                                   // 0x1D5  (0xCA7)
   ret                                                                              // 0x1D6  (0xFDF)
 
-label_38:
+label_62:
   ld    x,   0x38                                                                  // 0x1D7  (0xB38)
   add   mx,  0xF                                                                   // 0x1D8  (0xC2F)
   ldpx  a,   a                                                                     // 0x1D9  (0xEE0)
   adc   mx,  0xF                                                                   // 0x1DA  (0xC6F)
   ld    a,   0xF                                                                   // 0x1DB  (0xE0F)
   ld    xp,  a                                                                     // 0x1DC  (0xE80)
-  jp    c,   label_39                                                              // 0x1DD  (0x2E0)
+  jp    c,   label_63                                                              // 0x1DD  (0x2E0)
   ld    x,   0x71                                                                  // 0x1DE  (0xB71)
   and   mx,  0xE                                                                   // 0x1DF  (0xCAE)
 
-label_39:
+label_63:
   ld    x,   0x54                                                                  // 0x1E0  (0xB54)
   or    mx,  0x8                                                                   // 0x1E1  (0xCE8)
   ret                                                                              // 0x1E2  (0xFDF)
 
-label_40:
+label_64:
   ld    a,   0xF                                                                   // 0x1E3  (0xE0F)
-
-label_41:
   ld    xp,  a                                                                     // 0x1E4  (0xE80)
 
-label_42:
+label_65:
   ld    x,   0x73                                                                  // 0x1E5  (0xB73)
   ld    mx,  0x6                                                                   // 0x1E6  (0xE26)
   nop5                                                                             // 0x1E7  (0xFFB)
@@ -646,102 +687,94 @@ label_42:
   and   a,   0x8                                                                   // 0x1EA  (0xC88)
   ret                                                                              // 0x1EB  (0xFDF)
 
-label_43:
+label_66:
   ld    x,   0x75                                                                  // 0x1EC  (0xB75)
   ldpx  mx,  0x0                                                                   // 0x1ED  (0xE60)
   ldpx  mx,  a                                                                     // 0x1EE  (0xEE8)
   ldpx  mx,  b                                                                     // 0x1EF  (0xEE9)
   ld    x,   0x57                                                                  // 0x1F0  (0xB57)
   ldpx  mx,  b                                                                     // 0x1F1  (0xEE9)
-  calz  label_24                                                                   // 0x1F2  (0x521)
+  calz  label_5                                                                    // 0x1F2  (0x521)
   ret                                                                              // 0x1F3  (0xFDF)
 
-label_44:
+label_67:
   add   a,   0x1                                                                   // 0x1F4  (0xC01)
   adc   b,   0x0                                                                   // 0x1F5  (0xC50)
   cp    b,   0x1                                                                   // 0x1F6  (0xDD1)
-  jp    c,   label_46                                                              // 0x1F7  (0x2FD)
-  jp    nz,  label_45                                                              // 0x1F8  (0x7FB)
+  jp    c,   label_69                                                              // 0x1F7  (0x2FD)
+  jp    nz,  label_68                                                              // 0x1F8  (0x7FB)
   cp    a,   0x8                                                                   // 0x1F9  (0xDC8)
-  jp    c,   label_46                                                              // 0x1FA  (0x2FD)
+  jp    c,   label_69                                                              // 0x1FA  (0x2FD)
 
-label_45:
+label_68:
   ld    a,   0x0                                                                   // 0x1FB  (0xE00)
   ld    b,   0x0                                                                   // 0x1FC  (0xE10)
 
-label_46:
+label_69:
   ldpx  mx,  a                                                                     // 0x1FD  (0xEE8)
   ldpx  mx,  b                                                                     // 0x1FE  (0xEE9)
   ret                                                                              // 0x1FF  (0xFDF)
 
-label_47:
-  calz  label_64                                                                   // 0x200  (0x556)
-  calz  label_52                                                                   // 0x201  (0x521)
+label_70:
+  calz  label_15                                                                   // 0x200  (0x556)
+  calz  label_5                                                                    // 0x201  (0x521)
   cp    a,   0x5                                                                   // 0x202  (0xDC5)
-  jp    z,   label_48                                                              // 0x203  (0x606)
+  jp    z,   label_71                                                              // 0x203  (0x606)
   fan   b,   0x1                                                                   // 0x204  (0xD91)
   ret                                                                              // 0x205  (0xFDF)
 
-label_48:
-  calz  label_50                                                                   // 0x206  (0x512)
-  calz  label_88                                                                   // 0x207  (0x5EF)
+label_71:
+  calz  clear_0x07D                                                                // 0x206  (0x512)
+  calz  zero_a_xp                                                                  // 0x207  (0x5EF)
   ld    a,   0x2                                                                   // 0x208  (0xE02)
-
-label_49:
   ld    yp,  a                                                                     // 0x209  (0xE90)
   ld    x,   0x10                                                                  // 0x20A  (0xB10)
   ld    y,   0x72                                                                  // 0x20B  (0x872)
-  call  label_54                                                                   // 0x20C  (0x427)
+  call  label_73                                                                   // 0x20C  (0x427)
   rst   f,   0x0                                                                   // 0x20D  (0xF50)
   ld    a,   0xF                                                                   // 0x20E  (0xE0F)
   ld    sph, a                                                                     // 0x20F  (0xFE0)
   ld    spl, a                                                                     // 0x210  (0xFF0)
-  call  label_59                                                                   // 0x211  (0x442)
-
-label_50:
+  call  label_77                                                                   // 0x211  (0x442)
   ld    a,   0x0                                                                   // 0x212  (0xE00)
   ld    yp,  a                                                                     // 0x213  (0xE90)
   ld    a,   0x2                                                                   // 0x214  (0xE02)
   ld    xp,  a                                                                     // 0x215  (0xE80)
   ld    y,   0x10                                                                  // 0x216  (0x810)
   ld    x,   0x72                                                                  // 0x217  (0xB72)
-  call  label_54                                                                   // 0x218  (0x427)
-  calz  label_49                                                                   // 0x219  (0x509)
+  call  label_73                                                                   // 0x218  (0x427)
+  calz  set_f_0x07D                                                                // 0x219  (0x509)
   ld    y,   0x80                                                                  // 0x21A  (0x880)
-  calz  label_78                                                                   // 0x21B  (0x5BC)
+  calz  label_26                                                                   // 0x21B  (0x5BC)
   pset  0x7                                                                        // 0x21C  (0xE47)
-  call  label_271                                                                  // 0x21D  (0x461)
+  call  label_232                                                                  // 0x21D  (0x461)
   pset  0x4                                                                        // 0x21E  (0xE44)
-
-label_51:
-  call  label_147                                                                  // 0x21F  (0x465)
+  call  label_142                                                                  // 0x21F  (0x465)
   ld    x,   0x3C                                                                  // 0x220  (0xB3C)
-
-label_52:
   ld    mx,  0xF                                                                   // 0x221  (0xE2F)
 
-label_53:
-  calz  label_52                                                                   // 0x222  (0x521)
+label_72:
+  calz  label_5                                                                    // 0x222  (0x521)
   fan   a,   0x7                                                                   // 0x223  (0xD87)
-  jp    nz,  label_53                                                              // 0x224  (0x722)
+  jp    nz,  label_72                                                              // 0x224  (0x722)
   pset  0x5                                                                        // 0x225  (0xE45)
-  jp    label_169                                                                  // 0x226  (0x17)
+  jp    label_159                                                                  // 0x226  (0x17)
 
-label_54:
+label_73:
   pset  0x12                                                                       // 0x227  (0xE52)
-  jp    label_480                                                                  // 0x228  (0x22)
+  jp    label_396                                                                  // 0x228  (0x22)
 
-label_55:
+label_74:
   ret                                                                              // 0x229  (0xFDF)
 
 reset_vect_cont:
   pset  0x1                                                                        // 0x22A  (0xE41)
-  call  label_40                                                                   // 0x22B  (0x4E3)
-  jp    nz,  label_57                                                              // 0x22C  (0x72F)
+  call  label_64                                                                   // 0x22B  (0x4E3)
+  jp    nz,  label_76                                                              // 0x22C  (0x72F)
   ld    x,   0x70                                                                  // 0x22D  (0xB70)
   ld    mx,  0x1                                                                   // 0x22E  (0xE21)
 
-label_57:
+label_76:
   ld    a,   0xF                                                                   // 0x22F  (0xE0F)
   ld    xp,  a                                                                     // 0x230  (0xE80)
   ld    x,   0x40                                                                  // 0x231  (0xB40)
@@ -750,117 +783,111 @@ label_57:
   ld    y,   0x70                                                                  // 0x234  (0x870)
   ld    my,  mx                                                                    // 0x235  (0xECE)
   and   my,  0x7                                                                   // 0x236  (0xCB7)
-  call  label_59                                                                   // 0x237  (0x442)
-  calz  label_49                                                                   // 0x238  (0x509)
+  call  label_77                                                                   // 0x237  (0x442)
+  calz  set_f_0x07D                                                                // 0x238  (0x509)
   ld    y,   0x80                                                                  // 0x239  (0x880)
-  calz  label_78                                                                   // 0x23A  (0x5BC)
+  calz  label_26                                                                   // 0x23A  (0x5BC)
   ld    a,   0x2                                                                   // 0x23B  (0xE02)
   ld    xp,  a                                                                     // 0x23C  (0xE80)
   ld    x,   0x70                                                                  // 0x23D  (0xB70)
   cp    mx,  0x3                                                                   // 0x23E  (0xDE3)
-  jp    z,   label_64                                                              // 0x23F  (0x656)
-
-label_58:
+  jp    z,   label_80                                                              // 0x23F  (0x656)
   pset  0x9                                                                        // 0x240  (0xE49)
-  jp    label_351                                                                  // 0x241  (0x7F)
+  jp    label_294                                                                  // 0x241  (0x7F)
 
-label_59:
+label_77:
   pset  0x11                                                                       // 0x242  (0xE51)
-  jp    label_478                                                                  // 0x243  (0xE0)
+  jp    label_394                                                                  // 0x243  (0xE0)
 
-label_60:
+label_78:
   ld    a,   0x0                                                                   // 0x244  (0xE00)
-
-label_61:
   ld    b,   0xE                                                                   // 0x245  (0xE1E)
-  calz  label_61                                                                   // 0x246  (0x545)
-
-label_62:
+  calz  label_11                                                                   // 0x246  (0x545)
   ld    a,   0x1                                                                   // 0x247  (0xE01)
   ld    b,   0x0                                                                   // 0x248  (0xE10)
-  calz  label_61                                                                   // 0x249  (0x545)
+  calz  label_11                                                                   // 0x249  (0x545)
   ld    a,   0x2                                                                   // 0x24A  (0xE02)
   ld    b,   0x7                                                                   // 0x24B  (0xE17)
-  calz  label_61                                                                   // 0x24C  (0x545)
+  calz  label_11                                                                   // 0x24C  (0x545)
   ld    a,   0xE                                                                   // 0x24D  (0xE0E)
   ld    b,   0x5                                                                   // 0x24E  (0xE15)
-  calz  label_61                                                                   // 0x24F  (0x545)
+  calz  label_11                                                                   // 0x24F  (0x545)
   ld    b,   0x5                                                                   // 0x250  (0xE15)
   ld    x,   0x80                                                                  // 0x251  (0xB80)
-  calz  label_62                                                                   // 0x252  (0x547)
+  calz  loop_clear_0x100                                                           // 0x252  (0x547)
   pset  0x12                                                                       // 0x253  (0xE52)
-  jp    label_479                                                                  // 0x254  (0x0)
+  jp    label_395                                                                  // 0x254  (0x0)
 
-label_63:
+label_79:
   ret                                                                              // 0x255  (0xFDF)
 
-label_64:
+label_80:
   ld    x,   0x2C                                                                  // 0x256  (0xB2C)
   lbpx  mx,  0xFF                                                                  // 0x257  (0x9FF)
   ld    y,   0xFF                                                                  // 0x258  (0x8FF)
   ld    b,   0x2                                                                   // 0x259  (0xE12)
-  call  label_65                                                                   // 0x25A  (0x46B)
+  call  label_81                                                                   // 0x25A  (0x46B)
   ld    x,   0x2C                                                                  // 0x25B  (0xB2C)
   lbpx  mx,  0x5A                                                                  // 0x25C  (0x95A)
   ld    y,   0xA5                                                                  // 0x25D  (0x8A5)
   ld    b,   0x1                                                                   // 0x25E  (0xE11)
-  call  label_65                                                                   // 0x25F  (0x46B)
+  call  label_81                                                                   // 0x25F  (0x46B)
   ld    x,   0x2C                                                                  // 0x260  (0xB2C)
   lbpx  mx,  0xA5                                                                  // 0x261  (0x9A5)
   ld    y,   0x5A                                                                  // 0x262  (0x85A)
   ld    b,   0x4                                                                   // 0x263  (0xE14)
-  call  label_65                                                                   // 0x264  (0x46B)
+  call  label_81                                                                   // 0x264  (0x46B)
   ld    x,   0x2C                                                                  // 0x265  (0xB2C)
   lbpx  mx,  0x0                                                                   // 0x266  (0x900)
   ld    b,   0x2                                                                   // 0x267  (0xE12)
-  call  label_69                                                                   // 0x268  (0x481)
+  call  label_85                                                                   // 0x268  (0x481)
   pset  0x9                                                                        // 0x269  (0xE49)
-  jp    label_351                                                                  // 0x26A  (0x7F)
+  jp    label_294                                                                  // 0x26A  (0x7F)
 
-label_65:
+label_81:
   ld    m0,  b                                                                     // 0x26B  (0xF90)
-  calz  label_90                                                                   // 0x26C  (0x5F5)
+  calz  label_42                                                                   // 0x26C  (0x5F5)
   ld    x,   0x0                                                                   // 0x26D  (0xB00)
   ld    a,   yh                                                                    // 0x26E  (0xEB4)
   ld    b,   yl                                                                    // 0x26F  (0xEB9)
 
-label_66:
+label_82:
   ldpx  mx,  a                                                                     // 0x270  (0xEE8)
   ldpx  mx,  a                                                                     // 0x271  (0xEE8)
   ldpx  mx,  b                                                                     // 0x272  (0xEE9)
   ldpx  mx,  b                                                                     // 0x273  (0xEE9)
   cp    xh,  0x0                                                                   // 0x274  (0xA40)
-  jp    nz,  label_66                                                              // 0x275  (0x770)
+  jp    nz,  label_82                                                              // 0x275  (0x770)
   cp    xl,  0x0                                                                   // 0x276  (0xA50)
-  jp    nz,  label_66                                                              // 0x277  (0x770)
+  jp    nz,  label_82                                                              // 0x277  (0x770)
 
-label_67:
+label_83:
   pset  0x7                                                                        // 0x278  (0xE47)
-  call  label_282                                                                  // 0x279  (0x4E1)
-  calz  label_64                                                                   // 0x27A  (0x556)
+  call  label_242                                                                  // 0x279  (0x4E1)
+  calz  label_15                                                                   // 0x27A  (0x556)
 
-label_68:
-  calz  label_52                                                                   // 0x27B  (0x521)
+label_84:
+  calz  label_5                                                                    // 0x27B  (0x521)
   ld    b,   m0                                                                    // 0x27C  (0xFB0)
   cp    a,   b                                                                     // 0x27D  (0xF01)
-  jp    nz,  label_68                                                              // 0x27E  (0x77B)
-  calz  label_77                                                                   // 0x27F  (0x5BB)
+  jp    nz,  label_84                                                              // 0x27E  (0x77B)
+  calz  label_25                                                                   // 0x27F  (0x5BB)
   ret                                                                              // 0x280  (0xFDF)
 
-label_69:
+label_85:
   ld    m0,  b                                                                     // 0x281  (0xF90)
-  calz  label_90                                                                   // 0x282  (0x5F5)
+  calz  label_42                                                                   // 0x282  (0x5F5)
   ld    x,   0x0                                                                   // 0x283  (0xB00)
 
-label_70:
+label_86:
   lbpx  mx,  0x1                                                                   // 0x284  (0x901)
   cp    xh,  0x8                                                                   // 0x285  (0xA48)
-  jp    nz,  label_70                                                              // 0x286  (0x784)
+  jp    nz,  label_86                                                              // 0x286  (0x784)
 
-label_71:
+label_87:
   lbpx  mx,  0x80                                                                  // 0x287  (0x980)
   cp    xh,  0x0                                                                   // 0x288  (0xA40)
-  jp    nz,  label_71                                                              // 0x289  (0x787)
+  jp    nz,  label_87                                                              // 0x289  (0x787)
   ld    x,   0x0                                                                   // 0x28A  (0xB00)
   lbpx  mx,  0xFF                                                                  // 0x28B  (0x9FF)
   ld    x,   0x3E                                                                  // 0x28C  (0xB3E)
@@ -869,143 +896,131 @@ label_71:
   lbpx  mx,  0xFF                                                                  // 0x28F  (0x9FF)
   ld    x,   0xBE                                                                  // 0x290  (0xBBE)
   lbpx  mx,  0xFF                                                                  // 0x291  (0x9FF)
-  jp    label_67                                                                   // 0x292  (0x78)
+  jp    label_83                                                                   // 0x292  (0x78)
 
-label_72:
+label_88:
   ld    a,   0x0                                                                   // 0x293  (0xE00)
-  calz  label_86                                                                   // 0x294  (0x5ED)
-  calz  label_58                                                                   // 0x295  (0x540)
-  calz  label_52                                                                   // 0x296  (0x521)
+  calz  label_39                                                                   // 0x294  (0x5ED)
+  calz  label_10                                                                   // 0x295  (0x540)
+  calz  label_5                                                                    // 0x296  (0x521)
 
-label_73:
-  calz  label_82                                                                   // 0x297  (0x5CE)
+label_89:
+  calz  label_30                                                                   // 0x297  (0x5CE)
   lbpx  mx,  0xC4                                                                  // 0x298  (0x9C4)
   pset  0x5                                                                        // 0x299  (0xE45)
-  call  label_194                                                                  // 0x29A  (0x4A6)
+  call  label_181                                                                  // 0x29A  (0x4A6)
   ld    b,   0x5                                                                   // 0x29B  (0xE15)
   ld    m5,  b                                                                     // 0x29C  (0xF95)
   ld    a,   m4                                                                    // 0x29D  (0xFA4)
   cp    a,   0x6                                                                   // 0x29E  (0xDC6)
-  jp    c,   label_74                                                              // 0x29F  (0x2A1)
+  jp    c,   label_90                                                              // 0x29F  (0x2A1)
   add   a,   0x3                                                                   // 0x2A0  (0xC03)
 
-label_74:
+label_90:
   ld    m4,  a                                                                     // 0x2A1  (0xF84)
-  calz  label_90                                                                   // 0x2A2  (0x5F5)
+  calz  label_42                                                                   // 0x2A2  (0x5F5)
   ld    x,   0xE2                                                                  // 0x2A3  (0xBE2)
 
-label_75:
+label_91:
   dec   m4                                                                         // 0x2A4  (0xF74)
   ld    a,   m4                                                                    // 0x2A5  (0xFA4)
   rlc   a                                                                          // 0x2A6  (0xAF0)
   ld    a,   0x5                                                                   // 0x2A7  (0xE05)
   rlc   a                                                                          // 0x2A8  (0xAF0)
   pset  0x5                                                                        // 0x2A9  (0xE45)
-  call  label_207                                                                  // 0x2AA  (0x4EF)
+  call  label_187                                                                  // 0x2AA  (0x4EF)
   dec   m5                                                                         // 0x2AB  (0xF75)
-  jp    nz,  label_75                                                              // 0x2AC  (0x7A4)
-  calz  label_64                                                                   // 0x2AD  (0x556)
+  jp    nz,  label_91                                                              // 0x2AC  (0x7A4)
+  calz  label_15                                                                   // 0x2AD  (0x556)
   pset  0xF                                                                        // 0x2AE  (0xE4F)
-  call  label_435                                                                  // 0x2AF  (0x400)
-  jp    nz,  label_79                                                              // 0x2B0  (0x7C0)
+  call  label_357                                                                  // 0x2AF  (0x400)
+  jp    nz,  label_93                                                              // 0x2B0  (0x7C0)
 
-label_76:
-  calz  label_51                                                                   // 0x2B1  (0x51F)
+label_92:
+  calz  label_4                                                                    // 0x2B1  (0x51F)
   fan   b,   0x2                                                                   // 0x2B2  (0xD92)
   pset  0x5                                                                        // 0x2B3  (0xE45)
-  jp    nz,  label_166                                                             // 0x2B4  (0x708)
+  jp    nz,  label_157                                                             // 0x2B4  (0x708)
   cp    a,   0x5                                                                   // 0x2B5  (0xDC5)
   pset  0x5                                                                        // 0x2B6  (0xE45)
-  jp    z,   label_179                                                             // 0x2B7  (0x653)
+  jp    z,   label_167                                                             // 0x2B7  (0x653)
   ld    x,   0x7C                                                                  // 0x2B8  (0xB7C)
   cp    mx,  0x0                                                                   // 0x2B9  (0xDE0)
   pset  0x5                                                                        // 0x2BA  (0xE45)
-
-label_77:
-  jp    z,   label_166                                                             // 0x2BB  (0x608)
-
-label_78:
+  jp    z,   label_157                                                             // 0x2BB  (0x608)
   ld    x,   0x2E                                                                  // 0x2BC  (0xB2E)
   cp    mx,  0x0                                                                   // 0x2BD  (0xDE0)
-  jp    z,   label_76                                                              // 0x2BE  (0x6B1)
-  jp    label_73                                                                   // 0x2BF  (0x97)
+  jp    z,   label_92                                                              // 0x2BE  (0x6B1)
+  jp    label_89                                                                   // 0x2BF  (0x97)
 
-label_79:
+label_93:
   pset  0x3                                                                        // 0x2C0  (0xE43)
-  call  label_91                                                                   // 0x2C1  (0x407)
-  jp    label_72                                                                   // 0x2C2  (0x93)
+  call  label_101                                                                  // 0x2C1  (0x407)
+  jp    label_88                                                                   // 0x2C2  (0x93)
 
-label_80:
-  calz  label_52                                                                   // 0x2C3  (0x521)
+label_94:
+  calz  label_5                                                                    // 0x2C3  (0x521)
   or    a,   b                                                                     // 0x2C4  (0xAD1)
   fan   a,   0x7                                                                   // 0x2C5  (0xD87)
-  jp    z,   label_81                                                              // 0x2C6  (0x6CD)
+  jp    z,   label_95                                                              // 0x2C6  (0x6CD)
   ld    x,   0x77                                                                  // 0x2C7  (0xB77)
   ld    a,   mx                                                                    // 0x2C8  (0xEC2)
   cp    a,   0x0                                                                   // 0x2C9  (0xDC0)
-  jp    z,   label_81                                                              // 0x2CA  (0x6CD)
+  jp    z,   label_95                                                              // 0x2CA  (0x6CD)
   ld    x,   0x57                                                                  // 0x2CB  (0xB57)
   ld    mx,  a                                                                     // 0x2CC  (0xEC8)
 
-label_81:
+label_95:
   ld    x,   0x29                                                                  // 0x2CD  (0xB29)
-
-label_82:
   fan   mx,  0x4                                                                   // 0x2CE  (0xDA4)
-  jp    z,   label_83                                                              // 0x2CF  (0x6D9)
-  calz  label_77                                                                   // 0x2D0  (0x5BB)
+  jp    z,   label_96                                                              // 0x2CF  (0x6D9)
+  calz  label_25                                                                   // 0x2D0  (0x5BB)
   ld    x,   0x76                                                                  // 0x2D1  (0xB76)
   ld    a,   mx                                                                    // 0x2D2  (0xEC2)
   ld    x,   0x75                                                                  // 0x2D3  (0xB75)
   add   mx,  0x1                                                                   // 0x2D4  (0xC21)
   cp    mx,  a                                                                     // 0x2D5  (0xF08)
-  jp    c,   label_87                                                              // 0x2D6  (0x2EE)
+  jp    c,   label_99                                                              // 0x2D6  (0x2EE)
   ld    mx,  0x0                                                                   // 0x2D7  (0xE20)
-  jp    label_87                                                                   // 0x2D8  (0xEE)
+  jp    label_99                                                                   // 0x2D8  (0xEE)
 
-label_83:
+label_96:
   fan   mx,  0x2                                                                   // 0x2D9  (0xDA2)
-  jp    z,   label_84                                                              // 0x2DA  (0x6DF)
-  calz  label_77                                                                   // 0x2DB  (0x5BB)
+  jp    z,   label_97                                                              // 0x2DA  (0x6DF)
+  calz  label_25                                                                   // 0x2DB  (0x5BB)
   rst   f,   0xE                                                                   // 0x2DC  (0xF5E)
   set   f,   0x2                                                                   // 0x2DD  (0xF42)
-  jp    label_89                                                                   // 0x2DE  (0xF0)
+  jp    label_100                                                                  // 0x2DE  (0xF0)
 
-label_84:
+label_97:
   fan   mx,  0x1                                                                   // 0x2DF  (0xDA1)
-  jp    z,   label_85                                                              // 0x2E0  (0x6E5)
-  calz  label_77                                                                   // 0x2E1  (0x5BB)
+  jp    z,   label_98                                                              // 0x2E0  (0x6E5)
+  calz  label_25                                                                   // 0x2E1  (0x5BB)
   set   f,   0x1                                                                   // 0x2E2  (0xF41)
   set   f,   0x2                                                                   // 0x2E3  (0xF42)
-  jp    label_89                                                                   // 0x2E4  (0xF0)
+  jp    label_100                                                                  // 0x2E4  (0xF0)
 
-label_85:
+label_98:
   ld    x,   0x57                                                                  // 0x2E5  (0xB57)
   cp    mx,  0x0                                                                   // 0x2E6  (0xDE0)
-  jp    nz,  label_87                                                              // 0x2E7  (0x7EE)
+  jp    nz,  label_99                                                              // 0x2E7  (0x7EE)
   ld    x,   0x77                                                                  // 0x2E8  (0xB77)
   cp    mx,  0x0                                                                   // 0x2E9  (0xDE0)
-  jp    z,   label_87                                                              // 0x2EA  (0x6EE)
+  jp    z,   label_99                                                              // 0x2EA  (0x6EE)
   set   f,   0x1                                                                   // 0x2EB  (0xF41)
   rst   f,   0xD                                                                   // 0x2EC  (0xF5D)
+  jp    label_100                                                                  // 0x2ED  (0xF0)
 
-label_86:
-  jp    label_89                                                                   // 0x2ED  (0xF0)
-
-label_87:
+label_99:
   rst   f,   0xE                                                                   // 0x2EE  (0xF5E)
-
-label_88:
   rst   f,   0xD                                                                   // 0x2EF  (0xF5D)
 
-label_89:
+label_100:
   ld    x,   0x75                                                                  // 0x2F0  (0xB75)
   ld    a,   mx                                                                    // 0x2F1  (0xEC2)
   ret                                                                              // 0x2F2  (0xFDF)
   nop7                                                                             // 0x2F3  (0xFFF)
   nop7                                                                             // 0x2F4  (0xFFF)
-
-label_90:
   nop7                                                                             // 0x2F5  (0xFFF)
   nop7                                                                             // 0x2F6  (0xFFF)
   nop7                                                                             // 0x2F7  (0xFFF)
@@ -1018,153 +1033,137 @@ label_90:
   nop7                                                                             // 0x2FE  (0xFFF)
   nop7                                                                             // 0x2FF  (0xFFF)
   ret                                                                              // 0x300  (0xFDF)
-  jp    label_93                                                                   // 0x301  (0xC)
-  jp    label_98                                                                   // 0x302  (0x1C)
-  jp    label_100                                                                  // 0x303  (0x24)
-  jp    label_102                                                                  // 0x304  (0x29)
-  jp    label_109                                                                  // 0x305  (0x4B)
-  jp    label_114                                                                  // 0x306  (0x74)
+  jp    label_102                                                                  // 0x301  (0xC)
+  jp    label_106                                                                  // 0x302  (0x1C)
+  jp    label_107                                                                  // 0x303  (0x24)
+  jp    label_109                                                                  // 0x304  (0x29)
+  jp    label_112                                                                  // 0x305  (0x4B)
+  jp    label_116                                                                  // 0x306  (0x74)
 
-label_91:
-  calz  label_132                                                                  // 0x307  (0x5F2)
+label_101:
+  calz  label_41                                                                   // 0x307  (0x5F2)
   ld    x,   0x5C                                                                  // 0x308  (0xB5C)
-
-label_92:
   ld    a,   mx                                                                    // 0x309  (0xEC2)
   ld    mx,  0x0                                                                   // 0x30A  (0xE20)
   jpba                                                                             // 0x30B  (0xFE8)
 
-label_93:
+label_102:
   ld    x,   0x4A                                                                  // 0x30C  (0xB4A)
   ld    mx,  0xF                                                                   // 0x30D  (0xE2F)
   ld    x,   0x5D                                                                  // 0x30E  (0xB5D)
   ld    b,   mx                                                                    // 0x30F  (0xEC6)
   ld    a,   0x2                                                                   // 0x310  (0xE02)
   ld    xp,  a                                                                     // 0x311  (0xE80)
-
-label_94:
   ld    x,   0x4                                                                   // 0x312  (0xB04)
   cp    b,   0x1                                                                   // 0x313  (0xDD1)
-  jp    z,   label_96                                                              // 0x314  (0x617)
+  jp    z,   label_104                                                             // 0x314  (0x617)
   lbpx  mx,  0x0                                                                   // 0x315  (0x900)
 
-label_95:
-  jp    label_97                                                                   // 0x316  (0x18)
+label_103:
+  jp    label_105                                                                  // 0x316  (0x18)
 
-label_96:
+label_104:
   lbpx  mx,  0x3D                                                                  // 0x317  (0x93D)
 
-label_97:
+label_105:
   ld    a,   0x8                                                                   // 0x318  (0xE08)
   ld    y,   0xA5                                                                  // 0x319  (0x8A5)
-  calz  label_118                                                                  // 0x31A  (0x5B7)
+  calz  label_24                                                                   // 0x31A  (0x5B7)
   ret                                                                              // 0x31B  (0xFDF)
 
-label_98:
+label_106:
   ld    x,   0x5D                                                                  // 0x31C  (0xB5D)
   ld    a,   0x2                                                                   // 0x31D  (0xE02)
   ld    yp,  a                                                                     // 0x31E  (0xE90)
   ld    y,   0x8                                                                   // 0x31F  (0x808)
   cp    mx,  0x1                                                                   // 0x320  (0xDE1)
-
-label_99:
-  jp    nz,  label_101                                                             // 0x321  (0x727)
+  jp    nz,  label_108                                                             // 0x321  (0x727)
   ld    my,  0xD                                                                   // 0x322  (0xE3D)
-  jp    label_97                                                                   // 0x323  (0x18)
+  jp    label_105                                                                  // 0x323  (0x18)
 
-label_100:
+label_107:
   ld    a,   0x2                                                                   // 0x324  (0xE02)
   ld    yp,  a                                                                     // 0x325  (0xE90)
   ld    y,   0x9                                                                   // 0x326  (0x809)
 
-label_101:
+label_108:
   ld    my,  0x1                                                                   // 0x327  (0xE31)
-  jp    label_95                                                                   // 0x328  (0x16)
+  jp    label_103                                                                  // 0x328  (0x16)
 
-label_102:
+label_109:
   ld    x,   0x4B                                                                  // 0x329  (0xB4B)
   push  mx                                                                         // 0x32A  (0xFC2)
   ld    mx,  0xF                                                                   // 0x32B  (0xE2F)
-
-label_103:
   ld    a,   0x4                                                                   // 0x32C  (0xE04)
   ld    b,   0x8                                                                   // 0x32D  (0xE18)
   ld    y,   0x2                                                                   // 0x32E  (0x802)
-  call  label_125                                                                  // 0x32F  (0x4D5)
+  call  label_124                                                                  // 0x32F  (0x4D5)
   ld    a,   0x0                                                                   // 0x330  (0xE00)
   ld    yp,  a                                                                     // 0x331  (0xE90)
   ld    y,   0x4B                                                                  // 0x332  (0x84B)
   pop   my                                                                         // 0x333  (0xFD3)
   ld    a,   0x2                                                                   // 0x334  (0xE02)
-
-label_104:
   ld    xp,  a                                                                     // 0x335  (0xE80)
   ld    x,   0x6                                                                   // 0x336  (0xB06)
   lbpx  mx,  0xB4                                                                  // 0x337  (0x9B4)
   ld    y,   0x5D                                                                  // 0x338  (0x85D)
   cp    my,  0x1                                                                   // 0x339  (0xDF1)
-  jp    nz,  label_106                                                             // 0x33A  (0x73D)
+  jp    nz,  label_110                                                             // 0x33A  (0x73D)
   ld    x,   0x6                                                                   // 0x33B  (0xB06)
-
-label_105:
   lbpx  mx,  0x19                                                                  // 0x33C  (0x919)
 
-label_106:
+label_110:
   ld    y,   0x4D                                                                  // 0x33D  (0x84D)
   add   my,  0x1                                                                   // 0x33E  (0xC31)
   cp    my,  0x8                                                                   // 0x33F  (0xDF8)
-
-label_107:
-  jp    c,   label_108                                                             // 0x340  (0x24A)
+  jp    c,   label_111                                                             // 0x340  (0x24A)
   ld    my,  0x8                                                                   // 0x341  (0xE38)
   ld    y,   0x48                                                                  // 0x342  (0x848)
   fan   my,  0x8                                                                   // 0x343  (0xDB8)
-  jp    nz,  label_108                                                             // 0x344  (0x74A)
+  jp    nz,  label_111                                                             // 0x344  (0x74A)
   ld    x,   0xD                                                                   // 0x345  (0xB0D)
-  calz  label_94                                                                   // 0x346  (0x512)
+  calz  clear_0x07D                                                                // 0x346  (0x512)
   lbpx  mx,  0x0                                                                   // 0x347  (0x900)
   ld    mx,  0x0                                                                   // 0x348  (0xE20)
-  calz  label_92                                                                   // 0x349  (0x509)
+  calz  set_f_0x07D                                                                // 0x349  (0x509)
 
-label_108:
+label_111:
   ret                                                                              // 0x34A  (0xFDF)
 
-label_109:
+label_112:
   ld    a,   0x3                                                                   // 0x34B  (0xE03)
   ld    y,   0xAE                                                                  // 0x34C  (0x8AE)
-  calz  label_118                                                                  // 0x34D  (0x5B7)
-  call  label_134                                                                  // 0x34E  (0x4FC)
+  calz  label_24                                                                   // 0x34D  (0x5B7)
+  call  label_129                                                                  // 0x34E  (0x4FC)
   ld    b,   0x3                                                                   // 0x34F  (0xE13)
   pset  0x8                                                                        // 0x350  (0xE48)
-  call  label_318                                                                  // 0x351  (0x49E)
-  call  label_134                                                                  // 0x352  (0x4FC)
-  calz  label_131                                                                  // 0x353  (0x5EF)
+  call  label_271                                                                  // 0x351  (0x49E)
+  call  label_129                                                                  // 0x352  (0x4FC)
+  calz  zero_a_xp                                                                  // 0x353  (0x5EF)
   ld    x,   0x50                                                                  // 0x354  (0xB50)
   ld    a,   mx                                                                    // 0x355  (0xEC2)
-
-label_110:
   pset  0xD                                                                        // 0x356  (0xE4D)
-  call  label_419                                                                  // 0x357  (0x4C6)
+  call  label_346                                                                  // 0x357  (0x4C6)
   ld    x,   0x51                                                                  // 0x358  (0xB51)
   ld    b,   mx                                                                    // 0x359  (0xEC6)
   ld    x,   0x42                                                                  // 0x35A  (0xB42)
   ld    a,   mx                                                                    // 0x35B  (0xEC2)
   ld    x,   0x90                                                                  // 0x35C  (0xB90)
 
-label_111:
+label_113:
   cp    a,   mx                                                                    // 0x35D  (0xF02)
   ldpx  a,   a                                                                     // 0x35E  (0xEE0)
-  jp    c,   label_112                                                             // 0x35F  (0x262)
+  jp    c,   label_114                                                             // 0x35F  (0x262)
   cp    b,   mx                                                                    // 0x360  (0xF06)
-  jp    nc,  label_113                                                             // 0x361  (0x366)
+  jp    nc,  label_115                                                             // 0x361  (0x366)
 
-label_112:
+label_114:
   ldpx  a,   a                                                                     // 0x362  (0xEE0)
   ldpx  a,   a                                                                     // 0x363  (0xEE0)
   ldpx  a,   a                                                                     // 0x364  (0xEE0)
-  jp    label_111                                                                  // 0x365  (0x5D)
+  jp    label_113                                                                  // 0x365  (0x5D)
 
-label_113:
+label_115:
   ldpx  a,   a                                                                     // 0x366  (0xEE0)
   ldpx  a,   mx                                                                    // 0x367  (0xEE2)
   ld    b,   mx                                                                    // 0x368  (0xEC6)
@@ -1173,17 +1172,17 @@ label_113:
   ld    x,   0x5D                                                                  // 0x36B  (0xB5D)
   ld    mx,  b                                                                     // 0x36C  (0xEC9)
   pset  0x4                                                                        // 0x36D  (0xE44)
-  call  label_147                                                                  // 0x36E  (0x465)
+  call  label_142                                                                  // 0x36E  (0x465)
   ld    b,   0x4                                                                   // 0x36F  (0xE14)
   pset  0x8                                                                        // 0x370  (0xE48)
-  call  label_318                                                                  // 0x371  (0x49E)
+  call  label_271                                                                  // 0x371  (0x49E)
   pset  0xD                                                                        // 0x372  (0xE4D)
-  jp    label_420                                                                  // 0x373  (0xD2)
+  jp    label_347                                                                  // 0x373  (0xD2)
 
-label_114:
-  calz  label_128                                                                  // 0x374  (0x5EC)
-  call  label_134                                                                  // 0x375  (0x4FC)
-  calz  label_131                                                                  // 0x376  (0x5EF)
+label_116:
+  calz  label_38                                                                   // 0x374  (0x5EC)
+  call  label_129                                                                  // 0x375  (0x4FC)
+  calz  zero_a_xp                                                                  // 0x376  (0x5EF)
   ld    x,   0x74                                                                  // 0x377  (0xB74)
   ldpx  mx,  0x0                                                                   // 0x378  (0xE60)
   ld    x,   0x48                                                                  // 0x379  (0xB48)
@@ -1194,191 +1193,177 @@ label_114:
   ld    a,   mx                                                                    // 0x37E  (0xEC2)
   ld    m6,  a                                                                     // 0x37F  (0xF86)
   ld    y,   0xBF                                                                  // 0x380  (0x8BF)
-  calz  label_120                                                                  // 0x381  (0x5BC)
-  call  label_124                                                                  // 0x382  (0x4D2)
-  call  label_124                                                                  // 0x383  (0x4D2)
-  call  label_124                                                                  // 0x384  (0x4D2)
-  call  label_124                                                                  // 0x385  (0x4D2)
+  calz  label_26                                                                   // 0x381  (0x5BC)
+  call  label_123                                                                  // 0x382  (0x4D2)
+  call  label_123                                                                  // 0x383  (0x4D2)
+  call  label_123                                                                  // 0x384  (0x4D2)
+  call  label_123                                                                  // 0x385  (0x4D2)
   ld    y,   0xC4                                                                  // 0x386  (0x8C4)
-  calz  label_120                                                                  // 0x387  (0x5BC)
-  call  label_124                                                                  // 0x388  (0x4D2)
+  calz  label_26                                                                   // 0x387  (0x5BC)
+  call  label_123                                                                  // 0x388  (0x4D2)
   ld    y,   0xC9                                                                  // 0x389  (0x8C9)
-  calz  label_120                                                                  // 0x38A  (0x5BC)
-  call  label_124                                                                  // 0x38B  (0x4D2)
-  calz  label_131                                                                  // 0x38C  (0x5EF)
+  calz  label_26                                                                   // 0x38A  (0x5BC)
+  call  label_123                                                                  // 0x38B  (0x4D2)
+  calz  zero_a_xp                                                                  // 0x38C  (0x5EF)
   ld    x,   0x5D                                                                  // 0x38D  (0xB5D)
   ld    mx,  0x0                                                                   // 0x38E  (0xE20)
   ld    x,   0x4E                                                                  // 0x38F  (0xB4E)
   cp    mx,  0x0                                                                   // 0x390  (0xDE0)
-  jp    z,   label_116                                                             // 0x391  (0x69E)
-  call  label_126                                                                  // 0x392  (0x4D7)
+  jp    z,   label_118                                                             // 0x391  (0x69E)
+  call  label_125                                                                  // 0x392  (0x4D7)
   ld    x,   0x1B                                                                  // 0x393  (0xB1B)
-  calz  label_105                                                                  // 0x394  (0x53C)
+  calz  label_8                                                                    // 0x394  (0x53C)
   ld    x,   0x48                                                                  // 0x395  (0xB48)
-  calz  label_103                                                                  // 0x396  (0x52C)
-
-label_115:
-  call  label_126                                                                  // 0x397  (0x4D7)
-  calz  label_107                                                                  // 0x398  (0x540)
-  call  label_127                                                                  // 0x399  (0x4E4)
-  calz  label_104                                                                  // 0x39A  (0x535)
-  jp    nz,  label_115                                                             // 0x39B  (0x797)
-  ld    x,   0x1B                                                                  // 0x39C  (0xB1B)
-  calz  label_105                                                                  // 0x39D  (0x53C)
-
-label_116:
-  ld    y,   0xCE                                                                  // 0x39E  (0x8CE)
-  calz  label_120                                                                  // 0x39F  (0x5BC)
-  calz  label_99                                                                   // 0x3A0  (0x521)
+  calz  label_6                                                                    // 0x396  (0x52C)
 
 label_117:
-  calz  label_107                                                                  // 0x3A1  (0x540)
-  calz  label_132                                                                  // 0x3A2  (0x5F2)
+  call  label_125                                                                  // 0x397  (0x4D7)
+  calz  label_10                                                                   // 0x398  (0x540)
+  call  label_126                                                                  // 0x399  (0x4E4)
+  calz  label_7                                                                    // 0x39A  (0x535)
+  jp    nz,  label_117                                                             // 0x39B  (0x797)
+  ld    x,   0x1B                                                                  // 0x39C  (0xB1B)
+  calz  label_8                                                                    // 0x39D  (0x53C)
+
+label_118:
+  ld    y,   0xCE                                                                  // 0x39E  (0x8CE)
+  calz  label_26                                                                   // 0x39F  (0x5BC)
+  calz  label_5                                                                    // 0x3A0  (0x521)
+
+label_119:
+  calz  label_10                                                                   // 0x3A1  (0x540)
+  calz  label_41                                                                   // 0x3A2  (0x5F2)
   ld    x,   0x80                                                                  // 0x3A3  (0xB80)
   add   mx,  0x8                                                                   // 0x3A4  (0xC28)
   ld    b,   mx                                                                    // 0x3A5  (0xEC6)
   ld    x,   0x3A                                                                  // 0x3A6  (0xB3A)
   lbpx  mx,  0x0                                                                   // 0x3A7  (0x900)
   ld    a,   0x3                                                                   // 0x3A8  (0xE03)
-  call  label_130                                                                  // 0x3A9  (0x4EE)
-  calz  label_132                                                                  // 0x3AA  (0x5F2)
+  call  label_128                                                                  // 0x3A9  (0x4EE)
+  calz  label_41                                                                   // 0x3AA  (0x5F2)
   ld    x,   0x3A                                                                  // 0x3AB  (0xB3A)
   lbpx  mx,  0x20                                                                  // 0x3AC  (0x920)
   ld    a,   0x4                                                                   // 0x3AD  (0xE04)
-  call  label_129                                                                  // 0x3AE  (0x4ED)
+  call  label_127                                                                  // 0x3AE  (0x4ED)
   pset  0x2                                                                        // 0x3AF  (0xE42)
-  call  label_47                                                                   // 0x3B0  (0x400)
-  jp    z,   label_117                                                             // 0x3B1  (0x6A1)
-  calz  label_119                                                                  // 0x3B2  (0x5BB)
-  calz  label_133                                                                  // 0x3B3  (0x5F5)
+  call  label_70                                                                   // 0x3B0  (0x400)
+  jp    z,   label_119                                                             // 0x3B1  (0x6A1)
+  calz  label_25                                                                   // 0x3B2  (0x5BB)
+  calz  label_42                                                                   // 0x3B3  (0x5F5)
   ld    x,   0xD0                                                                  // 0x3B4  (0xBD0)
   ld    b,   0x1                                                                   // 0x3B5  (0xE11)
   ld    a,   0x9                                                                   // 0x3B6  (0xE09)
-
-label_118:
-  call  label_123                                                                  // 0x3B7  (0x4D0)
+  call  label_122                                                                  // 0x3B7  (0x4D0)
   ld    b,   0x0                                                                   // 0x3B8  (0xE10)
   ld    yp,  b                                                                     // 0x3B9  (0xE91)
   ld    y,   0x54                                                                  // 0x3BA  (0x854)
-
-label_119:
   ldpy  a,   my                                                                    // 0x3BB  (0xEF3)
-
-label_120:
   ld    x,   0x50                                                                  // 0x3BC  (0xB50)
-  call  label_123                                                                  // 0x3BD  (0x4D0)
+  call  label_122                                                                  // 0x3BD  (0x4D0)
   ld    b,   0x0                                                                   // 0x3BE  (0xE10)
   ld    a,   my                                                                    // 0x3BF  (0xEC3)
   cp    a,   0x0                                                                   // 0x3C0  (0xDC0)
-  jp    z,   label_121                                                             // 0x3C1  (0x6C4)
+  jp    z,   label_120                                                             // 0x3C1  (0x6C4)
   ld    x,   0x40                                                                  // 0x3C2  (0xB40)
-  call  label_123                                                                  // 0x3C3  (0x4D0)
+  call  label_122                                                                  // 0x3C3  (0x4D0)
 
-label_121:
+label_120:
   ld    a,   0x2                                                                   // 0x3C4  (0xE02)
   ld    b,   0x2                                                                   // 0x3C5  (0xE12)
   pset  0xA                                                                        // 0x3C6  (0xE4A)
-  call  label_369                                                                  // 0x3C7  (0x4F0)
+  call  label_305                                                                  // 0x3C7  (0x4F0)
 
-label_122:
+label_121:
   pset  0x2                                                                        // 0x3C8  (0xE42)
-  call  label_47                                                                   // 0x3C9  (0x400)
-  jp    z,   label_122                                                             // 0x3CA  (0x6C8)
-  calz  label_119                                                                  // 0x3CB  (0x5BB)
+  call  label_70                                                                   // 0x3C9  (0x400)
+  jp    z,   label_121                                                             // 0x3CA  (0x6C8)
+  calz  label_25                                                                   // 0x3CB  (0x5BB)
   ld    b,   0xE                                                                   // 0x3CC  (0xE1E)
   pset  0x5                                                                        // 0x3CD  (0xE45)
-  call  label_165                                                                  // 0x3CE  (0x400)
-  jp    label_117                                                                  // 0x3CF  (0xA1)
+  call  label_156                                                                  // 0x3CE  (0x400)
+  jp    label_119                                                                  // 0x3CF  (0xA1)
+
+label_122:
+  pset  0x7                                                                        // 0x3D0  (0xE47)
+  jp    label_235                                                                  // 0x3D1  (0xA5)
 
 label_123:
-  pset  0x7                                                                        // 0x3D0  (0xE47)
-  jp    label_274                                                                  // 0x3D1  (0xA5)
-
-label_124:
   ld    a,   0xA                                                                   // 0x3D2  (0xE0A)
   ld    b,   0xA                                                                   // 0x3D3  (0xE1A)
   ld    y,   0x5                                                                   // 0x3D4  (0x805)
 
-label_125:
+label_124:
   pset  0x8                                                                        // 0x3D5  (0xE48)
-  jp    label_320                                                                  // 0x3D6  (0xA9)
+  jp    label_273                                                                  // 0x3D6  (0xA9)
 
-label_126:
-  calz  label_107                                                                  // 0x3D7  (0x540)
-  calz  label_131                                                                  // 0x3D8  (0x5EF)
+label_125:
+  calz  label_10                                                                   // 0x3D7  (0x540)
+  calz  zero_a_xp                                                                  // 0x3D8  (0x5EF)
   ld    b,   m6                                                                    // 0x3D9  (0xFB6)
   ld    x,   0x5D                                                                  // 0x3DA  (0xB5D)
   ld    mx,  b                                                                     // 0x3DB  (0xEC9)
   ld    a,   0x4                                                                   // 0x3DC  (0xE04)
   ld    x,   0x0                                                                   // 0x3DD  (0xB00)
   pset  0xA                                                                        // 0x3DE  (0xE4A)
-  call  label_359                                                                  // 0x3DF  (0x4BD)
+  call  label_296                                                                  // 0x3DF  (0x4BD)
   ld    a,   m1                                                                    // 0x3E0  (0xFA1)
   ld    x,   0x3A                                                                  // 0x3E1  (0xB3A)
   lbpx  mx,  0x0                                                                   // 0x3E2  (0x900)
-  call  label_129                                                                  // 0x3E3  (0x4ED)
+  call  label_127                                                                  // 0x3E3  (0x4ED)
 
-label_127:
-  calz  label_132                                                                  // 0x3E4  (0x5F2)
+label_126:
+  calz  label_41                                                                   // 0x3E4  (0x5F2)
   ld    x,   0x5D                                                                  // 0x3E5  (0xB5D)
   ld    mx,  0x0                                                                   // 0x3E6  (0xE20)
   ld    a,   0x0                                                                   // 0x3E7  (0xE00)
   ld    x,   0x3A                                                                  // 0x3E8  (0xB3A)
   lbpx  mx,  0x20                                                                  // 0x3E9  (0x920)
-  call  label_129                                                                  // 0x3EA  (0x4ED)
-  calz  label_110                                                                  // 0x3EB  (0x556)
-
-label_128:
+  call  label_127                                                                  // 0x3EA  (0x4ED)
+  calz  label_15                                                                   // 0x3EB  (0x556)
   ret                                                                              // 0x3EC  (0xFDF)
 
-label_129:
+label_127:
   ld    b,   0x0                                                                   // 0x3ED  (0xE10)
 
-label_130:
+label_128:
   push  b                                                                          // 0x3EE  (0xFC1)
-
-label_131:
-  calz  label_132                                                                  // 0x3EF  (0x5F2)
+  calz  label_41                                                                   // 0x3EF  (0x5F2)
   pop   b                                                                          // 0x3F0  (0xFD1)
   push  b                                                                          // 0x3F1  (0xFC1)
-
-label_132:
   push  a                                                                          // 0x3F2  (0xFC0)
   pset  0x9                                                                        // 0x3F3  (0xE49)
-  call  label_341                                                                  // 0x3F4  (0x428)
-
-label_133:
+  call  label_288                                                                  // 0x3F4  (0x428)
   pop   a                                                                          // 0x3F5  (0xFD0)
-  calz  label_132                                                                  // 0x3F6  (0x5F2)
+  calz  label_41                                                                   // 0x3F6  (0x5F2)
   pop   b                                                                          // 0x3F7  (0xFD1)
   ld    x,   0x3B                                                                  // 0x3F8  (0xB3B)
   add   mx,  0x8                                                                   // 0x3F9  (0xC28)
   pset  0x9                                                                        // 0x3FA  (0xE49)
-  jp    label_342                                                                  // 0x3FB  (0x39)
+  jp    label_289                                                                  // 0x3FB  (0x39)
 
-label_134:
+label_129:
   pset  0x9                                                                        // 0x3FC  (0xE49)
-  jp    label_336                                                                  // 0x3FD  (0x6)
+  jp    label_284                                                                  // 0x3FD  (0x6)
   nop7                                                                             // 0x3FE  (0xFFF)
   nop7                                                                             // 0x3FF  (0xFFF)
 
-label_135:
-  calz  label_162                                                                  // 0x400  (0x5EF)
+label_130:
+  calz  zero_a_xp                                                                  // 0x400  (0x5EF)
   ld    x,   0x4B                                                                  // 0x401  (0xB4B)
   cp    mx,  0x0                                                                   // 0x402  (0xDE0)
-  jp    nz,  label_138                                                             // 0x403  (0x71B)
-  calz  label_163                                                                  // 0x404  (0x5F5)
+  jp    nz,  label_133                                                             // 0x403  (0x71B)
+  calz  label_42                                                                   // 0x404  (0x5F5)
   ld    yp,  a                                                                     // 0x405  (0xE90)
   ld    x,   0x0                                                                   // 0x406  (0xB00)
   ld    y,   0x80                                                                  // 0x407  (0x880)
 
-label_136:
+label_131:
   ldpx  mx,  0xF                                                                   // 0x408  (0xE6F)
   ldpy  my,  0xF                                                                   // 0x409  (0xE7F)
   cp    xh,  0x4                                                                   // 0x40A  (0xA44)
-  jp    c,   label_136                                                             // 0x40B  (0x208)
-  calz  label_154                                                                  // 0x40C  (0x5B3)
-  jp    z,   label_137                                                             // 0x40D  (0x61A)
+  jp    c,   label_131                                                             // 0x40B  (0x208)
+  calz  label_23                                                                   // 0x40C  (0x5B3)
+  jp    z,   label_132                                                             // 0x40D  (0x61A)
   add   mx,  0x1                                                                   // 0x40E  (0xC21)
   or    mx,  0x8                                                                   // 0x40F  (0xCE8)
   ld    a,   mx                                                                    // 0x410  (0xEC2)
@@ -1390,14 +1375,14 @@ label_136:
   ld    b,   0x2                                                                   // 0x416  (0xE12)
   ld    x,   0x20                                                                  // 0x417  (0xB20)
   pset  0x7                                                                        // 0x418  (0xE47)
-  call  label_274                                                                  // 0x419  (0x4A5)
+  call  label_235                                                                  // 0x419  (0x4A5)
 
-label_137:
+label_132:
   ret                                                                              // 0x41A  (0xFDF)
 
-label_138:
-  calz  label_154                                                                  // 0x41B  (0x5B3)
-  jp    z,   label_139                                                             // 0x41C  (0x62A)
+label_133:
+  calz  label_23                                                                   // 0x41B  (0x5B3)
+  jp    z,   label_134                                                             // 0x41C  (0x62A)
   add   mx,  0x1                                                                   // 0x41D  (0xC21)
   or    mx,  0x8                                                                   // 0x41E  (0xCE8)
   ld    a,   mx                                                                    // 0x41F  (0xEC2)
@@ -1409,21 +1394,21 @@ label_138:
   ld    b,   0x3                                                                   // 0x425  (0xE13)
   ld    x,   0x30                                                                  // 0x426  (0xB30)
   pset  0x7                                                                        // 0x427  (0xE47)
-  call  label_274                                                                  // 0x428  (0x4A5)
-  jp    label_140                                                                  // 0x429  (0x32)
+  call  label_235                                                                  // 0x428  (0x4A5)
+  jp    label_135                                                                  // 0x429  (0x32)
 
-label_139:
-  calz  label_164                                                                  // 0x42A  (0x5FB)
-  jp    z,   label_140                                                             // 0x42B  (0x632)
-  calz  label_163                                                                  // 0x42C  (0x5F5)
+label_134:
+  calz  label_44                                                                   // 0x42A  (0x5FB)
+  jp    z,   label_135                                                             // 0x42B  (0x632)
+  calz  label_42                                                                   // 0x42C  (0x5F5)
   ld    x,   0x30                                                                  // 0x42D  (0xB30)
   ld    b,   0x2                                                                   // 0x42E  (0xE12)
   ld    a,   0x2                                                                   // 0x42F  (0xE02)
   pset  0x7                                                                        // 0x430  (0xE47)
-  call  label_274                                                                  // 0x431  (0x4A5)
+  call  label_235                                                                  // 0x431  (0x4A5)
 
-label_140:
-  calz  label_162                                                                  // 0x432  (0x5EF)
+label_135:
+  calz  zero_a_xp                                                                  // 0x432  (0x5EF)
   ld    x,   0x7E                                                                  // 0x433  (0xB7E)
   add   mx,  0x1                                                                   // 0x434  (0xC21)
   ld    a,   mx                                                                    // 0x435  (0xEC2)
@@ -1434,61 +1419,61 @@ label_140:
   ld    x,   0x4D                                                                  // 0x43A  (0xB4D)
   ld    a,   mx                                                                    // 0x43B  (0xEC2)
   cp    a,   0x8                                                                   // 0x43C  (0xDC8)
-  jp    c,   label_141                                                             // 0x43D  (0x23F)
+  jp    c,   label_136                                                             // 0x43D  (0x23F)
   ld    a,   0x8                                                                   // 0x43E  (0xE08)
 
-label_141:
+label_136:
   ld    m3,  a                                                                     // 0x43F  (0xF83)
   add   a,   0xD                                                                   // 0x440  (0xC0D)
-  jp    nc,  label_144                                                             // 0x441  (0x356)
+  jp    nc,  label_139                                                             // 0x441  (0x356)
   rrc   a                                                                          // 0x442  (0xE8C)
   and   a,   0x3                                                                   // 0x443  (0xC83)
   add   a,   0x1                                                                   // 0x444  (0xC01)
   ld    y,   0x0                                                                   // 0x445  (0x800)
   ld    yh,  a                                                                     // 0x446  (0xE94)
-  calz  label_163                                                                  // 0x447  (0x5F5)
+  calz  label_42                                                                   // 0x447  (0x5F5)
   ld    yp,  a                                                                     // 0x448  (0xE90)
   ld    x,   0x0                                                                   // 0x449  (0xB00)
 
-label_142:
+label_137:
   ldpx  mx,  my                                                                    // 0x44A  (0xEEB)
   ldpy  a,   a                                                                     // 0x44B  (0xEF0)
   cp    xh,  0x4                                                                   // 0x44C  (0xA44)
-  jp    c,   label_142                                                             // 0x44D  (0x24A)
+  jp    c,   label_137                                                             // 0x44D  (0x24A)
   rst   f,   0xE                                                                   // 0x44E  (0xF5E)
   adc   xh,  0x4                                                                   // 0x44F  (0xA04)
   rst   f,   0xE                                                                   // 0x450  (0xF5E)
   adc   yh,  0x4                                                                   // 0x451  (0xA24)
 
-label_143:
+label_138:
   ldpx  mx,  my                                                                    // 0x452  (0xEEB)
   ldpy  a,   a                                                                     // 0x453  (0xEF0)
   cp    xh,  0xC                                                                   // 0x454  (0xA4C)
-  jp    c,   label_143                                                             // 0x455  (0x252)
+  jp    c,   label_138                                                             // 0x455  (0x252)
 
-label_144:
-  calz  label_163                                                                  // 0x456  (0x5F5)
+label_139:
+  calz  label_42                                                                   // 0x456  (0x5F5)
   ld    x,   0xB0                                                                  // 0x457  (0xBB0)
   inc   m3                                                                         // 0x458  (0xF63)
 
-label_145:
+label_140:
   dec   m3                                                                         // 0x459  (0xF73)
-  jp    z,   label_146                                                             // 0x45A  (0x664)
+  jp    z,   label_141                                                             // 0x45A  (0x664)
   ld    b,   0x1                                                                   // 0x45B  (0xE11)
   ld    a,   m4                                                                    // 0x45C  (0xFA4)
   pset  0x7                                                                        // 0x45D  (0xE47)
-  call  label_274                                                                  // 0x45E  (0x4A5)
+  call  label_235                                                                  // 0x45E  (0x4A5)
   rst   f,   0xE                                                                   // 0x45F  (0xF5E)
   adc   xh,  0x7                                                                   // 0x460  (0xA07)
-  jp    c,   label_145                                                             // 0x461  (0x259)
+  jp    c,   label_140                                                             // 0x461  (0x259)
   adc   xh,  0xF                                                                   // 0x462  (0xA0F)
-  jp    label_145                                                                  // 0x463  (0x59)
+  jp    label_140                                                                  // 0x463  (0x59)
 
-label_146:
+label_141:
   ret                                                                              // 0x464  (0xFDF)
 
-label_147:
-  calz  label_162                                                                  // 0x465  (0x5EF)
+label_142:
+  calz  zero_a_xp                                                                  // 0x465  (0x5EF)
   ld    x,   0x5F                                                                  // 0x466  (0xB5F)
   ldpx  mx,  0x0                                                                   // 0x467  (0xE60)
   ld    x,   0x66                                                                  // 0x468  (0xB66)
@@ -1498,18 +1483,18 @@ label_147:
   ld    a,   mx                                                                    // 0x46C  (0xEC2)
   ld    x,   0x6E                                                                  // 0x46D  (0xB6E)
   pset  0xA                                                                        // 0x46E  (0xE4A)
-  call  label_359                                                                  // 0x46F  (0x4BD)
+  call  label_296                                                                  // 0x46F  (0x4BD)
   ld    x,   0x5D                                                                  // 0x470  (0xB5D)
   ldpx  b,   mx                                                                    // 0x471  (0xEE6)
   ld    a,   mx                                                                    // 0x472  (0xEC2)
   ld    x,   0x0                                                                   // 0x473  (0xB00)
-  call  label_149                                                                  // 0x474  (0x484)
+  call  label_144                                                                  // 0x474  (0x484)
   ld    b,   0x0                                                                   // 0x475  (0xE10)
   ld    a,   m1                                                                    // 0x476  (0xFA1)
   add   a,   0xB                                                                   // 0x477  (0xC0B)
   adc   b,   0x8                                                                   // 0x478  (0xC58)
   ld    x,   0x6A                                                                  // 0x479  (0xB6A)
-  call  label_148                                                                  // 0x47A  (0x482)
+  call  label_143                                                                  // 0x47A  (0x482)
   ld    b,   0x0                                                                   // 0x47B  (0xE10)
   ld    a,   m0                                                                    // 0x47C  (0xFA0)
   add   a,   0x0                                                                   // 0x47D  (0xC00)
@@ -1518,19 +1503,19 @@ label_147:
   pset  0xB                                                                        // 0x480  (0xE4B)
   jpba                                                                             // 0x481  (0xFE8)
 
-label_148:
+label_143:
   pset  0x9                                                                        // 0x482  (0xE49)
   jpba                                                                             // 0x483  (0xFE8)
 
-label_149:
+label_144:
   pset  0xB                                                                        // 0x484  (0xE4B)
   jpba                                                                             // 0x485  (0xFE8)
 
-label_150:
-  calz  label_162                                                                  // 0x486  (0x5EF)
+label_145:
+  calz  zero_a_xp                                                                  // 0x486  (0x5EF)
   ld    x,   0x5F                                                                  // 0x487  (0xB5F)
   add   mx,  0xF                                                                   // 0x488  (0xC2F)
-  jp    c,   label_151                                                             // 0x489  (0x296)
+  jp    c,   label_146                                                             // 0x489  (0x296)
   ld    x,   0x64                                                                  // 0x48A  (0xB64)
   ld    a,   mx                                                                    // 0x48B  (0xEC2)
   add   mx,  0x1                                                                   // 0x48C  (0xC21)
@@ -1538,18 +1523,18 @@ label_150:
   ld    b,   mx                                                                    // 0x48E  (0xEC6)
   adc   mx,  0x0                                                                   // 0x48F  (0xC60)
   ld    x,   0x62                                                                  // 0x490  (0xB62)
-  call  label_159                                                                  // 0x491  (0x4E3)
+  call  label_153                                                                  // 0x491  (0x4E3)
   ld    x,   0x62                                                                  // 0x492  (0xB62)
   ld    a,   mx                                                                    // 0x493  (0xEC2)
   ld    x,   0x5F                                                                  // 0x494  (0xB5F)
   ld    mx,  a                                                                     // 0x495  (0xEC8)
 
-label_151:
+label_146:
   ld    x,   0x66                                                                  // 0x496  (0xB66)
   add   mx,  0xF                                                                   // 0x497  (0xC2F)
   ldpx  a,   a                                                                     // 0x498  (0xEE0)
   adc   mx,  0xF                                                                   // 0x499  (0xC6F)
-  jp    c,   label_152                                                             // 0x49A  (0x2A8)
+  jp    c,   label_147                                                             // 0x49A  (0x2A8)
   ld    x,   0x6A                                                                  // 0x49B  (0xB6A)
   ld    a,   mx                                                                    // 0x49C  (0xEC2)
   add   mx,  0x2                                                                   // 0x49D  (0xC22)
@@ -1557,29 +1542,27 @@ label_151:
   ld    b,   mx                                                                    // 0x49F  (0xEC6)
   adc   mx,  0x0                                                                   // 0x4A0  (0xC60)
   ld    x,   0x66                                                                  // 0x4A1  (0xB66)
-  call  label_160                                                                  // 0x4A2  (0x4E5)
+  call  label_154                                                                  // 0x4A2  (0x4E5)
   ld    x,   0x67                                                                  // 0x4A3  (0xB67)
   ld    a,   mx                                                                    // 0x4A4  (0xEC2)
   and   mx,  0x0                                                                   // 0x4A5  (0xCA0)
   ld    x,   0x70                                                                  // 0x4A6  (0xB70)
   ld    mx,  a                                                                     // 0x4A7  (0xEC8)
 
-label_152:
+label_147:
   ld    x,   0x68                                                                  // 0x4A8  (0xB68)
   ldpx  a,   mx                                                                    // 0x4A9  (0xEE2)
   ldpx  b,   mx                                                                    // 0x4AA  (0xEE6)
   fan   a,   0x1                                                                   // 0x4AB  (0xD81)
-  jp    z,   label_153                                                             // 0x4AC  (0x6B2)
+  jp    z,   label_148                                                             // 0x4AC  (0x6B2)
   and   a,   0xE                                                                   // 0x4AD  (0xC8E)
   ld    x,   0x6C                                                                  // 0x4AE  (0xB6C)
   add   a,   mx                                                                    // 0x4AF  (0xA82)
   ldpx  a,   a                                                                     // 0x4B0  (0xEE0)
   adc   b,   mx                                                                    // 0x4B1  (0xA96)
 
-label_153:
+label_148:
   ld    x,   0x6C                                                                  // 0x4B2  (0xB6C)
-
-label_154:
   ldpx  mx,  a                                                                     // 0x4B3  (0xEE8)
   ldpx  mx,  b                                                                     // 0x4B4  (0xEE9)
   ld    x,   0x3A                                                                  // 0x4B5  (0xB3A)
@@ -1587,15 +1570,15 @@ label_154:
   ldpx  mx,  b                                                                     // 0x4B7  (0xEE9)
   ld    x,   0x70                                                                  // 0x4B8  (0xB70)
   fan   mx,  0x8                                                                   // 0x4B9  (0xDA8)
-  jp    z,   label_156                                                             // 0x4BA  (0x6CB)
+  jp    z,   label_150                                                             // 0x4BA  (0x6CB)
   ld    x,   0x63                                                                  // 0x4BB  (0xB63)
   ld    b,   mx                                                                    // 0x4BC  (0xEC6)
   ld    x,   0x6E                                                                  // 0x4BD  (0xB6E)
   fan   b,   0x2                                                                   // 0x4BE  (0xD92)
-  jp    z,   label_155                                                             // 0x4BF  (0x6C1)
+  jp    z,   label_149                                                             // 0x4BF  (0x6C1)
   ld    x,   0x6F                                                                  // 0x4C0  (0xB6F)
 
-label_155:
+label_149:
   ld    a,   mx                                                                    // 0x4C1  (0xEC2)
   ld    x,   0x70                                                                  // 0x4C2  (0xB70)
   ld    b,   mx                                                                    // 0x4C3  (0xEC6)
@@ -1605,23 +1588,23 @@ label_155:
   xor   b,   mx                                                                    // 0x4C7  (0xAE6)
   and   b,   0x8                                                                   // 0x4C8  (0xC98)
   pset  0x9                                                                        // 0x4C9  (0xE49)
-  call  label_341                                                                  // 0x4CA  (0x428)
+  call  label_288                                                                  // 0x4CA  (0x428)
 
-label_156:
-  calz  label_162                                                                  // 0x4CB  (0x5EF)
+label_150:
+  calz  zero_a_xp                                                                  // 0x4CB  (0x5EF)
   ld    x,   0x3B                                                                  // 0x4CC  (0xB3B)
   add   mx,  0x8                                                                   // 0x4CD  (0xC28)
   ld    x,   0x70                                                                  // 0x4CE  (0xB70)
   fan   mx,  0x4                                                                   // 0x4CF  (0xDA4)
-  jp    z,   label_158                                                             // 0x4D0  (0x6E2)
+  jp    z,   label_152                                                             // 0x4D0  (0x6E2)
   ld    x,   0x63                                                                  // 0x4D1  (0xB63)
   ld    b,   mx                                                                    // 0x4D2  (0xEC6)
   ld    x,   0x6E                                                                  // 0x4D3  (0xB6E)
   fan   b,   0x1                                                                   // 0x4D4  (0xD91)
-  jp    z,   label_157                                                             // 0x4D5  (0x6D7)
+  jp    z,   label_151                                                             // 0x4D5  (0x6D7)
   ld    x,   0x6F                                                                  // 0x4D6  (0xB6F)
 
-label_157:
+label_151:
   ld    a,   mx                                                                    // 0x4D7  (0xEC2)
   ld    x,   0x70                                                                  // 0x4D8  (0xB70)
   ld    b,   mx                                                                    // 0x4D9  (0xEC6)
@@ -1632,141 +1615,131 @@ label_157:
   add   b,   b                                                                     // 0x4DE  (0xA85)
   and   b,   0x8                                                                   // 0x4DF  (0xC98)
   pset  0x9                                                                        // 0x4E0  (0xE49)
-  call  label_342                                                                  // 0x4E1  (0x439)
+  call  label_289                                                                  // 0x4E1  (0x439)
 
-label_158:
+label_152:
   ret                                                                              // 0x4E2  (0xFDF)
 
-label_159:
+label_153:
   pset  0xB                                                                        // 0x4E3  (0xE4B)
   jpba                                                                             // 0x4E4  (0xFE8)
 
-label_160:
+label_154:
   pset  0x9                                                                        // 0x4E5  (0xE49)
   jpba                                                                             // 0x4E6  (0xFE8)
 
-label_161:
+label_155:
   ld    x,   0x40                                                                  // 0x4E7  (0xB40)
   ld    a,   0x0                                                                   // 0x4E8  (0xE00)
   pset  0x8                                                                        // 0x4E9  (0xE48)
-  call  label_289                                                                  // 0x4EA  (0x40D)
+  call  label_245                                                                  // 0x4EA  (0x40D)
   ld    x,   0xC0                                                                  // 0x4EB  (0xBC0)
   ld    a,   0x0                                                                   // 0x4EC  (0xE00)
   pset  0x8                                                                        // 0x4ED  (0xE48)
-  call  label_289                                                                  // 0x4EE  (0x40D)
-
-label_162:
-  calz  label_162                                                                  // 0x4EF  (0x5EF)
+  call  label_245                                                                  // 0x4EE  (0x40D)
+  calz  zero_a_xp                                                                  // 0x4EF  (0x5EF)
   ld    x,   0x3A                                                                  // 0x4F0  (0xB3A)
   lbpx  mx,  0xC4                                                                  // 0x4F1  (0x9C4)
   pset  0x5                                                                        // 0x4F2  (0xE45)
-  call  label_194                                                                  // 0x4F3  (0x4A6)
+  call  label_181                                                                  // 0x4F3  (0x4A6)
   ld    x,   0x70                                                                  // 0x4F4  (0xB70)
-
-label_163:
   ld    a,   0x4                                                                   // 0x4F5  (0xE04)
   pset  0x8                                                                        // 0x4F6  (0xE48)
-  call  label_289                                                                  // 0x4F7  (0x40D)
+  call  label_245                                                                  // 0x4F7  (0x40D)
   ld    a,   0x4                                                                   // 0x4F8  (0xE04)
   ld    b,   0x4                                                                   // 0x4F9  (0xE14)
   pset  0xA                                                                        // 0x4FA  (0xE4A)
-
-label_164:
-  call  label_369                                                                  // 0x4FB  (0x4F0)
+  call  label_305                                                                  // 0x4FB  (0x4F0)
   pset  0x2                                                                        // 0x4FC  (0xE42)
-  jp    label_72                                                                   // 0x4FD  (0x93)
+  jp    label_88                                                                   // 0x4FD  (0x93)
   nop7                                                                             // 0x4FE  (0xFFF)
   nop7                                                                             // 0x4FF  (0xFFF)
 
-label_165:
-  calz  label_180                                                                  // 0x500  (0x556)
-  calz  label_207                                                                  // 0x501  (0x5EF)
+label_156:
+  calz  label_15                                                                   // 0x500  (0x556)
+  calz  zero_a_xp                                                                  // 0x501  (0x5EF)
   ld    x,   0x2A                                                                  // 0x502  (0xB2A)
   add   mx,  b                                                                     // 0x503  (0xA89)
   ldpx  a,   a                                                                     // 0x504  (0xEE0)
   adc   mx,  0xF                                                                   // 0x505  (0xC6F)
-  jp    c,   label_165                                                             // 0x506  (0x200)
+  jp    c,   label_156                                                             // 0x506  (0x200)
   ret                                                                              // 0x507  (0xFDF)
 
-label_166:
-  calz  label_196                                                                  // 0x508  (0x5BB)
-
-label_167:
-  calz  label_205                                                                  // 0x509  (0x5EC)
-  calz  label_198                                                                  // 0x50A  (0x5CE)
-  call  label_189                                                                  // 0x50B  (0x496)
+label_157:
+  calz  label_25                                                                   // 0x508  (0x5BB)
+  calz  label_38                                                                   // 0x509  (0x5EC)
+  calz  label_30                                                                   // 0x50A  (0x5CE)
+  call  label_176                                                                  // 0x50B  (0x496)
   pset  0x4                                                                        // 0x50C  (0xE44)
-  call  label_150                                                                  // 0x50D  (0x486)
+  call  label_145                                                                  // 0x50D  (0x486)
   pset  0x4                                                                        // 0x50E  (0xE44)
-  call  label_135                                                                  // 0x50F  (0x400)
+  call  label_130                                                                  // 0x50F  (0x400)
   ld    b,   0xC                                                                   // 0x510  (0xE1C)
-  call  label_165                                                                  // 0x511  (0x400)
+  call  label_156                                                                  // 0x511  (0x400)
 
-label_168:
+label_158:
   ld    x,   0x7C                                                                  // 0x512  (0xB7C)
   cp    mx,  0x0                                                                   // 0x513  (0xDE0)
-  jp    nz,  label_169                                                             // 0x514  (0x717)
+  jp    nz,  label_159                                                             // 0x514  (0x717)
   pset  0xF                                                                        // 0x515  (0xE4F)
-  call  label_472                                                                  // 0x516  (0x4EC)
+  call  label_391                                                                  // 0x516  (0x4EC)
 
-label_169:
-  calz  label_207                                                                  // 0x517  (0x5EF)
+label_159:
+  calz  zero_a_xp                                                                  // 0x517  (0x5EF)
   ld    x,   0xA0                                                                  // 0x518  (0xBA0)
   ldpx  mx,  0x0                                                                   // 0x519  (0xE60)
 
-label_170:
+label_160:
   ld    b,   0xA                                                                   // 0x51A  (0xE1A)
-  calz  label_207                                                                  // 0x51B  (0x5EF)
+  calz  zero_a_xp                                                                  // 0x51B  (0x5EF)
   ld    a,   0x1                                                                   // 0x51C  (0xE01)
   ld    x,   0x7C                                                                  // 0x51D  (0xB7C)
   cp    mx,  0xF                                                                   // 0x51E  (0xDEF)
-  jp    nz,  label_171                                                             // 0x51F  (0x721)
+  jp    nz,  label_161                                                             // 0x51F  (0x721)
   ld    a,   0x8                                                                   // 0x520  (0xE08)
 
-label_171:
+label_161:
   pset  0x1                                                                        // 0x521  (0xE41)
-  call  label_43                                                                   // 0x522  (0x4EC)
+  call  label_66                                                                   // 0x522  (0x4EC)
   ld    x,   0xA0                                                                  // 0x523  (0xBA0)
   ldpx  a,   mx                                                                    // 0x524  (0xEE2)
   ld    x,   0x75                                                                  // 0x525  (0xB75)
   ldpx  mx,  a                                                                     // 0x526  (0xEE8)
-  calz  label_206                                                                  // 0x527  (0x5ED)
+  calz  label_39                                                                   // 0x527  (0x5ED)
 
-label_172:
-  calz  label_207                                                                  // 0x528  (0x5EF)
+label_162:
+  calz  zero_a_xp                                                                  // 0x528  (0x5EF)
   ld    x,   0x7C                                                                  // 0x529  (0xB7C)
   cp    mx,  0x0                                                                   // 0x52A  (0xDE0)
-  jp    z,   label_168                                                             // 0x52B  (0x612)
+  jp    z,   label_158                                                             // 0x52B  (0x612)
   pset  0xF                                                                        // 0x52C  (0xE4F)
-  call  label_435                                                                  // 0x52D  (0x400)
-  jp    nz,  label_176                                                             // 0x52E  (0x74A)
+  call  label_357                                                                  // 0x52D  (0x400)
+  jp    nz,  label_165                                                             // 0x52E  (0x74A)
   pset  0x2                                                                        // 0x52F  (0xE42)
-  call  label_80                                                                   // 0x530  (0x4C3)
+  call  label_94                                                                   // 0x530  (0x4C3)
   push  f                                                                          // 0x531  (0xFCA)
   pop   b                                                                          // 0x532  (0xFD1)
   ld    x,   0x28                                                                  // 0x533  (0xB28)
   cp    mx,  0x3                                                                   // 0x534  (0xDE3)
   cp    mx,  0x5                                                                   // 0x535  (0xDE5)
-  jp    nz,  label_173                                                             // 0x536  (0x73A)
+  jp    nz,  label_163                                                             // 0x536  (0x73A)
   ld    x,   0x29                                                                  // 0x537  (0xB29)
   fan   mx,  0x5                                                                   // 0x538  (0xDA5)
-  jp    nz,  label_177                                                             // 0x539  (0x74D)
+  jp    nz,  label_166                                                             // 0x539  (0x74D)
 
-label_173:
+label_163:
   fan   b,   0x1                                                                   // 0x53A  (0xD91)
-  jp    nz,  label_169                                                             // 0x53B  (0x717)
+  jp    nz,  label_159                                                             // 0x53B  (0x717)
   fan   b,   0x2                                                                   // 0x53C  (0xD92)
-  jp    nz,  label_175                                                             // 0x53D  (0x743)
-  calz  label_206                                                                  // 0x53E  (0x5ED)
-  calz  label_174                                                                  // 0x53F  (0x540)
+  jp    nz,  label_164                                                             // 0x53D  (0x743)
+  calz  label_39                                                                   // 0x53E  (0x5ED)
+  calz  label_10                                                                   // 0x53F  (0x540)
+  call  label_176                                                                  // 0x540  (0x496)
+  calz  label_13                                                                   // 0x541  (0x552)
+  jp    label_162                                                                  // 0x542  (0x28)
 
-label_174:
-  call  label_189                                                                  // 0x540  (0x496)
-  calz  label_178                                                                  // 0x541  (0x552)
-  jp    label_172                                                                  // 0x542  (0x28)
-
-label_175:
-  calz  label_208                                                                  // 0x543  (0x5F2)
+label_164:
+  calz  label_41                                                                   // 0x543  (0x5F2)
   ld    x,   0xA0                                                                  // 0x544  (0xBA0)
   ld    mx,  a                                                                     // 0x545  (0xEC8)
   add   a,   a                                                                     // 0x546  (0xA80)
@@ -1774,138 +1747,134 @@ label_175:
   pset  0x7                                                                        // 0x548  (0xE47)
   jpba                                                                             // 0x549  (0xFE8)
 
-label_176:
+label_165:
   pset  0x3                                                                        // 0x54A  (0xE43)
-  call  label_91                                                                   // 0x54B  (0x407)
-  jp    label_169                                                                  // 0x54C  (0x17)
+  call  label_101                                                                  // 0x54B  (0x407)
+  jp    label_159                                                                  // 0x54C  (0x17)
 
-label_177:
+label_166:
   ld    x,   0x7B                                                                  // 0x54D  (0xB7B)
   xor   mx,  0xF                                                                   // 0x54E  (0xD2F)
   ld    b,   0xF                                                                   // 0x54F  (0xE1F)
   ld    y,   0x97                                                                  // 0x550  (0x897)
-  calz  label_197                                                                  // 0x551  (0x5C2)
+  calz  label_28                                                                   // 0x551  (0x5C2)
+  jp    label_159                                                                  // 0x552  (0x17)
 
-label_178:
-  jp    label_169                                                                  // 0x552  (0x17)
-
-label_179:
-  calz  label_196                                                                  // 0x553  (0x5BB)
+label_167:
+  calz  label_25                                                                   // 0x553  (0x5BB)
   ld    a,   0x0                                                                   // 0x554  (0xE00)
-  calz  label_206                                                                  // 0x555  (0x5ED)
-
-label_180:
-  calz  label_174                                                                  // 0x556  (0x540)
-  calz  label_211                                                                  // 0x557  (0x5F5)
+  calz  label_39                                                                   // 0x555  (0x5ED)
+  calz  label_10                                                                   // 0x556  (0x540)
+  calz  label_42                                                                   // 0x557  (0x5F5)
   ld    x,   0xE0                                                                  // 0x558  (0xBE0)
   ld    a,   0xC                                                                   // 0x559  (0xE0C)
   ld    b,   0x0                                                                   // 0x55A  (0xE10)
   pset  0x7                                                                        // 0x55B  (0xE47)
-  call  label_274                                                                  // 0x55C  (0x4A5)
+  call  label_235                                                                  // 0x55C  (0x4A5)
   ld    a,   0xD                                                                   // 0x55D  (0xE0D)
   ld    b,   0x0                                                                   // 0x55E  (0xE10)
   pset  0x7                                                                        // 0x55F  (0xE47)
-  call  label_274                                                                  // 0x560  (0x4A5)
-  calz  label_207                                                                  // 0x561  (0x5EF)
+  call  label_235                                                                  // 0x560  (0x4A5)
+  calz  zero_a_xp                                                                  // 0x561  (0x5EF)
   ld    x,   0x3C                                                                  // 0x562  (0xB3C)
   ld    mx,  0x0                                                                   // 0x563  (0xE20)
   ld    x,   0x10                                                                  // 0x564  (0xB10)
   lbpx  mx,  0x0                                                                   // 0x565  (0x900)
   ld    x,   0x3F                                                                  // 0x566  (0xB3F)
   ld    mx,  0x6                                                                   // 0x567  (0xE26)
-  call  label_188                                                                  // 0x568  (0x491)
+  call  label_175                                                                  // 0x568  (0x491)
 
-label_181:
-  calz  label_171                                                                  // 0x569  (0x521)
+label_168:
+  calz  label_5                                                                    // 0x569  (0x521)
   cp    a,   0x0                                                                   // 0x56A  (0xDC0)
-  jp    nz,  label_181                                                             // 0x56B  (0x769)
+  jp    nz,  label_168                                                             // 0x56B  (0x769)
 
-label_182:
-  call  label_188                                                                  // 0x56C  (0x491)
+label_169:
+  call  label_175                                                                  // 0x56C  (0x491)
 
-label_183:
-  calz  label_171                                                                  // 0x56D  (0x521)
+label_170:
+  calz  label_5                                                                    // 0x56D  (0x521)
   fan   mx,  0x1                                                                   // 0x56E  (0xDA1)
-  jp    nz,  label_187                                                             // 0x56F  (0x786)
+  jp    nz,  label_174                                                             // 0x56F  (0x786)
   fan   mx,  0x2                                                                   // 0x570  (0xDA2)
-  jp    z,   label_184                                                             // 0x571  (0x676)
-  calz  label_196                                                                  // 0x572  (0x5BB)
-  calz  label_201                                                                  // 0x573  (0x5E2)
+  jp    z,   label_171                                                             // 0x571  (0x676)
+  calz  label_25                                                                   // 0x572  (0x5BB)
+  calz  label_35                                                                   // 0x573  (0x5E2)
   ld    x,   0x2E                                                                  // 0x574  (0xB2E)
   ld    mx,  0xF                                                                   // 0x575  (0xE2F)
 
-label_184:
+label_171:
   ld    x,   0x29                                                                  // 0x576  (0xB29)
   fan   mx,  0x4                                                                   // 0x577  (0xDA4)
-  jp    z,   label_185                                                             // 0x578  (0x682)
-  calz  label_196                                                                  // 0x579  (0x5BB)
+  jp    z,   label_172                                                             // 0x578  (0x682)
+  calz  label_25                                                                   // 0x579  (0x5BB)
   ld    x,   0x14                                                                  // 0x57A  (0xB14)
   ldpx  a,   mx                                                                    // 0x57B  (0xEE2)
   ldpx  b,   mx                                                                    // 0x57C  (0xEE6)
   and   b,   0x1                                                                   // 0x57D  (0xC91)
   ld    x,   0x14                                                                  // 0x57E  (0xB14)
   pset  0x1                                                                        // 0x57F  (0xE41)
-  call  label_44                                                                   // 0x580  (0x4F4)
-  jp    label_186                                                                  // 0x581  (0x85)
+  call  label_67                                                                   // 0x580  (0x4F4)
+  jp    label_173                                                                  // 0x581  (0x85)
 
-label_185:
+label_172:
   ld    x,   0x2E                                                                  // 0x582  (0xB2E)
   cp    mx,  0x0                                                                   // 0x583  (0xDE0)
-  jp    z,   label_183                                                             // 0x584  (0x66D)
+  jp    z,   label_170                                                             // 0x584  (0x66D)
 
-label_186:
-  jp    label_182                                                                  // 0x585  (0x6C)
+label_173:
+  jp    label_169                                                                  // 0x585  (0x6C)
 
-label_187:
-  calz  label_196                                                                  // 0x586  (0x5BB)
+label_174:
+  calz  label_25                                                                   // 0x586  (0x5BB)
   ld    x,   0x3F                                                                  // 0x587  (0xB3F)
   ld    mx,  0x0                                                                   // 0x588  (0xE20)
   ld    x,   0x15                                                                  // 0x589  (0xB15)
   cp    mx,  0x2                                                                   // 0x58A  (0xDE2)
   pset  0x9                                                                        // 0x58B  (0xE49)
-  jp    nc,  label_351                                                             // 0x58C  (0x37F)
+  jp    nc,  label_294                                                             // 0x58C  (0x37F)
   ld    x,   0x3C                                                                  // 0x58D  (0xB3C)
   ld    mx,  0xF                                                                   // 0x58E  (0xE2F)
   pset  0x2                                                                        // 0x58F  (0xE42)
-  jp    label_72                                                                   // 0x590  (0x93)
+  jp    label_88                                                                   // 0x590  (0x93)
 
-label_188:
-  calz  label_198                                                                  // 0x591  (0x5CE)
+label_175:
+  calz  label_30                                                                   // 0x591  (0x5CE)
   lbpx  mx,  0xC4                                                                  // 0x592  (0x9C4)
-  call  label_194                                                                  // 0x593  (0x4A6)
-  calz  label_180                                                                  // 0x594  (0x556)
+  call  label_181                                                                  // 0x593  (0x4A6)
+  calz  label_15                                                                   // 0x594  (0x556)
   ret                                                                              // 0x595  (0xFDF)
 
-label_189:
-  calz  label_195                                                                  // 0x596  (0x5B3)
-  jp    nz,  label_191                                                             // 0x597  (0x79E)
-  calz  label_213                                                                  // 0x598  (0x5FD)
-  jp    nz,  label_190                                                             // 0x599  (0x79C)
+label_176:
+  calz  label_23                                                                   // 0x596  (0x5B3)
+  jp    nz,  label_178                                                             // 0x597  (0x79E)
+  calz  label_45                                                                   // 0x598  (0x5FD)
+  jp    nz,  label_177                                                             // 0x599  (0x79C)
   ld    a,   0x1                                                                   // 0x59A  (0xE01)
-  jp    label_192                                                                  // 0x59B  (0x9F)
+  jp    label_179                                                                  // 0x59B  (0x9F)
 
-label_190:
+label_177:
   ld    a,   0x9                                                                   // 0x59C  (0xE09)
-  jp    label_192                                                                  // 0x59D  (0x9F)
+  jp    label_179                                                                  // 0x59D  (0x9F)
 
-label_191:
+label_178:
   ld    a,   0x3                                                                   // 0x59E  (0xE03)
 
-label_192:
+label_179:
   ld    x,   0x5E                                                                  // 0x59F  (0xB5E)
   cp    mx,  a                                                                     // 0x5A0  (0xF08)
-  jp    z,   label_193                                                             // 0x5A1  (0x6A5)
+  jp    z,   label_180                                                             // 0x5A1  (0x6A5)
   ld    mx,  a                                                                     // 0x5A2  (0xEC8)
   pset  0x4                                                                        // 0x5A3  (0xE44)
-  call  label_147                                                                  // 0x5A4  (0x465)
+  call  label_142                                                                  // 0x5A4  (0x465)
 
-label_193:
+label_180:
   ret                                                                              // 0x5A5  (0xFDF)
 
-label_194:
-  calz  label_207                                                                  // 0x5A6  (0x5EF)
+label_181:
+  calz  zero_a_xp                                                                  // 0x5A6  (0x5EF)
   ld    x,   0x2E                                                                  // 0x5A7  (0xB2E)
-  calz  label_168                                                                  // 0x5A8  (0x512)
+  calz  clear_0x07D                                                                // 0x5A8  (0x512)
   ld    mx,  0x0                                                                   // 0x5A9  (0xE20)
   ld    x,   0x10                                                                  // 0x5AA  (0xB10)
   ldpx  a,   mx                                                                    // 0x5AB  (0xEE2)
@@ -1916,106 +1885,88 @@ label_194:
   ld    m6,  a                                                                     // 0x5B0  (0xF86)
   ldpx  a,   mx                                                                    // 0x5B1  (0xEE2)
   ld    m7,  a                                                                     // 0x5B2  (0xF87)
-
-label_195:
   ldpx  a,   mx                                                                    // 0x5B3  (0xEE2)
   ldpx  b,   mx                                                                    // 0x5B4  (0xEE6)
-  calz  label_167                                                                  // 0x5B5  (0x509)
+  calz  set_f_0x07D                                                                // 0x5B5  (0x509)
   ld    x,   0x8                                                                   // 0x5B6  (0xB08)
-  call  label_202                                                                  // 0x5B7  (0x4E3)
+  call  label_184                                                                  // 0x5B7  (0x4E3)
   ld    x,   0x3A                                                                  // 0x5B8  (0xB3A)
   ldpx  a,   mx                                                                    // 0x5B9  (0xEE2)
   ld    xh,  mx                                                                    // 0x5BA  (0xE86)
-
-label_196:
   ld    xl,  a                                                                     // 0x5BB  (0xE88)
-  calz  label_211                                                                  // 0x5BC  (0x5F5)
+  calz  label_42                                                                   // 0x5BC  (0x5F5)
   ld    a,   m9                                                                    // 0x5BD  (0xFA9)
   rrc   a                                                                          // 0x5BE  (0xE8C)
   rrc   a                                                                          // 0x5BF  (0xE8C)
   rrc   a                                                                          // 0x5C0  (0xE8C)
   and   a,   0x1                                                                   // 0x5C1  (0xC81)
-
-label_197:
   or    a,   0xA                                                                   // 0x5C2  (0xCCA)
   ld    b,   0x0                                                                   // 0x5C3  (0xE10)
   pset  0x7                                                                        // 0x5C4  (0xE47)
-  call  label_274                                                                  // 0x5C5  (0x4A5)
+  call  label_235                                                                  // 0x5C5  (0x4A5)
   pset  0x7                                                                        // 0x5C6  (0xE47)
-  call  label_276                                                                  // 0x5C7  (0x4B8)
+  call  label_236                                                                  // 0x5C7  (0x4B8)
   rst   f,   0xE                                                                   // 0x5C8  (0xF5E)
   adc   xh,  0x6                                                                   // 0x5C9  (0xA06)
   ld    a,   m9                                                                    // 0x5CA  (0xFA9)
   and   a,   0x3                                                                   // 0x5CB  (0xC83)
-  jp    nz,  label_199                                                             // 0x5CC  (0x7D0)
+  jp    nz,  label_182                                                             // 0x5CC  (0x7D0)
   pset  0x7                                                                        // 0x5CD  (0xE47)
+  call  label_237                                                                  // 0x5CE  (0x4BC)
+  jp    label_183                                                                  // 0x5CF  (0xD1)
 
-label_198:
-  call  label_277                                                                  // 0x5CE  (0x4BC)
-  jp    label_200                                                                  // 0x5CF  (0xD1)
+label_182:
+  call  label_188                                                                  // 0x5D0  (0x4F3)
 
-label_199:
-  call  label_209                                                                  // 0x5D0  (0x4F3)
-
-label_200:
+label_183:
   lbpx  mx,  0x0                                                                   // 0x5D1  (0x900)
   ld    a,   m8                                                                    // 0x5D2  (0xFA8)
-  call  label_209                                                                  // 0x5D3  (0x4F3)
+  call  label_188                                                                  // 0x5D3  (0x4F3)
   lbpx  mx,  0x0                                                                   // 0x5D4  (0x900)
   lbpx  mx,  0x22                                                                  // 0x5D5  (0x922)
   lbpx  mx,  0x0                                                                   // 0x5D6  (0x900)
   ld    a,   m7                                                                    // 0x5D7  (0xFA7)
-  call  label_209                                                                  // 0x5D8  (0x4F3)
+  call  label_188                                                                  // 0x5D8  (0x4F3)
   lbpx  mx,  0x0                                                                   // 0x5D9  (0x900)
   ld    a,   m6                                                                    // 0x5DA  (0xFA6)
-  call  label_209                                                                  // 0x5DB  (0x4F3)
+  call  label_188                                                                  // 0x5DB  (0x4F3)
   lbpx  mx,  0x0                                                                   // 0x5DC  (0x900)
   lbpx  mx,  0x0                                                                   // 0x5DD  (0x900)
   ld    a,   m5                                                                    // 0x5DE  (0xFA5)
-  call  label_207                                                                  // 0x5DF  (0x4EF)
+  call  label_187                                                                  // 0x5DF  (0x4EF)
   lbpx  mx,  0x0                                                                   // 0x5E0  (0x900)
   ld    a,   m4                                                                    // 0x5E1  (0xFA4)
+  jp    label_187                                                                  // 0x5E2  (0xEF)
 
-label_201:
-  jp    label_207                                                                  // 0x5E2  (0xEF)
-
-label_202:
+label_184:
   cp    b,   0x1                                                                   // 0x5E3  (0xDD1)
-  jp    c,   label_204                                                             // 0x5E4  (0x2E9)
-  jp    nz,  label_203                                                             // 0x5E5  (0x7E8)
+  jp    c,   label_186                                                             // 0x5E4  (0x2E9)
+  jp    nz,  label_185                                                             // 0x5E5  (0x7E8)
   cp    a,   0x8                                                                   // 0x5E6  (0xDC8)
-  jp    c,   label_204                                                             // 0x5E7  (0x2E9)
+  jp    c,   label_186                                                             // 0x5E7  (0x2E9)
 
-label_203:
+label_185:
   retd  0x0                                                                        // 0x5E8  (0x100)
 
-label_204:
+label_186:
   add   a,   0x6                                                                   // 0x5E9  (0xC06)
   ld    m0,  a                                                                     // 0x5EA  (0xF80)
   adc   b,   0xE                                                                   // 0x5EB  (0xC5E)
-
-label_205:
   ld    m1,  b                                                                     // 0x5EC  (0xF91)
-
-label_206:
   ld    a,   0x5                                                                   // 0x5ED  (0xE05)
-  jp    label_212                                                                  // 0x5EE  (0xFB)
+  jp    label_190                                                                  // 0x5EE  (0xFB)
 
-label_207:
+label_187:
   ld    b,   0x0                                                                   // 0x5EF  (0xE10)
   add   a,   0xA                                                                   // 0x5F0  (0xC0A)
   adc   b,   0x0                                                                   // 0x5F1  (0xC50)
+  jp    label_189                                                                  // 0x5F2  (0xF4)
 
-label_208:
-  jp    label_210                                                                  // 0x5F2  (0xF4)
-
-label_209:
+label_188:
   ld    b,   0x0                                                                   // 0x5F3  (0xE10)
 
-label_210:
+label_189:
   add   a,   a                                                                     // 0x5F4  (0xA80)
-
-label_211:
   adc   b,   b                                                                     // 0x5F5  (0xA95)
   add   a,   a                                                                     // 0x5F6  (0xA80)
   adc   b,   b                                                                     // 0x5F7  (0xA95)
@@ -2023,117 +1974,105 @@ label_211:
   ld    m1,  b                                                                     // 0x5F9  (0xF91)
   ld    a,   0x5                                                                   // 0x5FA  (0xE05)
 
-label_212:
+label_190:
   ld    m2,  a                                                                     // 0x5FB  (0xF82)
   pset  0x0                                                                        // 0x5FC  (0xE40)
-
-label_213:
   jp    render_asset                                                               // 0x5FD  (0x0)
   nop7                                                                             // 0x5FE  (0xFFF)
   nop7                                                                             // 0x5FF  (0xFFF)
 
-label_214:
-  calz  label_237                                                                  // 0x600  (0x5B3)
-  jp    nz,  label_218                                                             // 0x601  (0x71C)
-  calz  label_256                                                                  // 0x602  (0x5FB)
-  jp    nz,  label_215                                                             // 0x603  (0x706)
+label_191:
+  calz  label_23                                                                   // 0x600  (0x5B3)
+  jp    nz,  label_193                                                             // 0x601  (0x71C)
+  calz  label_44                                                                   // 0x602  (0x5FB)
+  jp    nz,  label_192                                                             // 0x603  (0x706)
   pset  0x6                                                                        // 0x604  (0xE46)
-  jp    label_219                                                                  // 0x605  (0x1E)
+  jp    label_194                                                                  // 0x605  (0x1E)
 
-label_215:
+label_192:
   and   mx,  0x7                                                                   // 0x606  (0xCA7)
   ld    a,   0x8                                                                   // 0x607  (0xE08)
   ld    b,   0x5                                                                   // 0x608  (0xE15)
-
-label_216:
   ld    y,   0x3                                                                   // 0x609  (0x803)
   pset  0x8                                                                        // 0x60A  (0xE48)
-  call  label_320                                                                  // 0x60B  (0x4A9)
+  call  label_273                                                                  // 0x60B  (0x4A9)
   ld    a,   0x2                                                                   // 0x60C  (0xE02)
   ld    yp,  a                                                                     // 0x60D  (0xE90)
   ld    y,   0x3B                                                                  // 0x60E  (0x83B)
-  calz  label_251                                                                  // 0x60F  (0x5EF)
+  calz  zero_a_xp                                                                  // 0x60F  (0x5EF)
   ld    x,   0x48                                                                  // 0x610  (0xB48)
   or    mx,  0x8                                                                   // 0x611  (0xCE8)
-
-label_217:
   add   mx,  my                                                                    // 0x612  (0xA8B)
   fan   mx,  0x8                                                                   // 0x613  (0xDA8)
-  jp    nz,  label_218                                                             // 0x614  (0x71C)
+  jp    nz,  label_193                                                             // 0x614  (0x71C)
   ld    a,   0x2                                                                   // 0x615  (0xE02)
   ld    xp,  a                                                                     // 0x616  (0xE80)
   ld    x,   0xD                                                                   // 0x617  (0xB0D)
   ld    y,   0x38                                                                  // 0x618  (0x838)
-  calz  label_217                                                                  // 0x619  (0x512)
-  calz  label_235                                                                  // 0x61A  (0x599)
-  calz  label_216                                                                  // 0x61B  (0x509)
+  calz  clear_0x07D                                                                // 0x619  (0x512)
+  calz  label_18                                                                   // 0x61A  (0x599)
+  calz  set_f_0x07D                                                                // 0x61B  (0x509)
 
-label_218:
+label_193:
   pset  0x5                                                                        // 0x61C  (0xE45)
-  jp    label_170                                                                  // 0x61D  (0x1A)
+  jp    label_160                                                                  // 0x61D  (0x1A)
 
-label_219:
+label_194:
   ld    a,   0x6                                                                   // 0x61E  (0xE06)
   ld    b,   0x5                                                                   // 0x61F  (0xE15)
   pset  0x8                                                                        // 0x620  (0xE48)
+  call  label_272                                                                  // 0x621  (0x4A8)
 
-label_220:
-  call  label_319                                                                  // 0x621  (0x4A8)
-
-label_221:
+label_195:
   pset  0x5                                                                        // 0x622  (0xE45)
-  jp    label_170                                                                  // 0x623  (0x1A)
+  jp    label_160                                                                  // 0x623  (0x1A)
 
-label_222:
-  calz  label_237                                                                  // 0x624  (0x5B3)
-  jp    nz,  label_221                                                             // 0x625  (0x722)
+label_196:
+  calz  label_23                                                                   // 0x624  (0x5B3)
+  jp    nz,  label_195                                                             // 0x625  (0x722)
 
-label_223:
-  calz  label_256                                                                  // 0x626  (0x5FB)
-  jp    nz,  label_219                                                             // 0x627  (0x71E)
+label_197:
+  calz  label_44                                                                   // 0x626  (0x5FB)
+  jp    nz,  label_194                                                             // 0x627  (0x71E)
   ld    a,   0x2                                                                   // 0x628  (0xE02)
   ld    yp,  a                                                                     // 0x629  (0xE90)
   ld    y,   0x9                                                                   // 0x62A  (0x809)
   cp    my,  0x0                                                                   // 0x62B  (0xDF0)
-  jp    nz,  label_219                                                             // 0x62C  (0x71E)
+  jp    nz,  label_194                                                             // 0x62C  (0x71E)
   ld    x,   0x5E                                                                  // 0x62D  (0xB5E)
   ld    mx,  0x5                                                                   // 0x62E  (0xE25)
   pset  0x4                                                                        // 0x62F  (0xE44)
-  call  label_147                                                                  // 0x630  (0x465)
-  calz  label_225                                                                  // 0x631  (0x540)
+  call  label_142                                                                  // 0x630  (0x465)
+  calz  label_10                                                                   // 0x631  (0x540)
   pset  0x4                                                                        // 0x632  (0xE44)
-  call  label_150                                                                  // 0x633  (0x486)
+  call  label_145                                                                  // 0x633  (0x486)
   pset  0x4                                                                        // 0x634  (0xE44)
-  call  label_135                                                                  // 0x635  (0x400)
-  calz  label_251                                                                  // 0x636  (0x5EF)
+  call  label_130                                                                  // 0x635  (0x400)
+  calz  zero_a_xp                                                                  // 0x636  (0x5EF)
   ld    x,   0x90                                                                  // 0x637  (0xB90)
   lbpx  mx,  0xFF                                                                  // 0x638  (0x9FF)
   lbpx  mx,  0x1C                                                                  // 0x639  (0x91C)
   lbpx  mx,  0xFF                                                                  // 0x63A  (0x9FF)
   lbpx  mx,  0x1C                                                                  // 0x63B  (0x91C)
-
-label_224:
   lbpx  mx,  0x1D                                                                  // 0x63C  (0x91D)
   lbpx  mx,  0xFF                                                                  // 0x63D  (0x9FF)
   lbpx  mx,  0x1D                                                                  // 0x63E  (0x91D)
   lbpx  mx,  0xFF                                                                  // 0x63F  (0x9FF)
-
-label_225:
   ld    y,   0xD6                                                                  // 0x640  (0x8D6)
-  calz  label_241                                                                  // 0x641  (0x5BC)
-  calz  label_247                                                                  // 0x642  (0x5DE)
-  calz  label_228                                                                  // 0x643  (0x556)
+  calz  label_26                                                                   // 0x641  (0x5BC)
+  calz  label_34                                                                   // 0x642  (0x5DE)
+  calz  label_15                                                                   // 0x643  (0x556)
   ld    x,   0xD                                                                   // 0x644  (0xB0D)
-  calz  label_224                                                                  // 0x645  (0x53C)
+  calz  label_8                                                                    // 0x645  (0x53C)
   ld    b,   0xC                                                                   // 0x646  (0xE1C)
   pset  0x5                                                                        // 0x647  (0xE45)
-  call  label_165                                                                  // 0x648  (0x400)
+  call  label_156                                                                  // 0x648  (0x400)
   ld    x,   0x82                                                                  // 0x649  (0xB82)
   ldpx  mx,  0x5                                                                   // 0x64A  (0xE65)
   ldpx  mx,  0x0                                                                   // 0x64B  (0xE60)
 
-label_226:
-  calz  label_251                                                                  // 0x64C  (0x5EF)
+label_198:
+  calz  zero_a_xp                                                                  // 0x64C  (0x5EF)
   ld    a,   0x2                                                                   // 0x64D  (0xE02)
   ld    yp,  a                                                                     // 0x64E  (0xE90)
   ld    x,   0x81                                                                  // 0x64F  (0xB81)
@@ -2141,100 +2080,92 @@ label_226:
   ld    y,   0x46                                                                  // 0x651  (0x846)
   ld    x,   0x80                                                                  // 0x652  (0xB80)
   ldpx  mx,  my                                                                    // 0x653  (0xEEB)
-
-label_227:
   ld    x,   0x84                                                                  // 0x654  (0xB84)
   ld    mx,  0x8                                                                   // 0x655  (0xE28)
-
-label_228:
   ld    y,   0x45                                                                  // 0x656  (0x845)
   ld    a,   my                                                                    // 0x657  (0xEC3)
   pset  0x9                                                                        // 0x658  (0xE49)
-  call  label_334                                                                  // 0x659  (0x400)
-  jp    c,   label_229                                                             // 0x65A  (0x260)
+  call  label_282                                                                  // 0x659  (0x400)
+  jp    c,   label_199                                                             // 0x65A  (0x260)
   ld    y,   0x47                                                                  // 0x65B  (0x847)
   ld    x,   0x80                                                                  // 0x65C  (0xB80)
   ldpx  mx,  my                                                                    // 0x65D  (0xEEB)
   ld    x,   0x84                                                                  // 0x65E  (0xB84)
   ld    mx,  0x0                                                                   // 0x65F  (0xE20)
 
-label_229:
+label_199:
   ld    x,   0x5E                                                                  // 0x660  (0xB5E)
   ld    mx,  0x5                                                                   // 0x661  (0xE25)
   pset  0x4                                                                        // 0x662  (0xE44)
-  call  label_147                                                                  // 0x663  (0x465)
-  calz  label_220                                                                  // 0x664  (0x521)
+  call  label_142                                                                  // 0x663  (0x465)
+  calz  label_5                                                                    // 0x664  (0x521)
   ld    x,   0x57                                                                  // 0x665  (0xB57)
   ld    mx,  0xF                                                                   // 0x666  (0xE2F)
 
-label_230:
+label_200:
   ld    y,   0x97                                                                  // 0x667  (0x897)
-  calz  label_241                                                                  // 0x668  (0x5BC)
-  calz  label_225                                                                  // 0x669  (0x540)
+  calz  label_26                                                                   // 0x668  (0x5BC)
+  calz  label_10                                                                   // 0x669  (0x540)
   pset  0x4                                                                        // 0x66A  (0xE44)
-  call  label_150                                                                  // 0x66B  (0x486)
-  call  label_246                                                                  // 0x66C  (0x4D4)
-  calz  label_227                                                                  // 0x66D  (0x554)
-  calz  label_220                                                                  // 0x66E  (0x521)
+  call  label_145                                                                  // 0x66B  (0x486)
+  call  label_211                                                                  // 0x66C  (0x4D4)
+  calz  label_14                                                                   // 0x66D  (0x554)
+  calz  label_5                                                                    // 0x66E  (0x521)
   fan   mx,  0x1                                                                   // 0x66F  (0xDA1)
-  jp    nz,  label_242                                                             // 0x670  (0x7C5)
+  jp    nz,  label_207                                                             // 0x670  (0x7C5)
   ld    x,   0x57                                                                  // 0x671  (0xB57)
   cp    mx,  0x0                                                                   // 0x672  (0xDE0)
-  jp    z,   label_242                                                             // 0x673  (0x6C5)
+  jp    z,   label_207                                                             // 0x673  (0x6C5)
   ld    x,   0x81                                                                  // 0x674  (0xB81)
   cp    mx,  0x0                                                                   // 0x675  (0xDE0)
-  jp    nz,  label_231                                                             // 0x676  (0x77A)
+  jp    nz,  label_201                                                             // 0x676  (0x77A)
   fan   b,   0x6                                                                   // 0x677  (0xD96)
-  jp    z,   label_230                                                             // 0x678  (0x667)
+  jp    z,   label_200                                                             // 0x678  (0x667)
   ld    mx,  b                                                                     // 0x679  (0xEC9)
 
-label_231:
+label_201:
   ld    x,   0x80                                                                  // 0x67A  (0xB80)
   add   mx,  0xF                                                                   // 0x67B  (0xC2F)
-  jp    nz,  label_230                                                             // 0x67C  (0x767)
-  calz  label_240                                                                  // 0x67D  (0x5BB)
-  calz  label_225                                                                  // 0x67E  (0x540)
-  calz  label_251                                                                  // 0x67F  (0x5EF)
+  jp    nz,  label_200                                                             // 0x67C  (0x767)
+  calz  label_25                                                                   // 0x67D  (0x5BB)
+  calz  label_10                                                                   // 0x67E  (0x540)
+  calz  zero_a_xp                                                                  // 0x67F  (0x5EF)
   ld    x,   0x84                                                                  // 0x680  (0xB84)
   ld    b,   mx                                                                    // 0x681  (0xEC6)
   ld    x,   0x81                                                                  // 0x682  (0xB81)
   fan   mx,  0x4                                                                   // 0x683  (0xDA4)
-  jp    z,   label_232                                                             // 0x684  (0x686)
+  jp    z,   label_202                                                             // 0x684  (0x686)
   xor   b,   0x8                                                                   // 0x685  (0xD18)
 
-label_232:
+label_202:
   ld    x,   0x3A                                                                  // 0x686  (0xB3A)
   lbpx  mx,  0x10                                                                  // 0x687  (0x910)
   pset  0x3                                                                        // 0x688  (0xE43)
-  call  label_130                                                                  // 0x689  (0x4EE)
-  call  label_246                                                                  // 0x68A  (0x4D4)
-  calz  label_227                                                                  // 0x68B  (0x554)
+  call  label_128                                                                  // 0x689  (0x4EE)
+  call  label_211                                                                  // 0x68A  (0x4D4)
+  calz  label_14                                                                   // 0x68B  (0x554)
   ld    x,   0x29                                                                  // 0x68C  (0xB29)
-  calz  label_224                                                                  // 0x68D  (0x53C)
-  calz  label_251                                                                  // 0x68E  (0x5EF)
+  calz  label_8                                                                    // 0x68D  (0x53C)
+  calz  zero_a_xp                                                                  // 0x68E  (0x5EF)
   ld    x,   0x84                                                                  // 0x68F  (0xB84)
   cp    mx,  0x0                                                                   // 0x690  (0xDE0)
-  jp    z,   label_233                                                             // 0x691  (0x696)
+  jp    z,   label_203                                                             // 0x691  (0x696)
   ld    x,   0x83                                                                  // 0x692  (0xB83)
   add   mx,  0x1                                                                   // 0x693  (0xC21)
-  call  label_243                                                                  // 0x694  (0x4C8)
-  jp    label_234                                                                  // 0x695  (0x97)
+  call  label_208                                                                  // 0x694  (0x4C8)
+  jp    label_204                                                                  // 0x695  (0x97)
 
-label_233:
-  call  label_244                                                                  // 0x696  (0x4CD)
+label_203:
+  call  label_209                                                                  // 0x696  (0x4CD)
 
-label_234:
-  calz  label_251                                                                  // 0x697  (0x5EF)
+label_204:
+  calz  zero_a_xp                                                                  // 0x697  (0x5EF)
   ld    x,   0x82                                                                  // 0x698  (0xB82)
-
-label_235:
   add   mx,  0xF                                                                   // 0x699  (0xC2F)
-  jp    nz,  label_226                                                             // 0x69A  (0x74C)
-
-label_236:
+  jp    nz,  label_198                                                             // 0x69A  (0x74C)
   ld    x,   0x90                                                                  // 0x69B  (0xB90)
   pset  0xC                                                                        // 0x69C  (0xE4C)
-  call  label_400                                                                  // 0x69D  (0x4F5)
+  call  label_334                                                                  // 0x69D  (0x4F5)
   ld    x,   0x83                                                                  // 0x69E  (0xB83)
   ld    a,   mx                                                                    // 0x69F  (0xEC2)
   ld    x,   0x98                                                                  // 0x6A0  (0xB98)
@@ -2244,263 +2175,249 @@ label_236:
   ld    x,   0x9C                                                                  // 0x6A4  (0xB9C)
   ld    mx,  b                                                                     // 0x6A5  (0xEC9)
   ld    y,   0xE5                                                                  // 0x6A6  (0x8E5)
-  calz  label_241                                                                  // 0x6A7  (0x5BC)
-  calz  label_247                                                                  // 0x6A8  (0x5DE)
-  calz  label_228                                                                  // 0x6A9  (0x556)
+  calz  label_26                                                                   // 0x6A7  (0x5BC)
+  calz  label_34                                                                   // 0x6A8  (0x5DE)
+  calz  label_15                                                                   // 0x6A9  (0x556)
   ld    x,   0x52                                                                  // 0x6AA  (0xB52)
-  calz  label_224                                                                  // 0x6AB  (0x53C)
-  calz  label_251                                                                  // 0x6AC  (0x5EF)
+  calz  label_8                                                                    // 0x6AB  (0x53C)
+  calz  zero_a_xp                                                                  // 0x6AC  (0x5EF)
   ld    x,   0x83                                                                  // 0x6AD  (0xB83)
   cp    mx,  0x3                                                                   // 0x6AE  (0xDE3)
-  jp    c,   label_238                                                             // 0x6AF  (0x2B5)
+  jp    c,   label_205                                                             // 0x6AF  (0x2B5)
   ld    x,   0x41                                                                  // 0x6B0  (0xB41)
   pset  0xC                                                                        // 0x6B1  (0xE4C)
-  call  label_396                                                                  // 0x6B2  (0x4E5)
+  call  label_331                                                                  // 0x6B2  (0x4E5)
+  call  label_208                                                                  // 0x6B3  (0x4C8)
+  jp    label_206                                                                  // 0x6B4  (0xB6)
 
-label_237:
-  call  label_243                                                                  // 0x6B3  (0x4C8)
-  jp    label_239                                                                  // 0x6B4  (0xB6)
+label_205:
+  call  label_209                                                                  // 0x6B5  (0x4CD)
 
-label_238:
-  call  label_244                                                                  // 0x6B5  (0x4CD)
-
-label_239:
-  calz  label_251                                                                  // 0x6B6  (0x5EF)
+label_206:
+  calz  zero_a_xp                                                                  // 0x6B6  (0x5EF)
   ld    x,   0x46                                                                  // 0x6B7  (0xB46)
   set   f,   0x4                                                                   // 0x6B8  (0xF44)
   add   mx,  0x9                                                                   // 0x6B9  (0xC29)
   ldpx  a,   a                                                                     // 0x6BA  (0xEE0)
-
-label_240:
   adc   mx,  0x9                                                                   // 0x6BB  (0xC69)
-
-label_241:
   rst   f,   0xB                                                                   // 0x6BC  (0xF5B)
   pset  0x6                                                                        // 0x6BD  (0xE46)
-  call  label_250                                                                  // 0x6BE  (0x4E5)
+  call  label_214                                                                  // 0x6BE  (0x4E5)
   ld    x,   0x29                                                                  // 0x6BF  (0xB29)
   fan   mx,  0x1                                                                   // 0x6C0  (0xDA1)
-  jp    nz,  label_242                                                             // 0x6C1  (0x7C5)
+  jp    nz,  label_207                                                             // 0x6C1  (0x7C5)
   pset  0xF                                                                        // 0x6C2  (0xE4F)
-  call  label_435                                                                  // 0x6C3  (0x400)
-  jp    z,   label_223                                                             // 0x6C4  (0x626)
+  call  label_357                                                                  // 0x6C3  (0x400)
+  jp    z,   label_197                                                             // 0x6C4  (0x626)
 
-label_242:
-  calz  label_240                                                                  // 0x6C5  (0x5BB)
+label_207:
+  calz  label_25                                                                   // 0x6C5  (0x5BB)
   pset  0x5                                                                        // 0x6C6  (0xE45)
-  jp    label_169                                                                  // 0x6C7  (0x17)
+  jp    label_159                                                                  // 0x6C7  (0x17)
 
-label_243:
+label_208:
   ld    y,   0x83                                                                  // 0x6C8  (0x883)
-  calz  label_241                                                                  // 0x6C9  (0x5BC)
+  calz  label_26                                                                   // 0x6C9  (0x5BC)
   ld    a,   0x7                                                                   // 0x6CA  (0xE07)
   ld    y,   0x6                                                                   // 0x6CB  (0x806)
-  jp    label_245                                                                  // 0x6CC  (0xD1)
+  jp    label_210                                                                  // 0x6CC  (0xD1)
 
-label_244:
+label_209:
   ld    y,   0x9E                                                                  // 0x6CD  (0x89E)
-  calz  label_241                                                                  // 0x6CE  (0x5BC)
+  calz  label_26                                                                   // 0x6CE  (0x5BC)
   ld    a,   0x8                                                                   // 0x6CF  (0xE08)
   ld    y,   0x3                                                                   // 0x6D0  (0x803)
 
-label_245:
+label_210:
   ld    b,   0x5                                                                   // 0x6D1  (0xE15)
   pset  0x8                                                                        // 0x6D2  (0xE48)
-  jp    label_320                                                                  // 0x6D3  (0xA9)
+  jp    label_273                                                                  // 0x6D3  (0xA9)
 
-label_246:
-  calz  label_251                                                                  // 0x6D4  (0x5EF)
+label_211:
+  calz  zero_a_xp                                                                  // 0x6D4  (0x5EF)
   ld    x,   0x81                                                                  // 0x6D5  (0xB81)
   cp    mx,  0x0                                                                   // 0x6D6  (0xDE0)
-  jp    z,   label_249                                                             // 0x6D7  (0x6E4)
+  jp    z,   label_213                                                             // 0x6D7  (0x6E4)
   ld    b,   mx                                                                    // 0x6D8  (0xEC6)
   ld    x,   0xB0                                                                  // 0x6D9  (0xBB0)
   ld    a,   0x7                                                                   // 0x6DA  (0xE07)
   fan   b,   0x4                                                                   // 0x6DB  (0xD94)
-  jp    z,   label_248                                                             // 0x6DC  (0x6DF)
+  jp    z,   label_212                                                             // 0x6DC  (0x6DF)
   ld    x,   0x80                                                                  // 0x6DD  (0xB80)
-
-label_247:
   ld    a,   0x6                                                                   // 0x6DE  (0xE06)
 
-label_248:
+label_212:
   ld    b,   0x1                                                                   // 0x6DF  (0xE11)
   ld    xp,  b                                                                     // 0x6E0  (0xE81)
   ld    b,   0x2                                                                   // 0x6E1  (0xE12)
   pset  0x7                                                                        // 0x6E2  (0xE47)
-  call  label_274                                                                  // 0x6E3  (0x4A5)
+  call  label_235                                                                  // 0x6E3  (0x4A5)
 
-label_249:
+label_213:
   ret                                                                              // 0x6E4  (0xFDF)
 
-label_250:
-  calz  label_251                                                                  // 0x6E5  (0x5EF)
+label_214:
+  calz  zero_a_xp                                                                  // 0x6E5  (0x5EF)
   ld    a,   0x2                                                                   // 0x6E6  (0xE02)
   ld    yp,  a                                                                     // 0x6E7  (0xE90)
   ld    y,   0x3D                                                                  // 0x6E8  (0x83D)
-  call  label_255                                                                  // 0x6E9  (0x4F6)
-  jp    c,   label_252                                                             // 0x6EA  (0x2F0)
+  call  label_218                                                                  // 0x6E9  (0x4F6)
+  jp    c,   label_215                                                             // 0x6EA  (0x2F0)
   ld    y,   0x3F                                                                  // 0x6EB  (0x83F)
-  call  label_255                                                                  // 0x6EC  (0x4F6)
-  jp    c,   label_254                                                             // 0x6ED  (0x2F5)
+  call  label_218                                                                  // 0x6EC  (0x4F6)
+  jp    c,   label_217                                                             // 0x6ED  (0x2F5)
   ld    y,   0x3E                                                                  // 0x6EE  (0x83E)
+  jp    label_216                                                                  // 0x6EF  (0xF1)
 
-label_251:
-  jp    label_253                                                                  // 0x6EF  (0xF1)
-
-label_252:
+label_215:
   ld    y,   0x3C                                                                  // 0x6F0  (0x83C)
 
-label_253:
+label_216:
   ld    x,   0x46                                                                  // 0x6F1  (0xB46)
-  calz  label_217                                                                  // 0x6F2  (0x512)
-  calz  label_236                                                                  // 0x6F3  (0x59B)
-  calz  label_216                                                                  // 0x6F4  (0x509)
+  calz  clear_0x07D                                                                // 0x6F2  (0x512)
+  calz  label_19                                                                   // 0x6F3  (0x59B)
+  calz  set_f_0x07D                                                                // 0x6F4  (0x509)
 
-label_254:
+label_217:
   ret                                                                              // 0x6F5  (0xFDF)
 
-label_255:
+label_218:
   ld    x,   0x47                                                                  // 0x6F6  (0xB47)
   cp    mx,  my                                                                    // 0x6F7  (0xF0B)
-  jp    c,   label_257                                                             // 0x6F8  (0x2FD)
-  jp    nz,  label_257                                                             // 0x6F9  (0x7FD)
+  jp    c,   label_219                                                             // 0x6F8  (0x2FD)
+  jp    nz,  label_219                                                             // 0x6F9  (0x7FD)
   ld    x,   0x46                                                                  // 0x6FA  (0xB46)
-
-label_256:
   adc   yl,  0xF                                                                   // 0x6FB  (0xA3F)
   cp    mx,  my                                                                    // 0x6FC  (0xF0B)
 
-label_257:
+label_219:
   ret                                                                              // 0x6FD  (0xFDF)
   nop7                                                                             // 0x6FE  (0xFFF)
   nop7                                                                             // 0x6FF  (0xFFF)
   pset  0x4                                                                        // 0x700  (0xE44)
-  jp    label_161                                                                  // 0x701  (0xE7)
+  jp    label_155                                                                  // 0x701  (0xE7)
   pset  0x7                                                                        // 0x702  (0xE47)
-  jp    label_259                                                                  // 0x703  (0x10)
+  jp    label_220                                                                  // 0x703  (0x10)
   pset  0xA                                                                        // 0x704  (0xE4A)
-  jp    label_360                                                                  // 0x705  (0xBE)
+  jp    label_297                                                                  // 0x705  (0xBE)
   pset  0x6                                                                        // 0x706  (0xE46)
-  jp    label_222                                                                  // 0x707  (0x24)
+  jp    label_196                                                                  // 0x707  (0x24)
   pset  0x6                                                                        // 0x708  (0xE46)
-
-label_258:
-  jp    label_214                                                                  // 0x709  (0x0)
+  jp    label_191                                                                  // 0x709  (0x0)
   pset  0xD                                                                        // 0x70A  (0xE4D)
-  jp    label_407                                                                  // 0x70B  (0x7E)
+  jp    label_336                                                                  // 0x70B  (0x7E)
   pset  0x8                                                                        // 0x70C  (0xE48)
-  jp    label_291                                                                  // 0x70D  (0x14)
+  jp    label_247                                                                  // 0x70D  (0x14)
   pset  0xA                                                                        // 0x70E  (0xE4A)
-  jp    label_364                                                                  // 0x70F  (0xDA)
+  jp    label_301                                                                  // 0x70F  (0xDA)
 
-label_259:
-  calz  label_275                                                                  // 0x710  (0x5B3)
-  jp    nz,  label_261                                                             // 0x711  (0x720)
+label_220:
+  calz  label_23                                                                   // 0x710  (0x5B3)
+  jp    nz,  label_222                                                             // 0x711  (0x720)
 
-label_260:
-  calz  label_283                                                                  // 0x712  (0x5EF)
+label_221:
+  calz  zero_a_xp                                                                  // 0x712  (0x5EF)
   ld    x,   0x73                                                                  // 0x713  (0xB73)
   ld    a,   mx                                                                    // 0x714  (0xEC2)
   ld    x,   0x78                                                                  // 0x715  (0xB78)
   ld    mx,  a                                                                     // 0x716  (0xEC8)
   ld    x,   0x90                                                                  // 0x717  (0xB90)
   pset  0xB                                                                        // 0x718  (0xE4B)
-  call  label_373                                                                  // 0x719  (0x4E8)
+  call  label_308                                                                  // 0x719  (0x4E8)
   ld    b,   0xA                                                                   // 0x71A  (0xE1A)
   pset  0xE                                                                        // 0x71B  (0xE4E)
-  call  label_428                                                                  // 0x71C  (0x45A)
-  jp    nc,  label_262                                                             // 0x71D  (0x322)
+  call  label_352                                                                  // 0x71C  (0x45A)
+  jp    nc,  label_223                                                             // 0x71D  (0x322)
   pset  0x5                                                                        // 0x71E  (0xE45)
-  jp    nz,  label_169                                                             // 0x71F  (0x717)
+  jp    nz,  label_159                                                             // 0x71F  (0x717)
 
-label_261:
+label_222:
   pset  0x5                                                                        // 0x720  (0xE45)
-  jp    label_170                                                                  // 0x721  (0x1A)
+  jp    label_160                                                                  // 0x721  (0x1A)
 
-label_262:
-  calz  label_284                                                                  // 0x722  (0x5F2)
+label_223:
+  calz  label_41                                                                   // 0x722  (0x5F2)
   ld    x,   0x73                                                                  // 0x723  (0xB73)
   ldpx  mx,  a                                                                     // 0x724  (0xEE8)
   cp    a,   0x0                                                                   // 0x725  (0xDC0)
-  jp    nz,  label_263                                                             // 0x726  (0x739)
+  jp    nz,  label_224                                                             // 0x726  (0x739)
   ld    y,   0xC                                                                   // 0x727  (0x80C)
-  calz  label_286                                                                  // 0x728  (0x5FD)
-  jp    nz,  label_267                                                             // 0x729  (0x751)
+  calz  label_45                                                                   // 0x728  (0x5FD)
+  jp    nz,  label_228                                                             // 0x729  (0x751)
   ld    a,   0x2                                                                   // 0x72A  (0xE02)
   ld    xp,  a                                                                     // 0x72B  (0xE80)
   ld    x,   0x9                                                                   // 0x72C  (0xB09)
   cp    mx,  0x0                                                                   // 0x72D  (0xDE0)
-  jp    nz,  label_267                                                             // 0x72E  (0x751)
-  calz  label_283                                                                  // 0x72F  (0x5EF)
+  jp    nz,  label_228                                                             // 0x72E  (0x751)
+  calz  zero_a_xp                                                                  // 0x72F  (0x5EF)
   ld    x,   0x40                                                                  // 0x730  (0xB40)
   cp    mx,  0xF                                                                   // 0x731  (0xDEF)
-  jp    z,   label_267                                                             // 0x732  (0x651)
+  jp    z,   label_228                                                             // 0x732  (0x651)
   pset  0xC                                                                        // 0x733  (0xE4C)
-  call  label_396                                                                  // 0x734  (0x4E5)
+  call  label_331                                                                  // 0x734  (0x4E5)
   ld    a,   0x1                                                                   // 0x735  (0xE01)
-  call  label_269                                                                  // 0x736  (0x456)
+  call  label_230                                                                  // 0x736  (0x456)
   ld    y,   0x8                                                                   // 0x737  (0x808)
-  jp    label_265                                                                  // 0x738  (0x49)
+  jp    label_226                                                                  // 0x738  (0x49)
 
-label_263:
+label_224:
   ld    x,   0x41                                                                  // 0x739  (0xB41)
   pset  0xC                                                                        // 0x73A  (0xE4C)
-  call  label_396                                                                  // 0x73B  (0x4E5)
-  calz  label_286                                                                  // 0x73C  (0x5FD)
-  jp    nz,  label_264                                                             // 0x73D  (0x746)
+  call  label_331                                                                  // 0x73B  (0x4E5)
+  calz  label_45                                                                   // 0x73C  (0x5FD)
+  jp    nz,  label_225                                                             // 0x73D  (0x746)
   ld    a,   0x2                                                                   // 0x73E  (0xE02)
   ld    xp,  a                                                                     // 0x73F  (0xE80)
   ld    x,   0xD                                                                   // 0x740  (0xB0D)
-  calz  label_260                                                                  // 0x741  (0x512)
+  calz  clear_0x07D                                                                // 0x741  (0x512)
   pset  0xC                                                                        // 0x742  (0xE4C)
-  call  label_389                                                                  // 0x743  (0x4C8)
-  calz  label_258                                                                  // 0x744  (0x509)
-  calz  label_283                                                                  // 0x745  (0x5EF)
+  call  label_324                                                                  // 0x743  (0x4C8)
+  calz  set_f_0x07D                                                                // 0x744  (0x509)
+  calz  zero_a_xp                                                                  // 0x745  (0x5EF)
 
-label_264:
+label_225:
   ld    a,   0x2                                                                   // 0x746  (0xE02)
-  call  label_269                                                                  // 0x747  (0x456)
+  call  label_230                                                                  // 0x747  (0x456)
   ld    y,   0xA                                                                   // 0x748  (0x80A)
 
-label_265:
+label_226:
   ld    a,   0x2                                                                   // 0x749  (0xE02)
   ld    xp,  a                                                                     // 0x74A  (0xE80)
   ld    x,   0x48                                                                  // 0x74B  (0xB48)
   fan   mx,  0x1                                                                   // 0x74C  (0xDA1)
-  jp    z,   label_266                                                             // 0x74D  (0x64F)
+  jp    z,   label_227                                                             // 0x74D  (0x64F)
   ldpy  a,   a                                                                     // 0x74E  (0xEF0)
 
-label_266:
+label_227:
   ld    a,   0x2                                                                   // 0x74F  (0xE02)
-  jp    label_268                                                                  // 0x750  (0x52)
+  jp    label_229                                                                  // 0x750  (0x52)
 
-label_267:
+label_228:
   ld    a,   0x6                                                                   // 0x751  (0xE06)
 
-label_268:
+label_229:
   ld    b,   0x5                                                                   // 0x752  (0xE15)
   pset  0x8                                                                        // 0x753  (0xE48)
-  call  label_320                                                                  // 0x754  (0x4A9)
-  jp    label_260                                                                  // 0x755  (0x12)
+  call  label_273                                                                  // 0x754  (0x4A9)
+  jp    label_221                                                                  // 0x755  (0x12)
 
-label_269:
+label_230:
   set   f,   0x4                                                                   // 0x756  (0xF44)
   ld    x,   0x46                                                                  // 0x757  (0xB46)
   add   mx,  a                                                                     // 0x758  (0xA88)
   ldpx  a,   a                                                                     // 0x759  (0xEE0)
   adc   mx,  0x0                                                                   // 0x75A  (0xC60)
-  jp    nc,  label_270                                                             // 0x75B  (0x35E)
+  jp    nc,  label_231                                                             // 0x75B  (0x35E)
   ld    x,   0x46                                                                  // 0x75C  (0xB46)
   lbpx  mx,  0x99                                                                  // 0x75D  (0x999)
 
-label_270:
+label_231:
   rst   f,   0xB                                                                   // 0x75E  (0xF5B)
   pset  0x6                                                                        // 0x75F  (0xE46)
-  jp    label_250                                                                  // 0x760  (0xE5)
+  jp    label_214                                                                  // 0x760  (0xE5)
 
-label_271:
-  calz  label_283                                                                  // 0x761  (0x5EF)
+label_232:
+  calz  zero_a_xp                                                                  // 0x761  (0x5EF)
   ld    x,   0x5D                                                                  // 0x762  (0xB5D)
   lbpx  mx,  0x10                                                                  // 0x763  (0x910)
   ld    x,   0x73                                                                  // 0x764  (0xB73)
@@ -2536,10 +2453,10 @@ label_271:
   lbpx  mx,  0xF                                                                   // 0x782  (0x90F)
   ldpx  mx,  0x0                                                                   // 0x783  (0xE60)
   ldpx  mx,  0x0                                                                   // 0x784  (0xE60)
-  calz  label_260                                                                  // 0x785  (0x512)
+  calz  clear_0x07D                                                                // 0x785  (0x512)
   lbpx  mx,  0x0                                                                   // 0x786  (0x900)
   ldpx  mx,  0x0                                                                   // 0x787  (0xE60)
-  calz  label_258                                                                  // 0x788  (0x509)
+  calz  set_f_0x07D                                                                // 0x788  (0x509)
   ld    x,   0xF                                                                   // 0x789  (0xB0F)
   ldpx  mx,  0xF                                                                   // 0x78A  (0xE6F)
   ld    x,   0x12                                                                  // 0x78B  (0xB12)
@@ -2550,30 +2467,30 @@ label_271:
   lbpx  mx,  0x28                                                                  // 0x790  (0x928)
   ret                                                                              // 0x791  (0xFDF)
 
-label_272:
+label_233:
   ld    a,   0x0                                                                   // 0x792  (0xE00)
   ld    yp,  a                                                                     // 0x793  (0xE90)
-  calz  label_285                                                                  // 0x794  (0x5F5)
+  calz  label_42                                                                   // 0x794  (0x5F5)
   ld    y,   0x3A                                                                  // 0x795  (0x83A)
   ld    xl,  my                                                                    // 0x796  (0xE8B)
   ldpy  a,   a                                                                     // 0x797  (0xEF0)
   ld    xh,  my                                                                    // 0x798  (0xE87)
   ld    y,   0x90                                                                  // 0x799  (0x890)
-  call  label_273                                                                  // 0x79A  (0x4A3)
-  call  label_273                                                                  // 0x79B  (0x4A3)
-  call  label_273                                                                  // 0x79C  (0x4A3)
-  call  label_273                                                                  // 0x79D  (0x4A3)
+  call  label_234                                                                  // 0x79A  (0x4A3)
+  call  label_234                                                                  // 0x79B  (0x4A3)
+  call  label_234                                                                  // 0x79C  (0x4A3)
+  call  label_234                                                                  // 0x79D  (0x4A3)
   rst   f,   0xE                                                                   // 0x79E  (0xF5E)
   adc   xh,  0x4                                                                   // 0x79F  (0xA04)
-  call  label_273                                                                  // 0x7A0  (0x4A3)
-  call  label_273                                                                  // 0x7A1  (0x4A3)
-  call  label_273                                                                  // 0x7A2  (0x4A3)
+  call  label_234                                                                  // 0x7A0  (0x4A3)
+  call  label_234                                                                  // 0x7A1  (0x4A3)
+  call  label_234                                                                  // 0x7A2  (0x4A3)
 
-label_273:
+label_234:
   ldpy  a,   my                                                                    // 0x7A3  (0xEF3)
   ldpy  b,   my                                                                    // 0x7A4  (0xEF7)
 
-label_274:
+label_235:
   push  b                                                                          // 0x7A5  (0xFC1)
   ld    b,   0x0                                                                   // 0x7A6  (0xE10)
   rrc   a                                                                          // 0x7A7  (0xE8C)
@@ -2582,60 +2499,58 @@ label_274:
   pop   b                                                                          // 0x7AA  (0xFD1)
   cp    b,   0x4                                                                   // 0x7AB  (0xDD4)
   pset  0x7                                                                        // 0x7AC  (0xE47)
-  jp    nc,  label_276                                                             // 0x7AD  (0x3B8)
+  jp    nc,  label_236                                                             // 0x7AD  (0x3B8)
   add   a,   a                                                                     // 0x7AE  (0xA80)
   rst   f,   0xE                                                                   // 0x7AF  (0xF5E)
   rrc   b                                                                          // 0x7B0  (0xE8D)
   rrc   a                                                                          // 0x7B1  (0xE8C)
   add   a,   0x0                                                                   // 0x7B2  (0xC00)
-
-label_275:
   adc   b,   0x6                                                                   // 0x7B3  (0xC56)
   ld    m1,  a                                                                     // 0x7B4  (0xF81)
   ld    m2,  b                                                                     // 0x7B5  (0xF92)
   pset  0x0                                                                        // 0x7B6  (0xE40)
   jp    render_asset                                                               // 0x7B7  (0x0)
 
-label_276:
+label_236:
   lbpx  mx,  0x0                                                                   // 0x7B8  (0x900)
   lbpx  mx,  0x0                                                                   // 0x7B9  (0x900)
   lbpx  mx,  0x0                                                                   // 0x7BA  (0x900)
   lbpx  mx,  0x0                                                                   // 0x7BB  (0x900)
 
-label_277:
+label_237:
   lbpx  mx,  0x0                                                                   // 0x7BC  (0x900)
   lbpx  mx,  0x0                                                                   // 0x7BD  (0x900)
   lbpx  mx,  0x0                                                                   // 0x7BE  (0x900)
   retd  0x0                                                                        // 0x7BF  (0x100)
 
-label_278:
-  calz  label_284                                                                  // 0x7C0  (0x5F2)
+label_238:
+  calz  label_41                                                                   // 0x7C0  (0x5F2)
   ld    x,   0x2C                                                                  // 0x7C1  (0xB2C)
-  call  label_281                                                                  // 0x7C2  (0x4D5)
-  calz  label_275                                                                  // 0x7C3  (0x5B3)
+  call  label_241                                                                  // 0x7C2  (0x4D5)
+  calz  label_23                                                                   // 0x7C3  (0x5B3)
   ld    a,   0x2                                                                   // 0x7C4  (0xE02)
   ld    xp,  a                                                                     // 0x7C5  (0xE80)
-  jp    z,   label_279                                                             // 0x7C6  (0x6CB)
+  jp    z,   label_239                                                             // 0x7C6  (0x6CB)
   ld    x,   0x5                                                                   // 0x7C7  (0xB05)
   cp    mx,  0x4                                                                   // 0x7C8  (0xDE4)
-  jp    c,   label_280                                                             // 0x7C9  (0x2D1)
-  jp    label_282                                                                  // 0x7CA  (0xE1)
+  jp    c,   label_240                                                             // 0x7C9  (0x2D1)
+  jp    label_242                                                                  // 0x7CA  (0xE1)
 
-label_279:
+label_239:
   ld    x,   0x8                                                                   // 0x7CB  (0xB08)
   cp    mx,  0x0                                                                   // 0x7CC  (0xDE0)
-  jp    nz,  label_280                                                             // 0x7CD  (0x7D1)
+  jp    nz,  label_240                                                             // 0x7CD  (0x7D1)
   ld    x,   0x9                                                                   // 0x7CE  (0xB09)
   cp    mx,  0x0                                                                   // 0x7CF  (0xDE0)
-  jp    z,   label_282                                                             // 0x7D0  (0x6E1)
+  jp    z,   label_242                                                             // 0x7D0  (0x6E1)
 
-label_280:
-  calz  label_283                                                                  // 0x7D1  (0x5EF)
+label_240:
+  calz  zero_a_xp                                                                  // 0x7D1  (0x5EF)
   ld    x,   0x2D                                                                  // 0x7D2  (0xB2D)
   or    mx,  0x8                                                                   // 0x7D3  (0xCE8)
-  jp    label_282                                                                  // 0x7D4  (0xE1)
+  jp    label_242                                                                  // 0x7D4  (0xE1)
 
-label_281:
+label_241:
   add   a,   0x8                                                                   // 0x7D5  (0xC08)
   adc   b,   0xD                                                                   // 0x7D6  (0xC5D)
   jpba                                                                             // 0x7D7  (0xFE8)
@@ -2649,7 +2564,7 @@ label_281:
   retd  0x40                                                                       // 0x7DF  (0x140)
   retd  0x80                                                                       // 0x7E0  (0x180)
 
-label_282:
+label_242:
   ld    a,   0xE                                                                   // 0x7E1  (0xE0E)
   ld    xp,  a                                                                     // 0x7E2  (0xE80)
   ld    a,   0x0                                                                   // 0x7E3  (0xE00)
@@ -2664,18 +2579,12 @@ label_282:
   ld    mx,  a                                                                     // 0x7EC  (0xEC8)
   rrc   a                                                                          // 0x7ED  (0xE8C)
   ld    x,   0x24                                                                  // 0x7EE  (0xB24)
-
-label_283:
   ld    mx,  a                                                                     // 0x7EF  (0xEC8)
   rrc   a                                                                          // 0x7F0  (0xE8C)
   ld    x,   0x26                                                                  // 0x7F1  (0xB26)
-
-label_284:
   ld    mx,  a                                                                     // 0x7F2  (0xEC8)
   ld    x,   0xB9                                                                  // 0x7F3  (0xBB9)
   ld    mx,  b                                                                     // 0x7F4  (0xEC9)
-
-label_285:
   rlc   b,   mx                                                                    // 0x7F5  (0xAF5)
   ld    x,   0xCB                                                                  // 0x7F6  (0xBCB)
   ld    mx,  b                                                                     // 0x7F7  (0xEC9)
@@ -2684,8 +2593,6 @@ label_285:
   ld    mx,  b                                                                     // 0x7FA  (0xEC9)
   rlc   b,   mx                                                                    // 0x7FB  (0xAF5)
   ld    x,   0xCF                                                                  // 0x7FC  (0xBCF)
-
-label_286:
   ld    mx,  b                                                                     // 0x7FD  (0xEC9)
   ret                                                                              // 0x7FE  (0xFDF)
   nop7                                                                             // 0x7FF  (0xFFF)
@@ -2698,76 +2605,74 @@ label_286:
   retd  0x10                                                                       // 0x806  (0x110)
   retd  0x4                                                                        // 0x807  (0x104)
 
-label_287:
+label_243:
   fan   a,   0x8                                                                   // 0x808  (0xD88)
-  jp    z,   label_288                                                             // 0x809  (0x60B)
+  jp    z,   label_244                                                             // 0x809  (0x60B)
   retd  0x0                                                                        // 0x80A  (0x100)
 
-label_288:
+label_244:
   ld    b,   0x0                                                                   // 0x80B  (0xE10)
   jpba                                                                             // 0x80C  (0xFE8)
 
-label_289:
+label_245:
   ld    b,   0x1                                                                   // 0x80D  (0xE11)
   ld    xp,  b                                                                     // 0x80E  (0xE81)
 
-label_290:
+label_246:
   lbpx  mx,  0x0                                                                   // 0x80F  (0x900)
   lbpx  mx,  0x0                                                                   // 0x810  (0x900)
   add   a,   0xF                                                                   // 0x811  (0xC0F)
-  jp    nz,  label_290                                                             // 0x812  (0x70F)
+  jp    nz,  label_246                                                             // 0x812  (0x70F)
   ret                                                                              // 0x813  (0xFDF)
 
-label_291:
-  calz  label_328                                                                  // 0x814  (0x5EF)
+label_247:
+  calz  zero_a_xp                                                                  // 0x814  (0x5EF)
   ld    x,   0x80                                                                  // 0x815  (0xB80)
   ld    mx,  0x0                                                                   // 0x816  (0xE20)
 
-label_292:
-  call  label_298                                                                  // 0x817  (0x436)
-  calz  label_326                                                                  // 0x818  (0x5DE)
-  calz  label_328                                                                  // 0x819  (0x5EF)
+label_248:
+  call  label_253                                                                  // 0x817  (0x436)
+  calz  label_34                                                                   // 0x818  (0x5DE)
+  calz  zero_a_xp                                                                  // 0x819  (0x5EF)
   ld    x,   0x81                                                                  // 0x81A  (0xB81)
   cp    mx,  0x0                                                                   // 0x81B  (0xDE0)
-  jp    z,   label_293                                                             // 0x81C  (0x61E)
-  call  label_305                                                                  // 0x81D  (0x467)
+  jp    z,   label_249                                                             // 0x81C  (0x61E)
+  call  label_258                                                                  // 0x81D  (0x467)
 
-label_293:
-  calz  label_303                                                                  // 0x81E  (0x556)
-  calz  label_294                                                                  // 0x81F  (0x521)
+label_249:
+  calz  label_15                                                                   // 0x81E  (0x556)
+  calz  label_5                                                                    // 0x81F  (0x521)
   ld    x,   0x57                                                                  // 0x820  (0xB57)
-
-label_294:
   ld    mx,  0xF                                                                   // 0x821  (0xE2F)
 
-label_295:
-  calz  label_294                                                                  // 0x822  (0x521)
+label_250:
+  calz  label_5                                                                    // 0x822  (0x521)
   ld    x,   0x57                                                                  // 0x823  (0xB57)
   cp    mx,  0x0                                                                   // 0x824  (0xDE0)
-  jp    z,   label_297                                                             // 0x825  (0x633)
+  jp    z,   label_252                                                             // 0x825  (0x633)
   fan   b,   0x1                                                                   // 0x826  (0xD91)
-  jp    nz,  label_297                                                             // 0x827  (0x733)
+  jp    nz,  label_252                                                             // 0x827  (0x733)
   fan   b,   0x6                                                                   // 0x828  (0xD96)
-  jp    z,   label_295                                                             // 0x829  (0x622)
-  calz  label_323                                                                  // 0x82A  (0x5BB)
+  jp    z,   label_250                                                             // 0x829  (0x622)
+  calz  label_25                                                                   // 0x82A  (0x5BB)
   ld    x,   0x80                                                                  // 0x82B  (0xB80)
   add   mx,  0x1                                                                   // 0x82C  (0xC21)
   cp    mx,  0x4                                                                   // 0x82D  (0xDE4)
-  jp    c,   label_296                                                             // 0x82E  (0x230)
+  jp    c,   label_251                                                             // 0x82E  (0x230)
   ld    mx,  0x0                                                                   // 0x82F  (0xE20)
 
-label_296:
+label_251:
   pset  0xF                                                                        // 0x830  (0xE4F)
-  call  label_435                                                                  // 0x831  (0x400)
-  jp    z,   label_292                                                             // 0x832  (0x617)
+  call  label_357                                                                  // 0x831  (0x400)
+  jp    z,   label_248                                                             // 0x832  (0x617)
 
-label_297:
-  calz  label_323                                                                  // 0x833  (0x5BB)
+label_252:
+  calz  label_25                                                                   // 0x833  (0x5BB)
   pset  0x5                                                                        // 0x834  (0xE45)
-  jp    label_170                                                                  // 0x835  (0x1A)
+  jp    label_160                                                                  // 0x835  (0x1A)
 
-label_298:
-  calz  label_330                                                                  // 0x836  (0x5F2)
+label_253:
+  calz  label_41                                                                   // 0x836  (0x5F2)
   ld    yp,  b                                                                     // 0x837  (0xE91)
   ld    x,   0x80                                                                  // 0x838  (0xB80)
   ldpx  a,   mx                                                                    // 0x839  (0xEE2)
@@ -2776,23 +2681,21 @@ label_298:
   adc   b,   0x3                                                                   // 0x83C  (0xC53)
   ld    x,   0x90                                                                  // 0x83D  (0xB90)
   jpba                                                                             // 0x83E  (0xFE8)
-  jp    label_300                                                                  // 0x83F  (0x43)
+  jp    label_254                                                                  // 0x83F  (0x43)
+  jp    label_257                                                                  // 0x840  (0x5C)
+  jp    label_264                                                                  // 0x841  (0x83)
+  jp    label_265                                                                  // 0x842  (0x89)
 
-label_299:
-  jp    label_304                                                                  // 0x840  (0x5C)
-  jp    label_311                                                                  // 0x841  (0x83)
-  jp    label_312                                                                  // 0x842  (0x89)
-
-label_300:
+label_254:
   lbpx  mx,  0x18                                                                  // 0x843  (0x918)
   ld    y,   0x55                                                                  // 0x844  (0x855)
   ldpx  mx,  my                                                                    // 0x845  (0xEEB)
   ld    b,   0x0                                                                   // 0x846  (0xE10)
   cp    my,  0x0                                                                   // 0x847  (0xDF0)
-  jp    nz,  label_301                                                             // 0x848  (0x74A)
+  jp    nz,  label_255                                                             // 0x848  (0x74A)
   ld    b,   0xF                                                                   // 0x849  (0xE1F)
 
-label_301:
+label_255:
   ldpx  mx,  b                                                                     // 0x84A  (0xEE9)
   ld    y,   0x54                                                                  // 0x84B  (0x854)
   ldpx  mx,  my                                                                    // 0x84C  (0xEEB)
@@ -2803,12 +2706,10 @@ label_301:
   ldpx  mx,  my                                                                    // 0x851  (0xEEB)
   ld    b,   0x0                                                                   // 0x852  (0xE10)
   cp    my,  0x0                                                                   // 0x853  (0xDF0)
-
-label_302:
-  jp    nz,  label_303                                                             // 0x854  (0x756)
+  jp    nz,  label_256                                                             // 0x854  (0x756)
   ld    b,   0xF                                                                   // 0x855  (0xE1F)
 
-label_303:
+label_256:
   ldpx  mx,  b                                                                     // 0x856  (0xEE9)
   ld    y,   0x46                                                                  // 0x857  (0x846)
   ldpx  mx,  my                                                                    // 0x858  (0xEEB)
@@ -2816,7 +2717,7 @@ label_303:
   lbpx  mx,  0x1B                                                                  // 0x85A  (0x91B)
   ret                                                                              // 0x85B  (0xFDF)
 
-label_304:
+label_257:
   lbpx  mx,  0x34                                                                  // 0x85C  (0x934)
   lbpx  mx,  0x35                                                                  // 0x85D  (0x935)
   lbpx  mx,  0x36                                                                  // 0x85E  (0x936)
@@ -2829,133 +2730,131 @@ label_304:
   ld    my,  0x1                                                                   // 0x865  (0xE31)
   ret                                                                              // 0x866  (0xFDF)
 
-label_305:
-  calz  label_332                                                                  // 0x867  (0x5F5)
+label_258:
+  calz  label_42                                                                   // 0x867  (0x5F5)
   ld    x,   0xC2                                                                  // 0x868  (0xBC2)
   lbpx  mx,  0x3D                                                                  // 0x869  (0x93D)
-  call  label_308                                                                  // 0x86A  (0x47D)
+  call  label_261                                                                  // 0x86A  (0x47D)
   lbpx  mx,  0x43                                                                  // 0x86B  (0x943)
-  call  label_308                                                                  // 0x86C  (0x47D)
+  call  label_261                                                                  // 0x86C  (0x47D)
   lbpx  mx,  0x3D                                                                  // 0x86D  (0x93D)
   ld    a,   0x0                                                                   // 0x86E  (0xE00)
   ld    yp,  a                                                                     // 0x86F  (0xE90)
   ld    y,   0x43                                                                  // 0x870  (0x843)
   ld    a,   my                                                                    // 0x871  (0xEC3)
   cp    a,   0x0                                                                   // 0x872  (0xDC0)
-  jp    nz,  label_306                                                             // 0x873  (0x775)
+  jp    nz,  label_259                                                             // 0x873  (0x775)
   ld    a,   0x1                                                                   // 0x874  (0xE01)
 
-label_306:
+label_259:
   ld    m0,  a                                                                     // 0x875  (0xF80)
   ld    x,   0xC6                                                                  // 0x876  (0xBC6)
 
-label_307:
+label_260:
   dec   m0                                                                         // 0x877  (0xF70)
-  jp    z,   label_310                                                             // 0x878  (0x682)
+  jp    z,   label_263                                                             // 0x878  (0x682)
   lbpx  mx,  0x5A                                                                  // 0x879  (0x95A)
   ldpx  a,   a                                                                     // 0x87A  (0xEE0)
   ldpx  a,   a                                                                     // 0x87B  (0xEE0)
-  jp    label_307                                                                  // 0x87C  (0x77)
+  jp    label_260                                                                  // 0x87C  (0x77)
 
-label_308:
+label_261:
   ld    a,   0xE                                                                   // 0x87D  (0xE0E)
   ld    m0,  a                                                                     // 0x87E  (0xF80)
 
-label_309:
+label_262:
   lbpx  mx,  0x42                                                                  // 0x87F  (0x942)
   dec   m0                                                                         // 0x880  (0xF70)
-  jp    nz,  label_309                                                             // 0x881  (0x77F)
+  jp    nz,  label_262                                                             // 0x881  (0x77F)
 
-label_310:
+label_263:
   ret                                                                              // 0x882  (0xFDF)
 
-label_311:
+label_264:
   lbpx  mx,  0x2E                                                                  // 0x883  (0x92E)
   lbpx  mx,  0x2F                                                                  // 0x884  (0x92F)
   lbpx  mx,  0x30                                                                  // 0x885  (0x930)
   lbpx  mx,  0xFF                                                                  // 0x886  (0x9FF)
   ld    y,   0x40                                                                  // 0x887  (0x840)
-  jp    label_313                                                                  // 0x888  (0x8C)
+  jp    label_266                                                                  // 0x888  (0x8C)
 
-label_312:
+label_265:
   pset  0xB                                                                        // 0x889  (0xE4B)
-  call  label_375                                                                  // 0x88A  (0x4F8)
+  call  label_310                                                                  // 0x88A  (0x4F8)
   ld    y,   0x41                                                                  // 0x88B  (0x841)
 
-label_313:
+label_266:
   ld    a,   0x4                                                                   // 0x88C  (0xE04)
   cp    my,  0xF                                                                   // 0x88D  (0xDFF)
-  jp    nc,  label_314                                                             // 0x88E  (0x394)
+  jp    nc,  label_267                                                             // 0x88E  (0x394)
   ld    a,   my                                                                    // 0x88F  (0xEC3)
   add   a,   0x1                                                                   // 0x890  (0xC01)
   rrc   a                                                                          // 0x891  (0xE8C)
   rrc   a                                                                          // 0x892  (0xE8C)
   and   a,   0x3                                                                   // 0x893  (0xC83)
 
-label_314:
+label_267:
   ld    b,   0x4                                                                   // 0x894  (0xE14)
 
-label_315:
+label_268:
   cp    a,   0x0                                                                   // 0x895  (0xDC0)
-  jp    nz,  label_316                                                             // 0x896  (0x799)
+  jp    nz,  label_269                                                             // 0x896  (0x799)
   lbpx  mx,  0x1D                                                                  // 0x897  (0x91D)
-  jp    label_317                                                                  // 0x898  (0x9B)
+  jp    label_270                                                                  // 0x898  (0x9B)
 
-label_316:
+label_269:
   add   a,   0xF                                                                   // 0x899  (0xC0F)
   lbpx  mx,  0x1C                                                                  // 0x89A  (0x91C)
 
-label_317:
+label_270:
   add   b,   0xF                                                                   // 0x89B  (0xC1F)
-  jp    nz,  label_315                                                             // 0x89C  (0x795)
+  jp    nz,  label_268                                                             // 0x89C  (0x795)
   ret                                                                              // 0x89D  (0xFDF)
 
-label_318:
+label_271:
   ld    y,   0x0                                                                   // 0x89E  (0x800)
   push  b                                                                          // 0x89F  (0xFC1)
   push  yh                                                                         // 0x8A0  (0xFC8)
   push  yl                                                                         // 0x8A1  (0xFC9)
   pset  0x5                                                                        // 0x8A2  (0xE45)
-  call  label_189                                                                  // 0x8A3  (0x496)
+  call  label_176                                                                  // 0x8A3  (0x496)
   pop   yl                                                                         // 0x8A4  (0xFD9)
   pop   yh                                                                         // 0x8A5  (0xFD8)
-  calz  label_328                                                                  // 0x8A6  (0x5EF)
-  jp    label_321                                                                  // 0x8A7  (0xAD)
+  calz  zero_a_xp                                                                  // 0x8A6  (0x5EF)
+  jp    label_274                                                                  // 0x8A7  (0xAD)
 
-label_319:
+label_272:
   ld    y,   0x0                                                                   // 0x8A8  (0x800)
 
-label_320:
+label_273:
   push  b                                                                          // 0x8A9  (0xFC1)
-  calz  label_330                                                                  // 0x8AA  (0x5F2)
+  calz  label_41                                                                   // 0x8AA  (0x5F2)
   ld    x,   0x5E                                                                  // 0x8AB  (0xB5E)
   ldpx  mx,  a                                                                     // 0x8AC  (0xEE8)
 
-label_321:
+label_274:
   ld    x,   0x57                                                                  // 0x8AD  (0xB57)
   pop   mx                                                                         // 0x8AE  (0xFD2)
   ld    a,   yl                                                                    // 0x8AF  (0xEB8)
   ld    b,   yh                                                                    // 0x8B0  (0xEB5)
   ld    x,   0xA6                                                                  // 0x8B1  (0xBA6)
   pset  0xE                                                                        // 0x8B2  (0xE4E)
-  call  label_426                                                                  // 0x8B3  (0x40D)
+  call  label_351                                                                  // 0x8B3  (0x40D)
   ld    x,   0xAA                                                                  // 0x8B4  (0xBAA)
   ldpx  mx,  0x0                                                                   // 0x8B5  (0xE60)
   pset  0x4                                                                        // 0x8B6  (0xE44)
-  call  label_147                                                                  // 0x8B7  (0x465)
-  calz  label_294                                                                  // 0x8B8  (0x521)
+  call  label_142                                                                  // 0x8B7  (0x465)
+  calz  label_5                                                                    // 0x8B8  (0x521)
 
-label_322:
-  calz  label_299                                                                  // 0x8B9  (0x540)
+label_275:
+  calz  label_10                                                                   // 0x8B9  (0x540)
   pset  0x4                                                                        // 0x8BA  (0xE44)
-
-label_323:
-  call  label_150                                                                  // 0x8BB  (0x486)
-  calz  label_328                                                                  // 0x8BC  (0x5EF)
+  call  label_145                                                                  // 0x8BB  (0x486)
+  calz  zero_a_xp                                                                  // 0x8BC  (0x5EF)
   ld    yp,  a                                                                     // 0x8BD  (0xE90)
   ld    x,   0xAA                                                                  // 0x8BE  (0xBAA)
   add   mx,  0xF                                                                   // 0x8BF  (0xC2F)
-  jp    c,   label_324                                                             // 0x8C0  (0x2D5)
+  jp    c,   label_276                                                             // 0x8C0  (0x2D5)
   ld    x,   0xA6                                                                  // 0x8C1  (0xBA6)
   ld    a,   mx                                                                    // 0x8C2  (0xEC2)
   add   mx,  0x2                                                                   // 0x8C3  (0xC22)
@@ -2964,7 +2863,7 @@ label_323:
   adc   mx,  0x0                                                                   // 0x8C6  (0xC60)
   ld    x,   0xA2                                                                  // 0x8C7  (0xBA2)
   pset  0xE                                                                        // 0x8C8  (0xE4E)
-  call  label_426                                                                  // 0x8C9  (0x40D)
+  call  label_351                                                                  // 0x8C9  (0x40D)
   ld    x,   0xA2                                                                  // 0x8CA  (0xBA2)
   ld    y,   0xA8                                                                  // 0x8CB  (0x8A8)
   ldpx  my,  mx                                                                    // 0x8CC  (0xEEE)
@@ -2977,30 +2876,28 @@ label_323:
   rrc   my                                                                         // 0x8D3  (0xE8F)
   and   my,  0x3                                                                   // 0x8D4  (0xCB3)
 
-label_324:
+label_276:
   ld    x,   0xA8                                                                  // 0x8D5  (0xBA8)
   cp    mx,  0xF                                                                   // 0x8D6  (0xDEF)
-  jp    nz,  label_325                                                             // 0x8D7  (0x7DB)
+  jp    nz,  label_277                                                             // 0x8D7  (0x7DB)
   ldpx  a,   a                                                                     // 0x8D8  (0xEE0)
   cp    mx,  0x3                                                                   // 0x8D9  (0xDE3)
-  jp    z,   label_331                                                             // 0x8DA  (0x6F4)
+  jp    z,   label_280                                                             // 0x8DA  (0x6F4)
 
-label_325:
+label_277:
   ld    y,   0xA4                                                                  // 0x8DB  (0x8A4)
   ld    xl,  my                                                                    // 0x8DC  (0xE8B)
   ldpy  a,   a                                                                     // 0x8DD  (0xEF0)
-
-label_326:
   ld    xh,  my                                                                    // 0x8DE  (0xE87)
   ld    y,   0x5D                                                                  // 0x8DF  (0x85D)
   cp    my,  0x1                                                                   // 0x8E0  (0xDF1)
-  jp    nz,  label_329                                                             // 0x8E1  (0x7F0)
+  jp    nz,  label_279                                                             // 0x8E1  (0x7F0)
   ld    a,   xh                                                                    // 0x8E2  (0xEA4)
   cp    a,   0x0                                                                   // 0x8E3  (0xDC0)
-  jp    z,   label_327                                                             // 0x8E4  (0x6E6)
+  jp    z,   label_278                                                             // 0x8E4  (0x6E6)
   or    a,   0x8                                                                   // 0x8E5  (0xCC8)
 
-label_327:
+label_278:
   ld    xh,  a                                                                     // 0x8E6  (0xE84)
   rst   f,   0xE                                                                   // 0x8E7  (0xF5E)
   adc   xl,  0x8                                                                   // 0x8E8  (0xA18)
@@ -3008,93 +2905,85 @@ label_327:
   ld    a,   xh                                                                    // 0x8EA  (0xEA4)
   or    a,   0x8                                                                   // 0x8EB  (0xCC8)
   cp    a,   0xF                                                                   // 0x8EC  (0xDCF)
-  jp    nz,  label_329                                                             // 0x8ED  (0x7F0)
+  jp    nz,  label_279                                                             // 0x8ED  (0x7F0)
   rst   f,   0xE                                                                   // 0x8EE  (0xF5E)
-
-label_328:
   adc   xh,  0x1                                                                   // 0x8EF  (0xA01)
 
-label_329:
-  calz  label_332                                                                  // 0x8F0  (0x5F5)
+label_279:
+  calz  label_42                                                                   // 0x8F0  (0x5F5)
   ld    y,   0xA8                                                                  // 0x8F1  (0x8A8)
-
-label_330:
   pset  0x7                                                                        // 0x8F2  (0xE47)
-  call  label_273                                                                  // 0x8F3  (0x4A3)
+  call  label_234                                                                  // 0x8F3  (0x4A3)
 
-label_331:
-  calz  label_302                                                                  // 0x8F4  (0x554)
-
-label_332:
-  calz  label_294                                                                  // 0x8F5  (0x521)
+label_280:
+  calz  label_14                                                                   // 0x8F4  (0x554)
+  calz  label_5                                                                    // 0x8F5  (0x521)
   ld    x,   0x57                                                                  // 0x8F6  (0xB57)
   cp    mx,  0x0                                                                   // 0x8F7  (0xDE0)
-  jp    z,   label_333                                                             // 0x8F8  (0x6FF)
+  jp    z,   label_281                                                             // 0x8F8  (0x6FF)
   ld    x,   0x74                                                                  // 0x8F9  (0xB74)
   cp    mx,  0x0                                                                   // 0x8FA  (0xDE0)
-  jp    z,   label_322                                                             // 0x8FB  (0x6B9)
+  jp    z,   label_275                                                             // 0x8FB  (0x6B9)
   fan   b,   0x7                                                                   // 0x8FC  (0xD97)
-  jp    z,   label_322                                                             // 0x8FD  (0x6B9)
-  calz  label_323                                                                  // 0x8FE  (0x5BB)
+  jp    z,   label_275                                                             // 0x8FD  (0x6B9)
+  calz  label_25                                                                   // 0x8FE  (0x5BB)
 
-label_333:
+label_281:
   ret                                                                              // 0x8FF  (0xFDF)
 
-label_334:
+label_282:
   cp    a,   0x0                                                                   // 0x900  (0xDC0)
-  jp    z,   label_335                                                             // 0x901  (0x605)
+  jp    z,   label_283                                                             // 0x901  (0x605)
   ld    x,   0x5A                                                                  // 0x902  (0xB5A)
   set   f,   0x1                                                                   // 0x903  (0xF41)
   adc   mx,  a                                                                     // 0x904  (0xA98)
 
-label_335:
+label_283:
   ret                                                                              // 0x905  (0xFDF)
 
-label_336:
+label_284:
   ld    a,   0x0                                                                   // 0x906  (0xE00)
   ld    m2,  a                                                                     // 0x907  (0xF82)
   ld    a,   0x8                                                                   // 0x908  (0xE08)
   ld    m3,  a                                                                     // 0x909  (0xF83)
 
-label_337:
-  call  label_338                                                                  // 0x90A  (0x413)
-  calz  label_348                                                                  // 0x90B  (0x556)
+label_285:
+  call  label_286                                                                  // 0x90A  (0x413)
+  calz  label_15                                                                   // 0x90B  (0x556)
   ld    x,   0x1                                                                   // 0x90C  (0xB01)
-  calz  label_343                                                                  // 0x90D  (0x53C)
+  calz  label_8                                                                    // 0x90D  (0x53C)
   inc   m2                                                                         // 0x90E  (0xF62)
   dec   m3                                                                         // 0x90F  (0xF73)
-  jp    nz,  label_337                                                             // 0x910  (0x70A)
-  calz  label_344                                                                  // 0x911  (0x540)
+  jp    nz,  label_285                                                             // 0x910  (0x70A)
+  calz  label_10                                                                   // 0x911  (0x540)
   ret                                                                              // 0x912  (0xFDF)
 
-label_338:
-  calz  label_354                                                                  // 0x913  (0x5EF)
+label_286:
+  calz  zero_a_xp                                                                  // 0x913  (0x5EF)
   ld    x,   0x0                                                                   // 0x914  (0xB00)
   ld    a,   m2                                                                    // 0x915  (0xFA2)
   pset  0x8                                                                        // 0x916  (0xE48)
-  call  label_287                                                                  // 0x917  (0x408)
-  calz  label_355                                                                  // 0x918  (0x5F5)
+  call  label_243                                                                  // 0x917  (0x408)
+  calz  label_42                                                                   // 0x918  (0x5F5)
   ld    x,   0x0                                                                   // 0x919  (0xB00)
   ld    a,   m0                                                                    // 0x91A  (0xFA0)
   ld    b,   m1                                                                    // 0x91B  (0xFB1)
   rst   f,   0xE                                                                   // 0x91C  (0xF5E)
 
-label_339:
+label_287:
   or    mx,  a                                                                     // 0x91D  (0xAD8)
   ldpx  a,   a                                                                     // 0x91E  (0xEE0)
   or    mx,  a                                                                     // 0x91F  (0xAD8)
   ldpx  a,   a                                                                     // 0x920  (0xEE0)
-
-label_340:
   or    mx,  b                                                                     // 0x921  (0xAD9)
   ldpx  a,   a                                                                     // 0x922  (0xEE0)
   or    mx,  b                                                                     // 0x923  (0xAD9)
   adc   xl,  0x1                                                                   // 0x924  (0xA11)
   adc   xh,  0x0                                                                   // 0x925  (0xA00)
-  jp    nc,  label_339                                                             // 0x926  (0x31D)
+  jp    nc,  label_287                                                             // 0x926  (0x31D)
   ret                                                                              // 0x927  (0xFDF)
 
-label_341:
+label_288:
   ld    m0,  a                                                                     // 0x928  (0xF80)
   ld    m3,  b                                                                     // 0x929  (0xF93)
   ld    x,   0x5D                                                                  // 0x92A  (0xB5D)
@@ -3102,7 +2991,7 @@ label_341:
   ld    b,   0x0                                                                   // 0x92C  (0xE10)
   ld    x,   0x1                                                                   // 0x92D  (0xB01)
   pset  0xC                                                                        // 0x92E  (0xE4C)
-  call  label_376                                                                  // 0x92F  (0x479)
+  call  label_311                                                                  // 0x92F  (0x479)
   ld    a,   m1                                                                    // 0x930  (0xFA1)
   ld    b,   m0                                                                    // 0x931  (0xFB0)
   add   a,   b                                                                     // 0x932  (0xA81)
@@ -3110,22 +2999,18 @@ label_341:
   adc   b,   0x0                                                                   // 0x934  (0xC50)
   ld    x,   0x24                                                                  // 0x935  (0xB24)
   pset  0xC                                                                        // 0x936  (0xE4C)
-  call  label_376                                                                  // 0x937  (0x479)
-  jp    label_345                                                                  // 0x938  (0x49)
+  call  label_311                                                                  // 0x937  (0x479)
+  jp    label_290                                                                  // 0x938  (0x49)
 
-label_342:
+label_289:
   ld    m0,  a                                                                     // 0x939  (0xF80)
   ld    m3,  b                                                                     // 0x93A  (0xF93)
   ld    x,   0x5D                                                                  // 0x93B  (0xB5D)
-
-label_343:
   ld    a,   mx                                                                    // 0x93C  (0xEC2)
   ld    b,   0x0                                                                   // 0x93D  (0xE10)
   ld    x,   0x1                                                                   // 0x93E  (0xB01)
   pset  0xD                                                                        // 0x93F  (0xE4D)
-
-label_344:
-  call  label_406                                                                  // 0x940  (0x47D)
+  call  label_335                                                                  // 0x940  (0x47D)
   ld    a,   m1                                                                    // 0x941  (0xFA1)
   ld    b,   m0                                                                    // 0x942  (0xFB0)
   add   a,   b                                                                     // 0x943  (0xA81)
@@ -3133,31 +3018,27 @@ label_344:
   adc   b,   0x0                                                                   // 0x945  (0xC50)
   ld    x,   0x24                                                                  // 0x946  (0xB24)
   pset  0xD                                                                        // 0x947  (0xE4D)
-  call  label_406                                                                  // 0x948  (0x47D)
+  call  label_335                                                                  // 0x948  (0x47D)
 
-label_345:
+label_290:
   ld    a,   m3                                                                    // 0x949  (0xFA3)
   and   a,   0x8                                                                   // 0x94A  (0xC88)
   ld    x,   0x25                                                                  // 0x94B  (0xB25)
   xor   mx,  a                                                                     // 0x94C  (0xAE8)
   pset  0x9                                                                        // 0x94D  (0xE49)
-  jp    label_346                                                                  // 0x94E  (0x4F)
+  jp    label_291                                                                  // 0x94E  (0x4F)
 
-label_346:
-  calz  label_354                                                                  // 0x94F  (0x5EF)
+label_291:
+  calz  zero_a_xp                                                                  // 0x94F  (0x5EF)
   ld    m0,  a                                                                     // 0x950  (0xF80)
   ld    x,   0x24                                                                  // 0x951  (0xB24)
-
-label_347:
   ldpx  a,   mx                                                                    // 0x952  (0xEE2)
   ldpx  b,   mx                                                                    // 0x953  (0xEE6)
   and   b,   0x7                                                                   // 0x954  (0xC97)
   add   a,   0x3                                                                   // 0x955  (0xC03)
-
-label_348:
   adc   b,   0x0                                                                   // 0x956  (0xC50)
   cp    b,   0x8                                                                   // 0x957  (0xDD8)
-  jp    nc,  label_350                                                             // 0x958  (0x37E)
+  jp    nc,  label_293                                                             // 0x958  (0x37E)
   ld    m2,  b                                                                     // 0x959  (0xF92)
   ld    m1,  a                                                                     // 0x95A  (0xF81)
   ld    x,   0x3A                                                                  // 0x95B  (0xB3A)
@@ -3165,12 +3046,12 @@ label_348:
   ldpx  b,   mx                                                                    // 0x95D  (0xEE6)
   ld    xl,  a                                                                     // 0x95E  (0xE88)
   ld    xh,  b                                                                     // 0x95F  (0xE85)
-  calz  label_355                                                                  // 0x960  (0x5F5)
-  calz  label_334                                                                  // 0x961  (0x500)
-  calz  label_354                                                                  // 0x962  (0x5EF)
+  calz  label_42                                                                   // 0x960  (0x5F5)
+  calz  render_asset                                                               // 0x961  (0x500)
+  calz  zero_a_xp                                                                  // 0x962  (0x5EF)
   ld    x,   0x25                                                                  // 0x963  (0xB25)
   fan   mx,  0x8                                                                   // 0x964  (0xDA8)
-  jp    z,   label_350                                                             // 0x965  (0x67E)
+  jp    z,   label_293                                                             // 0x965  (0x67E)
   ld    x,   0x3A                                                                  // 0x966  (0xB3A)
   ldpx  a,   mx                                                                    // 0x967  (0xEE2)
   ldpx  b,   mx                                                                    // 0x968  (0xEE6)
@@ -3180,12 +3061,12 @@ label_348:
   ld    yl,  a                                                                     // 0x96C  (0xE98)
   adc   b,   0x1                                                                   // 0x96D  (0xC51)
   ld    yh,  b                                                                     // 0x96E  (0xE95)
-  calz  label_355                                                                  // 0x96F  (0x5F5)
+  calz  label_42                                                                   // 0x96F  (0x5F5)
   ld    yp,  a                                                                     // 0x970  (0xE90)
   ld    a,   0x8                                                                   // 0x971  (0xE08)
   ld    m0,  a                                                                     // 0x972  (0xF80)
 
-label_349:
+label_292:
   ld    a,   mx                                                                    // 0x973  (0xEC2)
   ldpx  mx,  my                                                                    // 0x974  (0xEEB)
   ldpy  my,  a                                                                     // 0x975  (0xEFC)
@@ -3196,26 +3077,26 @@ label_349:
   adc   yl,  0xD                                                                   // 0x97A  (0xA3D)
   adc   yh,  0xF                                                                   // 0x97B  (0xA2F)
   dec   m0                                                                         // 0x97C  (0xF70)
-  jp    nz,  label_349                                                             // 0x97D  (0x773)
+  jp    nz,  label_292                                                             // 0x97D  (0x773)
 
-label_350:
+label_293:
   ret                                                                              // 0x97E  (0xFDF)
 
-label_351:
+label_294:
   pset  0x7                                                                        // 0x97F  (0xE47)
-  call  label_271                                                                  // 0x980  (0x461)
+  call  label_232                                                                  // 0x980  (0x461)
   pset  0x4                                                                        // 0x981  (0xE44)
-  call  label_147                                                                  // 0x982  (0x465)
-  calz  label_353                                                                  // 0x983  (0x5EC)
+  call  label_142                                                                  // 0x982  (0x465)
+  calz  label_38                                                                   // 0x983  (0x5EC)
 
-label_352:
-  calz  label_344                                                                  // 0x984  (0x540)
-  calz  label_347                                                                  // 0x985  (0x552)
-  calz  label_340                                                                  // 0x986  (0x521)
+label_295:
+  calz  label_10                                                                   // 0x984  (0x540)
+  calz  label_13                                                                   // 0x985  (0x552)
+  calz  label_5                                                                    // 0x986  (0x521)
   fan   mx,  0x2                                                                   // 0x987  (0xDA2)
-  jp    z,   label_352                                                             // 0x988  (0x684)
+  jp    z,   label_295                                                             // 0x988  (0x684)
   pset  0x5                                                                        // 0x989  (0xE45)
-  jp    label_179                                                                  // 0x98A  (0x53)
+  jp    label_167                                                                  // 0x98A  (0x53)
   retd  0x9B                                                                       // 0x98B  (0x19B)
   retd  0x9E                                                                       // 0x98C  (0x19E)
   retd  0xB1                                                                       // 0x98D  (0x1B1)
@@ -3313,21 +3194,15 @@ label_352:
   lbpx  mx,  0xCB                                                                  // 0x9E9  (0x9CB)
   lbpx  mx,  0x10                                                                  // 0x9EA  (0x910)
   retd  0xE5                                                                       // 0x9EB  (0x1E5)
-
-label_353:
   lbpx  mx,  0xC7                                                                  // 0x9EC  (0x9C7)
   retd  0x10                                                                       // 0x9ED  (0x110)
   lbpx  mx,  0xF7                                                                  // 0x9EE  (0x9F7)
-
-label_354:
   lbpx  mx,  0x10                                                                  // 0x9EF  (0x910)
   retd  0xEC                                                                       // 0x9F0  (0x1EC)
   lbpx  mx,  0xC0                                                                  // 0x9F1  (0x9C0)
   retd  0x10                                                                       // 0x9F2  (0x110)
   lbpx  mx,  0xC1                                                                  // 0x9F3  (0x9C1)
   retd  0x12                                                                       // 0x9F4  (0x112)
-
-label_355:
   lbpx  mx,  0xC0                                                                  // 0x9F5  (0x9C0)
   retd  0x10                                                                       // 0x9F6  (0x110)
   lbpx  mx,  0xC0                                                                  // 0x9F7  (0x9C0)
@@ -3425,8 +3300,6 @@ label_355:
   retd  0x33                                                                       // 0xA53  (0x133)
   retd  0x24                                                                       // 0xA54  (0x124)
   retd  0x51                                                                       // 0xA55  (0x151)
-
-label_356:
   retd  0x76                                                                       // 0xA56  (0x176)
   retd  0x81                                                                       // 0xA57  (0x181)
   retd  0x76                                                                       // 0xA58  (0x176)
@@ -3520,8 +3393,6 @@ label_356:
   retd  0x0                                                                        // 0xAB0  (0x100)
   retd  0x10                                                                       // 0xAB1  (0x110)
   retd  0x2                                                                        // 0xAB2  (0x102)
-
-label_357:
   retd  0x33                                                                       // 0xAB3  (0x133)
   retd  0x21                                                                       // 0xAB4  (0x121)
   retd  0x44                                                                       // 0xAB5  (0x144)
@@ -3531,15 +3402,13 @@ label_357:
   retd  0x11                                                                       // 0xAB9  (0x111)
   retd  0x11                                                                       // 0xABA  (0x111)
   retd  0x11                                                                       // 0xABB  (0x111)
-
-label_358:
   retd  0x0                                                                        // 0xABC  (0x100)
 
-label_359:
+label_296:
   jpba                                                                             // 0xABD  (0xFE8)
 
-label_360:
-  calz  label_368                                                                  // 0xABE  (0x5EF)
+label_297:
+  calz  zero_a_xp                                                                  // 0xABE  (0x5EF)
   ld    x,   0x4B                                                                  // 0xABF  (0xB4B)
   ld    a,   mx                                                                    // 0xAC0  (0xEC2)
   and   a,   0x1                                                                   // 0xAC1  (0xC81)
@@ -3548,87 +3417,83 @@ label_360:
   ld    mx,  a                                                                     // 0xAC4  (0xEC8)
   ld    x,   0x90                                                                  // 0xAC5  (0xB90)
   pset  0xB                                                                        // 0xAC6  (0xE4B)
-  call  label_374                                                                  // 0xAC7  (0x4F0)
+  call  label_309                                                                  // 0xAC7  (0x4F0)
   ld    b,   0xA                                                                   // 0xAC8  (0xE1A)
   pset  0xE                                                                        // 0xAC9  (0xE4E)
-  call  label_428                                                                  // 0xACA  (0x45A)
-  jp    nc,  label_361                                                             // 0xACB  (0x3CF)
+  call  label_352                                                                  // 0xACA  (0x45A)
+  jp    nc,  label_298                                                             // 0xACB  (0x3CF)
   pset  0x5                                                                        // 0xACC  (0xE45)
-  jp    nz,  label_169                                                             // 0xACD  (0x717)
-  jp    label_363                                                                  // 0xACE  (0xD8)
+  jp    nz,  label_159                                                             // 0xACD  (0x717)
+  jp    label_300                                                                  // 0xACE  (0xD8)
 
-label_361:
-  calz  label_370                                                                  // 0xACF  (0x5F2)
+label_298:
+  calz  label_41                                                                   // 0xACF  (0x5F2)
   ld    x,   0x4B                                                                  // 0xAD0  (0xB4B)
   cp    a,   0x0                                                                   // 0xAD1  (0xDC0)
-  jp    z,   label_362                                                             // 0xAD2  (0x6D7)
+  jp    z,   label_299                                                             // 0xAD2  (0x6D7)
   ld    mx,  0x0                                                                   // 0xAD3  (0xE20)
   ld    a,   0x2                                                                   // 0xAD4  (0xE02)
   ld    xp,  a                                                                     // 0xAD5  (0xE80)
   ld    x,   0x5                                                                   // 0xAD6  (0xB05)
 
-label_362:
+label_299:
   ld    mx,  0xF                                                                   // 0xAD7  (0xE2F)
 
-label_363:
+label_300:
   pset  0x5                                                                        // 0xAD8  (0xE45)
-  jp    label_170                                                                  // 0xAD9  (0x1A)
+  jp    label_160                                                                  // 0xAD9  (0x1A)
 
-label_364:
-  calz  label_357                                                                  // 0xADA  (0x5B3)
-  jp    nz,  label_367                                                             // 0xADB  (0x7EE)
+label_301:
+  calz  label_23                                                                   // 0xADA  (0x5B3)
+  jp    nz,  label_304                                                             // 0xADB  (0x7EE)
   ld    a,   0x2                                                                   // 0xADC  (0xE02)
   ld    xp,  a                                                                     // 0xADD  (0xE80)
   ld    x,   0x9                                                                   // 0xADE  (0xB09)
   cp    mx,  0x0                                                                   // 0xADF  (0xDE0)
-  jp    z,   label_366                                                             // 0xAE0  (0x6E9)
+  jp    z,   label_303                                                             // 0xAE0  (0x6E9)
   ld    mx,  0x0                                                                   // 0xAE1  (0xE20)
-  calz  label_368                                                                  // 0xAE2  (0x5EF)
+  calz  zero_a_xp                                                                  // 0xAE2  (0x5EF)
   ld    x,   0x43                                                                  // 0xAE3  (0xB43)
   add   mx,  0x4                                                                   // 0xAE4  (0xC24)
-  jp    nc,  label_365                                                             // 0xAE5  (0x3E7)
+  jp    nc,  label_302                                                             // 0xAE5  (0x3E7)
   ld    mx,  0xF                                                                   // 0xAE6  (0xE2F)
 
-label_365:
+label_302:
   ld    y,   0xF0                                                                  // 0xAE7  (0x8F0)
-  calz  label_358                                                                  // 0xAE8  (0x5BC)
+  calz  label_26                                                                   // 0xAE8  (0x5BC)
 
-label_366:
+label_303:
   ld    a,   0x8                                                                   // 0xAE9  (0xE08)
   ld    b,   0x5                                                                   // 0xAEA  (0xE15)
   ld    y,   0x3                                                                   // 0xAEB  (0x803)
   pset  0x8                                                                        // 0xAEC  (0xE48)
-  call  label_320                                                                  // 0xAED  (0x4A9)
+  call  label_273                                                                  // 0xAED  (0x4A9)
 
-label_367:
+label_304:
   pset  0x5                                                                        // 0xAEE  (0xE45)
+  jp    label_160                                                                  // 0xAEF  (0x1A)
 
-label_368:
-  jp    label_170                                                                  // 0xAEF  (0x1A)
-
-label_369:
+label_305:
   ld    m0,  a                                                                     // 0xAF0  (0xF80)
-  calz  label_368                                                                  // 0xAF1  (0x5EF)
-
-label_370:
+  calz  zero_a_xp                                                                  // 0xAF1  (0x5EF)
   ld    x,   0x2A                                                                  // 0xAF2  (0xB2A)
   lbpx  mx,  0x0                                                                   // 0xAF3  (0x900)
 
-label_371:
-  calz  label_356                                                                  // 0xAF4  (0x556)
-  calz  label_368                                                                  // 0xAF5  (0x5EF)
+label_306:
+  calz  label_15                                                                   // 0xAF4  (0x556)
+  calz  zero_a_xp                                                                  // 0xAF5  (0x5EF)
   ld    a,   m0                                                                    // 0xAF6  (0xFA0)
   ld    x,   0x2B                                                                  // 0xAF7  (0xB2B)
   cp    mx,  a                                                                     // 0xAF8  (0xF08)
-  jp    nc,  label_372                                                             // 0xAF9  (0x3FF)
+  jp    nc,  label_307                                                             // 0xAF9  (0x3FF)
   ld    x,   0x2A                                                                  // 0xAFA  (0xB2A)
   add   mx,  b                                                                     // 0xAFB  (0xA89)
   ldpx  a,   a                                                                     // 0xAFC  (0xEE0)
   adc   mx,  0x0                                                                   // 0xAFD  (0xC60)
-  jp    label_371                                                                  // 0xAFE  (0xF4)
+  jp    label_306                                                                  // 0xAFE  (0xF4)
 
 // TODO: Is this a special `jpba` table for different return set values?
-label_372:
+label_307:
   ret                                                                              // 0xAFF  (0xFDF)
   retd  0x0                                                                        // 0xB00  (0x100)
   retd  0x0                                                                        // 0xB01  (0x100)
@@ -3863,7 +3728,7 @@ label_372:
   lbpx  mx,  0x31                                                                  // 0xBE6  (0x931)
   retd  0xE6                                                                       // 0xBE7  (0x1E6)
 
-label_373:
+label_308:
   lbpx  mx,  0xFF                                                                  // 0xBE8  (0x9FF)
   lbpx  mx,  0x28                                                                  // 0xBE9  (0x928)
   lbpx  mx,  0x29                                                                  // 0xBEA  (0x929)
@@ -3873,7 +3738,7 @@ label_373:
   lbpx  mx,  0x2C                                                                  // 0xBEE  (0x92C)
   retd  0x2D                                                                       // 0xBEF  (0x12D)
 
-label_374:
+label_309:
   lbpx  mx,  0xFF                                                                  // 0xBF0  (0x9FF)
   lbpx  mx,  0x38                                                                  // 0xBF1  (0x938)
   lbpx  mx,  0x39                                                                  // 0xBF2  (0x939)
@@ -3883,7 +3748,7 @@ label_374:
   lbpx  mx,  0x17                                                                  // 0xBF6  (0x917)
   retd  0xFF                                                                       // 0xBF7  (0x1FF)
 
-label_375:
+label_310:
   lbpx  mx,  0x31                                                                  // 0xBF8  (0x931)
   lbpx  mx,  0x32                                                                  // 0xBF9  (0x932)
   lbpx  mx,  0x33                                                                  // 0xBFA  (0x933)
@@ -4014,147 +3879,147 @@ label_375:
   retd  0x42                                                                       // 0xC77  (0x142)
   retd  0x41                                                                       // 0xC78  (0x141)
 
-label_376:
+label_311:
   jpba                                                                             // 0xC79  (0xFE8)
 
-label_377:
+label_312:
   rst   f,   0xB                                                                   // 0xC7A  (0xF5B)
   ld    x,   0x7C                                                                  // 0xC7B  (0xB7C)
   cp    mx,  0x0                                                                   // 0xC7C  (0xDE0)
-  jp    z,   label_378                                                             // 0xC7D  (0x681)
+  jp    z,   label_313                                                             // 0xC7D  (0x681)
   cp    mx,  0xF                                                                   // 0xC7E  (0xDEF)
-  jp    z,   label_379                                                             // 0xC7F  (0x682)
+  jp    z,   label_314                                                             // 0xC7F  (0x682)
   add   mx,  0xF                                                                   // 0xC80  (0xC2F)
 
-label_378:
+label_313:
   ret                                                                              // 0xC81  (0xFDF)
 
-label_379:
+label_314:
   ld    x,   0x4A                                                                  // 0xC82  (0xB4A)
   fan   mx,  0x8                                                                   // 0xC83  (0xDA8)
-  jp    z,   label_383                                                             // 0xC84  (0x696)
-  calz  label_401                                                                  // 0xC85  (0x5F8)
+  jp    z,   label_318                                                             // 0xC84  (0x696)
+  calz  label_43                                                                   // 0xC85  (0x5F8)
   ld    a,   0x2                                                                   // 0xC86  (0xE02)
   ld    xp,  a                                                                     // 0xC87  (0xE80)
-  jp    nz,  label_381                                                             // 0xC88  (0x78E)
+  jp    nz,  label_316                                                             // 0xC88  (0x78E)
   ld    x,   0x15                                                                  // 0xC89  (0xB15)
   add   mx,  0xF                                                                   // 0xC8A  (0xC2F)
-  jp    c,   label_380                                                             // 0xC8B  (0x28D)
+  jp    c,   label_315                                                             // 0xC8B  (0x28D)
   ld    mx,  0x0                                                                   // 0xC8C  (0xE20)
 
-label_380:
+label_315:
   ret                                                                              // 0xC8D  (0xFDF)
 
-label_381:
+label_316:
   ld    x,   0x4                                                                   // 0xC8E  (0xB04)
   add   mx,  0x1                                                                   // 0xC8F  (0xC21)
   ldpx  a,   a                                                                     // 0xC90  (0xEE0)
   adc   mx,  0x0                                                                   // 0xC91  (0xC60)
-  jp    nc,  label_382                                                             // 0xC92  (0x395)
+  jp    nc,  label_317                                                             // 0xC92  (0x395)
   ld    x,   0x4                                                                   // 0xC93  (0xB04)
   lbpx  mx,  0xFF                                                                  // 0xC94  (0x9FF)
 
-label_382:
+label_317:
   ret                                                                              // 0xC95  (0xFDF)
 
-label_383:
-  calz  label_401                                                                  // 0xC96  (0x5F8)
+label_318:
+  calz  label_43                                                                   // 0xC96  (0x5F8)
   ld    a,   0x2                                                                   // 0xC97  (0xE02)
   ld    xp,  a                                                                     // 0xC98  (0xE80)
-  jp    nz,  label_384                                                             // 0xC99  (0x7A1)
+  jp    nz,  label_319                                                             // 0xC99  (0x7A1)
   ld    x,   0x16                                                                  // 0xC9A  (0xB16)
   add   mx,  0xF                                                                   // 0xC9B  (0xC2F)
   ldpx  a,   a                                                                     // 0xC9C  (0xEE0)
   adc   mx,  0xF                                                                   // 0xC9D  (0xC6F)
-  jp    c,   label_384                                                             // 0xC9E  (0x2A1)
+  jp    c,   label_319                                                             // 0xC9E  (0x2A1)
   ld    x,   0x16                                                                  // 0xC9F  (0xB16)
   lbpx  mx,  0x0                                                                   // 0xCA0  (0x900)
 
-label_384:
+label_319:
   ld    x,   0x0                                                                   // 0xCA1  (0xB00)
-  call  label_391                                                                  // 0xCA2  (0x4D2)
+  call  label_326                                                                  // 0xCA2  (0x4D2)
   ld    x,   0x2                                                                   // 0xCA3  (0xB02)
-  call  label_391                                                                  // 0xCA4  (0x4D2)
+  call  label_326                                                                  // 0xCA4  (0x4D2)
   ld    x,   0x8                                                                   // 0xCA5  (0xB08)
-  call  label_393                                                                  // 0xCA6  (0x4D9)
+  call  label_328                                                                  // 0xCA6  (0x4D9)
   ld    x,   0x9                                                                   // 0xCA7  (0xB09)
-  call  label_393                                                                  // 0xCA8  (0x4D9)
+  call  label_328                                                                  // 0xCA8  (0x4D9)
   ld    x,   0x6                                                                   // 0xCA9  (0xB06)
-  call  label_391                                                                  // 0xCAA  (0x4D2)
-  calz  label_398                                                                  // 0xCAB  (0x5EF)
+  call  label_326                                                                  // 0xCAA  (0x4D2)
+  calz  zero_a_xp                                                                  // 0xCAB  (0x5EF)
   ld    x,   0x40                                                                  // 0xCAC  (0xB40)
   cp    mx,  0x0                                                                   // 0xCAD  (0xDE0)
-  jp    z,   label_385                                                             // 0xCAE  (0x6B8)
+  jp    z,   label_320                                                             // 0xCAE  (0x6B8)
   ld    x,   0x41                                                                  // 0xCAF  (0xB41)
   cp    mx,  0x0                                                                   // 0xCB0  (0xDE0)
-  jp    z,   label_385                                                             // 0xCB1  (0x6B8)
+  jp    z,   label_320                                                             // 0xCB1  (0x6B8)
   ld    a,   0x2                                                                   // 0xCB2  (0xE02)
   ld    xp,  a                                                                     // 0xCB3  (0xE80)
   ld    x,   0xA                                                                   // 0xCB4  (0xB0A)
   lbpx  mx,  0x0                                                                   // 0xCB5  (0x900)
   ld    mx,  0x0                                                                   // 0xCB6  (0xE20)
-  jp    label_386                                                                  // 0xCB7  (0xBC)
+  jp    label_321                                                                  // 0xCB7  (0xBC)
 
-label_385:
+label_320:
   ld    a,   0x2                                                                   // 0xCB8  (0xE02)
   ld    xp,  a                                                                     // 0xCB9  (0xE80)
   ld    x,   0xA                                                                   // 0xCBA  (0xB0A)
-  call  label_395                                                                  // 0xCBB  (0x4DF)
+  call  label_330                                                                  // 0xCBB  (0x4DF)
 
-label_386:
-  calz  label_402                                                                  // 0xCBC  (0x5FB)
-  jp    z,   label_387                                                             // 0xCBD  (0x6C3)
+label_321:
+  calz  label_44                                                                   // 0xCBC  (0x5FB)
+  jp    z,   label_322                                                             // 0xCBD  (0x6C3)
   ld    a,   0x2                                                                   // 0xCBE  (0xE02)
   ld    xp,  a                                                                     // 0xCBF  (0xE80)
   ld    x,   0xD                                                                   // 0xCC0  (0xB0D)
-  call  label_395                                                                  // 0xCC1  (0x4DF)
-  jp    label_388                                                                  // 0xCC2  (0xC7)
+  call  label_330                                                                  // 0xCC1  (0x4DF)
+  jp    label_323                                                                  // 0xCC2  (0xC7)
 
-label_387:
+label_322:
   ld    a,   0x2                                                                   // 0xCC3  (0xE02)
   ld    xp,  a                                                                     // 0xCC4  (0xE80)
   ld    x,   0xD                                                                   // 0xCC5  (0xB0D)
-  call  label_389                                                                  // 0xCC6  (0x4C8)
+  call  label_324                                                                  // 0xCC6  (0x4C8)
 
-label_388:
+label_323:
   ld    x,   0x10                                                                  // 0xCC7  (0xB10)
 
-label_389:
+label_324:
   add   mx,  0xF                                                                   // 0xCC8  (0xC2F)
   ldpx  a,   a                                                                     // 0xCC9  (0xEE0)
   adc   mx,  0xF                                                                   // 0xCCA  (0xC6F)
   ldpx  a,   a                                                                     // 0xCCB  (0xEE0)
   adc   mx,  0xF                                                                   // 0xCCC  (0xC6F)
-  jp    c,   label_390                                                             // 0xCCD  (0x2D1)
+  jp    c,   label_325                                                             // 0xCCD  (0x2D1)
   adc   xl,  0xE                                                                   // 0xCCE  (0xA1E)
   lbpx  mx,  0x0                                                                   // 0xCCF  (0x900)
   ld    mx,  0x0                                                                   // 0xCD0  (0xE20)
 
-label_390:
+label_325:
   ret                                                                              // 0xCD1  (0xFDF)
 
-label_391:
+label_326:
   add   mx,  0xF                                                                   // 0xCD2  (0xC2F)
   ldpx  a,   a                                                                     // 0xCD3  (0xEE0)
   adc   mx,  0xF                                                                   // 0xCD4  (0xC6F)
-  jp    c,   label_392                                                             // 0xCD5  (0x2D8)
+  jp    c,   label_327                                                             // 0xCD5  (0x2D8)
   adc   xl,  0xF                                                                   // 0xCD6  (0xA1F)
   lbpx  mx,  0x0                                                                   // 0xCD7  (0x900)
 
-label_392:
+label_327:
   ret                                                                              // 0xCD8  (0xFDF)
 
-label_393:
+label_328:
   cp    mx,  0x0                                                                   // 0xCD9  (0xDE0)
-  jp    z,   label_394                                                             // 0xCDA  (0x6DE)
+  jp    z,   label_329                                                             // 0xCDA  (0x6DE)
   add   mx,  0x1                                                                   // 0xCDB  (0xC21)
-  jp    nc,  label_394                                                             // 0xCDC  (0x3DE)
+  jp    nc,  label_329                                                             // 0xCDC  (0x3DE)
   ld    mx,  0xF                                                                   // 0xCDD  (0xE2F)
 
-label_394:
+label_329:
   ret                                                                              // 0xCDE  (0xFDF)
 
-label_395:
+label_330:
   add   mx,  0x1                                                                   // 0xCDF  (0xC21)
   ldpx  a,   a                                                                     // 0xCE0  (0xEE0)
   adc   mx,  0x0                                                                   // 0xCE1  (0xC60)
@@ -4162,48 +4027,40 @@ label_395:
   adc   mx,  0x0                                                                   // 0xCE3  (0xC60)
   ret                                                                              // 0xCE4  (0xFDF)
 
-label_396:
+label_331:
   add   mx,  0x4                                                                   // 0xCE5  (0xC24)
-  jp    nc,  label_397                                                             // 0xCE6  (0x3E8)
+  jp    nc,  label_332                                                             // 0xCE6  (0x3E8)
   ld    mx,  0xF                                                                   // 0xCE7  (0xE2F)
 
-label_397:
+label_332:
   ld    x,   0x40                                                                  // 0xCE8  (0xB40)
   cp    mx,  0x0                                                                   // 0xCE9  (0xDE0)
-  jp    z,   label_399                                                             // 0xCEA  (0x6F4)
+  jp    z,   label_333                                                             // 0xCEA  (0x6F4)
   ld    x,   0x41                                                                  // 0xCEB  (0xB41)
   cp    mx,  0x0                                                                   // 0xCEC  (0xDE0)
-  jp    z,   label_399                                                             // 0xCED  (0x6F4)
+  jp    z,   label_333                                                             // 0xCED  (0x6F4)
   ld    a,   0x2                                                                   // 0xCEE  (0xE02)
-
-label_398:
   ld    xp,  a                                                                     // 0xCEF  (0xE80)
   ld    x,   0x8                                                                   // 0xCF0  (0xB08)
   ld    mx,  0x0                                                                   // 0xCF1  (0xE20)
   ld    a,   0x0                                                                   // 0xCF2  (0xE00)
   ld    xp,  a                                                                     // 0xCF3  (0xE80)
 
-label_399:
+label_333:
   ret                                                                              // 0xCF4  (0xFDF)
 
-label_400:
+label_334:
   lbpx  mx,  0x18                                                                  // 0xCF5  (0x918)
   lbpx  mx,  0xFF                                                                  // 0xCF6  (0x9FF)
   lbpx  mx,  0x1D                                                                  // 0xCF7  (0x91D)
-
-label_401:
   lbpx  mx,  0xFF                                                                  // 0xCF8  (0x9FF)
   lbpx  mx,  0x0                                                                   // 0xCF9  (0x900)
   lbpx  mx,  0xF                                                                   // 0xCFA  (0x90F)
-
-label_402:
   lbpx  mx,  0x0                                                                   // 0xCFB  (0x900)
   retd  0xFF                                                                       // 0xCFC  (0x1FF)
   nop7                                                                             // 0xCFD  (0xFFF)
   nop7                                                                             // 0xCFE  (0xFFF)
   nop7                                                                             // 0xCFF  (0xFFF)
-
-label_403:
   retd  0x10                                                                       // 0xD00  (0x110)
   retd  0x15                                                                       // 0xD01  (0x115)
   retd  0x1C                                                                       // 0xD02  (0x11C)
@@ -4213,8 +4070,6 @@ label_403:
   retd  0x47                                                                       // 0xD06  (0x147)
   retd  0x50                                                                       // 0xD07  (0x150)
   retd  0x5A                                                                       // 0xD08  (0x15A)
-
-label_404:
   retd  0x64                                                                       // 0xD09  (0x164)
   retd  0x70                                                                       // 0xD0A  (0x170)
   retd  0x77                                                                       // 0xD0B  (0x177)
@@ -4224,8 +4079,6 @@ label_404:
   retd  0x7D                                                                       // 0xD0F  (0x17D)
   retd  0x44                                                                       // 0xD10  (0x144)
   retd  0x46                                                                       // 0xD11  (0x146)
-
-label_405:
   retd  0x48                                                                       // 0xD12  (0x148)
   retd  0x4A                                                                       // 0xD13  (0x14A)
   retd  0x4C                                                                       // 0xD14  (0x14C)
@@ -4334,52 +4187,50 @@ label_405:
   retd  0x2E                                                                       // 0xD7B  (0x12E)
   retd  0x3D                                                                       // 0xD7C  (0x13D)
 
-label_406:
+label_335:
   jpba                                                                             // 0xD7D  (0xFE8)
 
-label_407:
-  calz  label_415                                                                  // 0xD7E  (0x5B3)
-  jp    nz,  label_408                                                             // 0xD7F  (0x792)
-  calz  label_423                                                                  // 0xD80  (0x5F5)
+label_336:
+  calz  label_23                                                                   // 0xD7E  (0x5B3)
+  jp    nz,  label_337                                                             // 0xD7F  (0x792)
+  calz  label_42                                                                   // 0xD80  (0x5F5)
   ld    x,   0x40                                                                  // 0xD81  (0xB40)
-  call  label_409                                                                  // 0xD82  (0x494)
+  call  label_338                                                                  // 0xD82  (0x494)
   ld    x,   0xC0                                                                  // 0xD83  (0xBC0)
-  call  label_409                                                                  // 0xD84  (0x494)
+  call  label_338                                                                  // 0xD84  (0x494)
   ld    a,   0x4                                                                   // 0xD85  (0xE04)
   ld    b,   0x4                                                                   // 0xD86  (0xE14)
   pset  0xA                                                                        // 0xD87  (0xE4A)
-  call  label_369                                                                  // 0xD88  (0x4F0)
+  call  label_305                                                                  // 0xD88  (0x4F0)
   ld    x,   0x4D                                                                  // 0xD89  (0xB4D)
   cp    mx,  0x0                                                                   // 0xD8A  (0xDE0)
-  jp    z,   label_408                                                             // 0xD8B  (0x692)
+  jp    z,   label_337                                                             // 0xD8B  (0x692)
   ld    mx,  0x0                                                                   // 0xD8C  (0xE20)
   ld    a,   0x7                                                                   // 0xD8D  (0xE07)
   ld    b,   0x5                                                                   // 0xD8E  (0xE15)
   ld    y,   0x6                                                                   // 0xD8F  (0x806)
   pset  0x8                                                                        // 0xD90  (0xE48)
-  call  label_320                                                                  // 0xD91  (0x4A9)
+  call  label_273                                                                  // 0xD91  (0x4A9)
 
-label_408:
+label_337:
   pset  0x5                                                                        // 0xD92  (0xE45)
-  jp    label_170                                                                  // 0xD93  (0x1A)
+  jp    label_160                                                                  // 0xD93  (0x1A)
 
-label_409:
+label_338:
   lbpx  mx,  0x44                                                                  // 0xD94  (0x944)
   lbpx  mx,  0xEE                                                                  // 0xD95  (0x9EE)
   lbpx  mx,  0xBB                                                                  // 0xD96  (0x9BB)
   lbpx  mx,  0x55                                                                  // 0xD97  (0x955)
   lbpx  mx,  0xAA                                                                  // 0xD98  (0x9AA)
-
-label_410:
   lbpx  mx,  0x11                                                                  // 0xD99  (0x911)
   lbpx  mx,  0x0                                                                   // 0xD9A  (0x900)
   retd  0x0                                                                        // 0xD9B  (0x100)
 
-label_411:
+label_339:
   lbpx  mx,  0x0                                                                   // 0xD9C  (0x900)
   retd  0x21                                                                       // 0xD9D  (0x121)
 
-label_412:
+label_340:
   lbpx  mx,  0x33                                                                  // 0xD9E  (0x933)
   lbpx  mx,  0x45                                                                  // 0xD9F  (0x945)
   lbpx  mx,  0x3                                                                   // 0xDA0  (0x903)
@@ -4389,7 +4240,7 @@ label_412:
   lbpx  mx,  0x0                                                                   // 0xDA4  (0x900)
   retd  0x32                                                                       // 0xDA5  (0x132)
 
-label_413:
+label_341:
   lbpx  mx,  0x43                                                                  // 0xDA6  (0x943)
   lbpx  mx,  0xAF                                                                  // 0xDA7  (0x9AF)
   lbpx  mx,  0x23                                                                  // 0xDA8  (0x923)
@@ -4403,10 +4254,8 @@ label_413:
   lbpx  mx,  0x0                                                                   // 0xDB0  (0x900)
   retd  0x5F                                                                       // 0xDB1  (0x15F)
 
-label_414:
+label_342:
   lbpx  mx,  0x84                                                                  // 0xDB2  (0x984)
-
-label_415:
   lbpx  mx,  0xAF                                                                  // 0xDB3  (0x9AF)
   lbpx  mx,  0x4                                                                   // 0xDB4  (0x904)
   lbpx  mx,  0x9F                                                                  // 0xDB5  (0x99F)
@@ -4415,7 +4264,7 @@ label_415:
   lbpx  mx,  0x0                                                                   // 0xDB8  (0x900)
   retd  0x6F                                                                       // 0xDB9  (0x16F)
 
-label_416:
+label_343:
   lbpx  mx,  0x30                                                                  // 0xDBA  (0x930)
   lbpx  mx,  0xAF                                                                  // 0xDBB  (0x9AF)
   lbpx  mx,  0x20                                                                  // 0xDBC  (0x920)
@@ -4423,32 +4272,32 @@ label_416:
   lbpx  mx,  0x0                                                                   // 0xDBE  (0x900)
   retd  0x8F                                                                       // 0xDBF  (0x18F)
 
-label_417:
+label_344:
   lbpx  mx,  0x60                                                                  // 0xDC0  (0x960)
   lbpx  mx,  0xAF                                                                  // 0xDC1  (0x9AF)
   lbpx  mx,  0x0                                                                   // 0xDC2  (0x900)
   retd  0x9F                                                                       // 0xDC3  (0x19F)
 
-label_418:
+label_345:
   lbpx  mx,  0x0                                                                   // 0xDC4  (0x900)
   retd  0xBF                                                                       // 0xDC5  (0x1BF)
 
-label_419:
+label_346:
   ld    x,   0x90                                                                  // 0xDC6  (0xB90)
   ld    b,   0x0                                                                   // 0xDC7  (0xE10)
   add   a,   0xB                                                                   // 0xDC8  (0xC0B)
   adc   b,   0xC                                                                   // 0xDC9  (0xC5C)
   jpba                                                                             // 0xDCA  (0xFE8)
-  jp    label_411                                                                  // 0xDCB  (0x9C)
-  jp    label_412                                                                  // 0xDCC  (0x9E)
-  jp    label_413                                                                  // 0xDCD  (0xA6)
-  jp    label_414                                                                  // 0xDCE  (0xB2)
-  jp    label_416                                                                  // 0xDCF  (0xBA)
-  jp    label_417                                                                  // 0xDD0  (0xC0)
-  jp    label_418                                                                  // 0xDD1  (0xC4)
+  jp    label_339                                                                  // 0xDCB  (0x9C)
+  jp    label_340                                                                  // 0xDCC  (0x9E)
+  jp    label_341                                                                  // 0xDCD  (0xA6)
+  jp    label_342                                                                  // 0xDCE  (0xB2)
+  jp    label_343                                                                  // 0xDCF  (0xBA)
+  jp    label_344                                                                  // 0xDD0  (0xC0)
+  jp    label_345                                                                  // 0xDD1  (0xC4)
 
-label_420:
-  calz  label_422                                                                  // 0xDD2  (0x5F2)
+label_347:
+  calz  label_41                                                                   // 0xDD2  (0x5F2)
   ld    yp,  b                                                                     // 0xDD3  (0xE91)
   ld    x,   0x49                                                                  // 0xDD4  (0xB49)
   ld    mx,  0x0                                                                   // 0xDD5  (0xE20)
@@ -4463,47 +4312,43 @@ label_420:
   ld    a,   0x2                                                                   // 0xDDE  (0xE02)
   ld    xp,  a                                                                     // 0xDDF  (0xE80)
   ld    x,   0x30                                                                  // 0xDE0  (0xB30)
-  calz  label_403                                                                  // 0xDE1  (0x500)
+  calz  render_asset                                                               // 0xDE1  (0x500)
   ld    y,   0x48                                                                  // 0xDE2  (0x848)
   ld    a,   my                                                                    // 0xDE3  (0xEC3)
   ld    b,   0x2                                                                   // 0xDE4  (0xE12)
   ld    yp,  b                                                                     // 0xDE5  (0xE91)
   ld    x,   0x10                                                                  // 0xDE6  (0xB10)
   ld    y,   0x40                                                                  // 0xDE7  (0x840)
-  calz  label_405                                                                  // 0xDE8  (0x512)
-  calz  label_410                                                                  // 0xDE9  (0x599)
+  calz  clear_0x07D                                                                // 0xDE8  (0x512)
+  calz  label_18                                                                   // 0xDE9  (0x599)
   fan   a,   0x8                                                                   // 0xDEA  (0xD88)
-  jp    nz,  label_421                                                             // 0xDEB  (0x7EF)
+  jp    nz,  label_348                                                             // 0xDEB  (0x7EF)
   ld    x,   0xD                                                                   // 0xDEC  (0xB0D)
   ld    y,   0x38                                                                  // 0xDED  (0x838)
-  calz  label_410                                                                  // 0xDEE  (0x599)
+  calz  label_18                                                                   // 0xDEE  (0x599)
 
-label_421:
-  calz  label_404                                                                  // 0xDEF  (0x509)
+label_348:
+  calz  set_f_0x07D                                                                // 0xDEF  (0x509)
   ld    y,   0x43                                                                  // 0xDF0  (0x843)
   ld    x,   0x13                                                                  // 0xDF1  (0xB13)
-
-label_422:
   ld    mx,  my                                                                    // 0xDF2  (0xECB)
-  calz  label_421                                                                  // 0xDF3  (0x5EF)
+  calz  zero_a_xp                                                                  // 0xDF3  (0x5EF)
   ld    y,   0x44                                                                  // 0xDF4  (0x844)
-
-label_423:
   ld    x,   0x43                                                                  // 0xDF5  (0xB43)
   ld    mx,  my                                                                    // 0xDF6  (0xECB)
   ld    x,   0x50                                                                  // 0xDF7  (0xB50)
   cp    mx,  0x2                                                                   // 0xDF8  (0xDE2)
-  jp    z,   label_424                                                             // 0xDF9  (0x6FC)
+  jp    z,   label_349                                                             // 0xDF9  (0x6FC)
   cp    mx,  0x4                                                                   // 0xDFA  (0xDE4)
-  jp    nz,  label_425                                                             // 0xDFB  (0x7FE)
+  jp    nz,  label_350                                                             // 0xDFB  (0x7FE)
 
-label_424:
+label_349:
   ld    x,   0x43                                                                  // 0xDFC  (0xB43)
   ld    mx,  0x8                                                                   // 0xDFD  (0xE28)
 
-label_425:
+label_350:
   pset  0x6                                                                        // 0xDFE  (0xE46)
-  jp    label_250                                                                  // 0xDFF  (0xE5)
+  jp    label_214                                                                  // 0xDFF  (0xE5)
   retd  0xE                                                                        // 0xE00  (0x10E)
   retd  0x11                                                                       // 0xE01  (0x111)
   retd  0x16                                                                       // 0xE02  (0x116)
@@ -4518,7 +4363,7 @@ label_425:
   retd  0x4E                                                                       // 0xE0B  (0x14E)
   retd  0x55                                                                       // 0xE0C  (0x155)
 
-label_426:
+label_351:
   jpba                                                                             // 0xE0D  (0xFE8)
   lbpx  mx,  0xFF                                                                  // 0xE0E  (0x9FF)
   lbpx  mx,  0x50                                                                  // 0xE0F  (0x950)
@@ -4592,56 +4437,54 @@ label_426:
   lbpx  mx,  0x80                                                                  // 0xE53  (0x980)
   retd  0xE                                                                        // 0xE54  (0x10E)
   lbpx  mx,  0x10                                                                  // 0xE55  (0x910)
-
-label_427:
   retd  0x0                                                                        // 0xE56  (0x100)
   lbpx  mx,  0xD0                                                                  // 0xE57  (0x9D0)
   lbpx  mx,  0x80                                                                  // 0xE58  (0x980)
   retd  0x57                                                                       // 0xE59  (0x157)
 
-label_428:
-  calz  label_434                                                                  // 0xE5A  (0x5EF)
+label_352:
+  calz  zero_a_xp                                                                  // 0xE5A  (0x5EF)
   ld    a,   0x2                                                                   // 0xE5B  (0xE02)
   pset  0x1                                                                        // 0xE5C  (0xE41)
-  call  label_43                                                                   // 0xE5D  (0x4EC)
-  calz  label_433                                                                  // 0xE5E  (0x5CE)
+  call  label_66                                                                   // 0xE5D  (0x4EC)
+  calz  label_30                                                                   // 0xE5E  (0x5CE)
   lbpx  mx,  0x40                                                                  // 0xE5F  (0x940)
   ld    x,   0x78                                                                  // 0xE60  (0xB78)
   ldpx  a,   mx                                                                    // 0xE61  (0xEE2)
   ld    x,   0x75                                                                  // 0xE62  (0xB75)
   ldpx  mx,  a                                                                     // 0xE63  (0xEE8)
 
-label_429:
+label_353:
   pset  0x2                                                                        // 0xE64  (0xE42)
-  call  label_80                                                                   // 0xE65  (0x4C3)
-  jp    c,   label_431                                                             // 0xE66  (0x279)
-  jp    z,   label_431                                                             // 0xE67  (0x679)
+  call  label_94                                                                   // 0xE65  (0x4C3)
+  jp    c,   label_355                                                             // 0xE66  (0x279)
+  jp    z,   label_355                                                             // 0xE67  (0x679)
   ld    x,   0x90                                                                  // 0xE68  (0xB90)
   lbpx  mx,  0xFF                                                                  // 0xE69  (0x9FF)
   ld    x,   0x98                                                                  // 0xE6A  (0xB98)
   lbpx  mx,  0xFF                                                                  // 0xE6B  (0x9FF)
   ld    x,   0x90                                                                  // 0xE6C  (0xB90)
   cp    a,   0x0                                                                   // 0xE6D  (0xDC0)
-  jp    z,   label_430                                                             // 0xE6E  (0x670)
+  jp    z,   label_354                                                             // 0xE6E  (0x670)
   ld    x,   0x98                                                                  // 0xE6F  (0xB98)
 
-label_430:
+label_354:
   lbpx  mx,  0x27                                                                  // 0xE70  (0x927)
   pset  0x7                                                                        // 0xE71  (0xE47)
-  call  label_272                                                                  // 0xE72  (0x492)
-  calz  label_427                                                                  // 0xE73  (0x556)
+  call  label_233                                                                  // 0xE72  (0x492)
+  calz  label_15                                                                   // 0xE73  (0x556)
   pset  0xF                                                                        // 0xE74  (0xE4F)
-  call  label_435                                                                  // 0xE75  (0x400)
-  jp    z,   label_429                                                             // 0xE76  (0x664)
-  calz  label_434                                                                  // 0xE77  (0x5EF)
+  call  label_357                                                                  // 0xE75  (0x400)
+  jp    z,   label_353                                                             // 0xE76  (0x664)
+  calz  zero_a_xp                                                                  // 0xE77  (0x5EF)
   set   f,   0x1                                                                   // 0xE78  (0xF41)
 
-label_431:
+label_355:
   ld    x,   0x78                                                                  // 0xE79  (0xB78)
   ldpx  mx,  a                                                                     // 0xE7A  (0xEE8)
   ret                                                                              // 0xE7B  (0xFDF)
 
-label_432:
+label_356:
   jpba                                                                             // 0xE7C  (0xFE8)
   lbpx  mx,  0xFF                                                                  // 0xE7D  (0x9FF)
   lbpx  mx,  0x8                                                                   // 0xE7E  (0x908)
@@ -4724,8 +4567,6 @@ label_432:
   lbpx  mx,  0x44                                                                  // 0xECB  (0x944)
   lbpx  mx,  0x8                                                                   // 0xECC  (0x908)
   retd  0xC9                                                                       // 0xECD  (0x1C9)
-
-label_433:
   lbpx  mx,  0x50                                                                  // 0xECE  (0x950)
   lbpx  mx,  0x3                                                                   // 0xECF  (0x903)
   retd  0x7D                                                                       // 0xED0  (0x17D)
@@ -4759,8 +4600,6 @@ label_433:
   retd  0x4                                                                        // 0xEEC  (0x104)
   lbpx  mx,  0x10                                                                  // 0xEED  (0x910)
   lbpx  mx,  0x5                                                                   // 0xEEE  (0x905)
-
-label_434:
   retd  0x7D                                                                       // 0xEEF  (0x17D)
   lbpx  mx,  0x6                                                                   // 0xEF0  (0x906)
   retd  0x1                                                                        // 0xEF1  (0x101)
@@ -4779,44 +4618,40 @@ label_434:
   nop7                                                                             // 0xEFE  (0xFFF)
   nop7                                                                             // 0xEFF  (0xFFF)
 
-label_435:
+label_357:
   ld    a,   0x2                                                                   // 0xF00  (0xE02)
   ld    yp,  a                                                                     // 0xF01  (0xE90)
-  calz  label_473                                                                  // 0xF02  (0x5EF)
+  calz  zero_a_xp                                                                  // 0xF02  (0x5EF)
   ld    x,   0x7C                                                                  // 0xF03  (0xB7C)
   cp    mx,  0xF                                                                   // 0xF04  (0xDEF)
-  jp    nz,  label_465                                                             // 0xF05  (0x7D6)
+  jp    nz,  label_385                                                             // 0xF05  (0x7D6)
   ld    x,   0x5C                                                                  // 0xF06  (0xB5C)
   cp    mx,  0x0                                                                   // 0xF07  (0xDE0)
-  jp    nz,  label_465                                                             // 0xF08  (0x7D6)
-
-label_436:
+  jp    nz,  label_385                                                             // 0xF08  (0x7D6)
   ld    x,   0x14                                                                  // 0xF09  (0xB14)
-  calz  label_437                                                                  // 0xF0A  (0x512)
+  calz  clear_0x07D                                                                // 0xF0A  (0x512)
   ldpx  a,   mx                                                                    // 0xF0B  (0xEE2)
   ld    b,   mx                                                                    // 0xF0C  (0xEC6)
-  calz  label_436                                                                  // 0xF0D  (0x509)
+  calz  set_f_0x07D                                                                // 0xF0D  (0x509)
   ld    x,   0x4A                                                                  // 0xF0E  (0xB4A)
   fan   mx,  0x8                                                                   // 0xF0F  (0xDA8)
-  jp    z,   label_444                                                             // 0xF10  (0x64A)
-  calz  label_474                                                                  // 0xF11  (0x5F8)
-
-label_437:
-  jp    nz,  label_438                                                             // 0xF12  (0x717)
+  jp    z,   label_364                                                             // 0xF10  (0x64A)
+  calz  label_43                                                                   // 0xF11  (0x5F8)
+  jp    nz,  label_358                                                             // 0xF12  (0x717)
   ld    y,   0x15                                                                  // 0xF13  (0x815)
   cp    my,  0x0                                                                   // 0xF14  (0xDF0)
-  jp    z,   label_439                                                             // 0xF15  (0x61D)
-  jp    label_465                                                                  // 0xF16  (0xD6)
+  jp    z,   label_359                                                             // 0xF15  (0x61D)
+  jp    label_385                                                                  // 0xF16  (0xD6)
 
-label_438:
+label_358:
   ld    y,   0x31                                                                  // 0xF17  (0x831)
-  call  label_467                                                                  // 0xF18  (0x4D9)
-  jp    c,   label_441                                                             // 0xF19  (0x235)
+  call  label_386                                                                  // 0xF18  (0x4D9)
+  jp    c,   label_361                                                             // 0xF19  (0x235)
   ld    y,   0x33                                                                  // 0xF1A  (0x833)
-  call  label_467                                                                  // 0xF1B  (0x4D9)
-  jp    nc,  label_441                                                             // 0xF1C  (0x335)
+  call  label_386                                                                  // 0xF1B  (0x4D9)
+  jp    nc,  label_361                                                             // 0xF1C  (0x335)
 
-label_439:
+label_359:
   ld    x,   0x4B                                                                  // 0xF1D  (0xB4B)
   ld    mx,  0xF                                                                   // 0xF1E  (0xE2F)
   ld    x,   0x4A                                                                  // 0xF1F  (0xB4A)
@@ -4827,36 +4662,36 @@ label_439:
   ldpx  a,   a                                                                     // 0xF24  (0xEE0)
   adc   mx,  0x0                                                                   // 0xF25  (0xC60)
   rst   f,   0xB                                                                   // 0xF26  (0xF5B)
-  jp    nc,  label_440                                                             // 0xF27  (0x32A)
+  jp    nc,  label_360                                                             // 0xF27  (0x32A)
   ld    x,   0x54                                                                  // 0xF28  (0xB54)
   lbpx  mx,  0x99                                                                  // 0xF29  (0x999)
 
-label_440:
+label_360:
   ld    x,   0x50                                                                  // 0xF2A  (0xB50)
   cp    mx,  0xF                                                                   // 0xF2B  (0xDEF)
-  jp    nz,  label_465                                                             // 0xF2C  (0x7D6)
+  jp    nz,  label_385                                                             // 0xF2C  (0x7D6)
   ld    y,   0x10                                                                  // 0xF2D  (0x810)
-  calz  label_466                                                                  // 0xF2E  (0x5D7)
-  jp    nz,  label_465                                                             // 0xF2F  (0x7D6)
+  calz  label_32                                                                   // 0xF2E  (0x5D7)
+  jp    nz,  label_385                                                             // 0xF2F  (0x7D6)
   ld    y,   0x34                                                                  // 0xF30  (0x834)
-  call  label_443                                                                  // 0xF31  (0x43D)
+  call  label_363                                                                  // 0xF31  (0x43D)
   ld    y,   0x36                                                                  // 0xF32  (0x836)
-  call  label_443                                                                  // 0xF33  (0x43D)
-  jp    label_465                                                                  // 0xF34  (0xD6)
+  call  label_363                                                                  // 0xF33  (0x43D)
+  jp    label_385                                                                  // 0xF34  (0xD6)
 
-label_441:
+label_361:
   ld    y,   0x5                                                                   // 0xF35  (0x805)
   cp    my,  0xF                                                                   // 0xF36  (0xDFF)
-  jp    z,   label_442                                                             // 0xF37  (0x63C)
+  jp    z,   label_362                                                             // 0xF37  (0x63C)
   cp    my,  0x4                                                                   // 0xF38  (0xDF4)
-  jp    c,   label_442                                                             // 0xF39  (0x23C)
+  jp    c,   label_362                                                             // 0xF39  (0x23C)
   ld    my,  0xF                                                                   // 0xF3A  (0xE3F)
-  call  label_469                                                                  // 0xF3B  (0x4DF)
+  call  label_388                                                                  // 0xF3B  (0x4DF)
 
-label_442:
-  jp    label_465                                                                  // 0xF3C  (0xD6)
+label_362:
+  jp    label_385                                                                  // 0xF3C  (0xD6)
 
-label_443:
+label_363:
   ldpy  a,   my                                                                    // 0xF3D  (0xEF3)
   ld    b,   my                                                                    // 0xF3E  (0xEC7)
   rrc   b                                                                          // 0xF3F  (0xE8D)
@@ -4871,252 +4706,244 @@ label_443:
   sbc   my,  b                                                                     // 0xF48  (0xABD)
   ret                                                                              // 0xF49  (0xFDF)
 
-label_444:
-  calz  label_474                                                                  // 0xF4A  (0x5F8)
-  jp    nz,  label_445                                                             // 0xF4B  (0x753)
+label_364:
+  calz  label_43                                                                   // 0xF4A  (0x5F8)
+  jp    nz,  label_365                                                             // 0xF4B  (0x753)
   ld    y,   0x15                                                                  // 0xF4C  (0x815)
   cp    my,  0x0                                                                   // 0xF4D  (0xDF0)
-  jp    z,   label_447                                                             // 0xF4E  (0x65B)
+  jp    z,   label_367                                                             // 0xF4E  (0x65B)
   ld    y,   0x16                                                                  // 0xF4F  (0x816)
-  calz  label_464                                                                  // 0xF50  (0x5D4)
-  jp    nz,  label_447                                                             // 0xF51  (0x75B)
-  jp    label_446                                                                  // 0xF52  (0x59)
+  calz  label_31                                                                   // 0xF50  (0x5D4)
+  jp    nz,  label_367                                                             // 0xF51  (0x75B)
+  jp    label_366                                                                  // 0xF52  (0x59)
 
-label_445:
+label_365:
   ld    y,   0x33                                                                  // 0xF53  (0x833)
-  call  label_467                                                                  // 0xF54  (0x4D9)
-  jp    nc,  label_446                                                             // 0xF55  (0x359)
+  call  label_386                                                                  // 0xF54  (0x4D9)
+  jp    nc,  label_366                                                             // 0xF55  (0x359)
   ld    y,   0x31                                                                  // 0xF56  (0x831)
-  call  label_467                                                                  // 0xF57  (0x4D9)
-  jp    nc,  label_447                                                             // 0xF58  (0x35B)
+  call  label_386                                                                  // 0xF57  (0x4D9)
+  jp    nc,  label_367                                                             // 0xF58  (0x35B)
 
-label_446:
+label_366:
   ld    a,   0x1                                                                   // 0xF59  (0xE01)
-  jp    label_464                                                                  // 0xF5A  (0xD4)
+  jp    label_384                                                                  // 0xF5A  (0xD4)
 
-label_447:
+label_367:
   ld    x,   0x49                                                                  // 0xF5B  (0xB49)
   cp    mx,  0x3                                                                   // 0xF5C  (0xDE3)
-  jp    nc,  label_451                                                             // 0xF5D  (0x374)
-  calz  label_474                                                                  // 0xF5E  (0x5F8)
-  jp    nz,  label_448                                                             // 0xF5F  (0x763)
-  calz  label_475                                                                  // 0xF60  (0x5FD)
-  jp    z,   label_450                                                             // 0xF61  (0x671)
-  jp    label_450                                                                  // 0xF62  (0x71)
+  jp    nc,  label_371                                                             // 0xF5D  (0x374)
+  calz  label_43                                                                   // 0xF5E  (0x5F8)
+  jp    nz,  label_368                                                             // 0xF5F  (0x763)
+  calz  label_45                                                                   // 0xF60  (0x5FD)
+  jp    z,   label_370                                                             // 0xF61  (0x671)
+  jp    label_370                                                                  // 0xF62  (0x71)
 
-label_448:
+label_368:
   ld    y,   0xC                                                                   // 0xF63  (0x80C)
   cp    my,  0x2                                                                   // 0xF64  (0xDF2)
-  jp    c,   label_449                                                             // 0xF65  (0x269)
+  jp    c,   label_369                                                             // 0xF65  (0x269)
   ld    y,   0xB                                                                   // 0xF66  (0x80B)
   cp    my,  0xD                                                                   // 0xF67  (0xDFD)
-  jp    nc,  label_451                                                             // 0xF68  (0x374)
+  jp    nc,  label_371                                                             // 0xF68  (0x374)
 
-label_449:
-  calz  label_475                                                                  // 0xF69  (0x5FD)
-  jp    z,   label_450                                                             // 0xF6A  (0x671)
+label_369:
+  calz  label_45                                                                   // 0xF69  (0x5FD)
+  jp    z,   label_370                                                             // 0xF6A  (0x671)
   ld    y,   0xF                                                                   // 0xF6B  (0x80F)
   cp    my,  0x1                                                                   // 0xF6C  (0xDF1)
-  jp    c,   label_450                                                             // 0xF6D  (0x271)
+  jp    c,   label_370                                                             // 0xF6D  (0x271)
   ld    y,   0xE                                                                   // 0xF6E  (0x80E)
   cp    my,  0x6                                                                   // 0xF6F  (0xDF6)
-  jp    nc,  label_451                                                             // 0xF70  (0x374)
+  jp    nc,  label_371                                                             // 0xF70  (0x374)
 
-label_450:
+label_370:
   ld    x,   0x4F                                                                  // 0xF71  (0xB4F)
   cp    mx,  0x5                                                                   // 0xF72  (0xDE5)
-  jp    c,   label_452                                                             // 0xF73  (0x276)
+  jp    c,   label_372                                                             // 0xF73  (0x276)
 
-label_451:
+label_371:
   ld    a,   0x6                                                                   // 0xF74  (0xE06)
-  jp    label_464                                                                  // 0xF75  (0xD4)
+  jp    label_384                                                                  // 0xF75  (0xD4)
 
-label_452:
+label_372:
   ld    y,   0x10                                                                  // 0xF76  (0x810)
-  calz  label_466                                                                  // 0xF77  (0x5D7)
-  jp    nz,  label_454                                                             // 0xF78  (0x780)
+  calz  label_32                                                                   // 0xF77  (0x5D7)
+  jp    nz,  label_374                                                             // 0xF78  (0x780)
   ld    x,   0x50                                                                  // 0xF79  (0xB50)
   cp    mx,  0xF                                                                   // 0xF7A  (0xDEF)
-  jp    nc,  label_453                                                             // 0xF7B  (0x37E)
+  jp    nc,  label_373                                                             // 0xF7B  (0x37E)
   ld    a,   0x5                                                                   // 0xF7C  (0xE05)
-  jp    label_464                                                                  // 0xF7D  (0xD4)
+  jp    label_384                                                                  // 0xF7D  (0xD4)
 
-label_453:
+label_373:
   ld    x,   0x4E                                                                  // 0xF7E  (0xB4E)
   ld    mx,  0xF                                                                   // 0xF7F  (0xE2F)
 
-label_454:
+label_374:
   ld    y,   0x6                                                                   // 0xF80  (0x806)
-  calz  label_464                                                                  // 0xF81  (0x5D4)
-  jp    nz,  label_455                                                             // 0xF82  (0x785)
+  calz  label_31                                                                   // 0xF81  (0x5D4)
+  jp    nz,  label_375                                                             // 0xF82  (0x785)
   ld    a,   0x4                                                                   // 0xF83  (0xE04)
-  jp    label_464                                                                  // 0xF84  (0xD4)
+  jp    label_384                                                                  // 0xF84  (0xD4)
 
-label_455:
-  calz  label_475                                                                  // 0xF85  (0x5FD)
-  jp    nz,  label_456                                                             // 0xF86  (0x78D)
+label_375:
+  calz  label_45                                                                   // 0xF85  (0x5FD)
+  jp    nz,  label_376                                                             // 0xF86  (0x78D)
   ld    y,   0xD                                                                   // 0xF87  (0x80D)
-  calz  label_466                                                                  // 0xF88  (0x5D7)
-  jp    nz,  label_456                                                             // 0xF89  (0x78D)
+  calz  label_32                                                                   // 0xF88  (0x5D7)
+  jp    nz,  label_376                                                             // 0xF89  (0x78D)
   ld    mx,  0xF                                                                   // 0xF8A  (0xE2F)
   ld    x,   0x49                                                                  // 0xF8B  (0xB49)
   add   mx,  0x1                                                                   // 0xF8C  (0xC21)
 
-label_456:
+label_376:
   ld    y,   0x0                                                                   // 0xF8D  (0x800)
-  calz  label_464                                                                  // 0xF8E  (0x5D4)
-  jp    nz,  label_458                                                             // 0xF8F  (0x7A2)
+  calz  label_31                                                                   // 0xF8E  (0x5D4)
+  jp    nz,  label_378                                                             // 0xF8F  (0x7A2)
   ld    y,   0x34                                                                  // 0xF90  (0x834)
   ldpy  a,   my                                                                    // 0xF91  (0xEF3)
   ld    b,   my                                                                    // 0xF92  (0xEC7)
   ld    y,   0x0                                                                   // 0xF93  (0x800)
-  calz  label_437                                                                  // 0xF94  (0x512)
+  calz  clear_0x07D                                                                // 0xF94  (0x512)
   ldpy  my,  a                                                                     // 0xF95  (0xEFC)
   ld    my,  b                                                                     // 0xF96  (0xECD)
-  calz  label_436                                                                  // 0xF97  (0x509)
+  calz  set_f_0x07D                                                                // 0xF97  (0x509)
   ld    x,   0x40                                                                  // 0xF98  (0xB40)
   add   mx,  0xC                                                                   // 0xF99  (0xC2C)
-  jp    c,   label_457                                                             // 0xF9A  (0x29E)
+  jp    c,   label_377                                                             // 0xF9A  (0x29E)
   ld    mx,  0x0                                                                   // 0xF9B  (0xE20)
   ld    a,   0x2                                                                   // 0xF9C  (0xE02)
-  jp    label_464                                                                  // 0xF9D  (0xD4)
+  jp    label_384                                                                  // 0xF9D  (0xD4)
 
-label_457:
+label_377:
   ld    y,   0x13                                                                  // 0xF9E  (0x813)
   add   my,  0xF                                                                   // 0xF9F  (0xC3F)
-  jp    c,   label_458                                                             // 0xFA0  (0x2A2)
+  jp    c,   label_378                                                             // 0xFA0  (0x2A2)
   ld    my,  0x0                                                                   // 0xFA1  (0xE30)
 
-label_458:
+label_378:
   ld    y,   0x2                                                                   // 0xFA2  (0x802)
-  calz  label_464                                                                  // 0xFA3  (0x5D4)
-  jp    nz,  label_460                                                             // 0xFA4  (0x7B7)
+  calz  label_31                                                                   // 0xFA3  (0x5D4)
+  jp    nz,  label_380                                                             // 0xFA4  (0x7B7)
   ld    y,   0x36                                                                  // 0xFA5  (0x836)
   ldpy  a,   my                                                                    // 0xFA6  (0xEF3)
   ld    b,   my                                                                    // 0xFA7  (0xEC7)
   ld    y,   0x2                                                                   // 0xFA8  (0x802)
-  calz  label_437                                                                  // 0xFA9  (0x512)
+  calz  clear_0x07D                                                                // 0xFA9  (0x512)
   ldpy  my,  a                                                                     // 0xFAA  (0xEFC)
   ld    my,  b                                                                     // 0xFAB  (0xECD)
-  calz  label_436                                                                  // 0xFAC  (0x509)
+  calz  set_f_0x07D                                                                // 0xFAC  (0x509)
   ld    x,   0x41                                                                  // 0xFAD  (0xB41)
   add   mx,  0xC                                                                   // 0xFAE  (0xC2C)
-  jp    c,   label_459                                                             // 0xFAF  (0x2B3)
+  jp    c,   label_379                                                             // 0xFAF  (0x2B3)
   ld    mx,  0x0                                                                   // 0xFB0  (0xE20)
   ld    a,   0x2                                                                   // 0xFB1  (0xE02)
-  jp    label_464                                                                  // 0xFB2  (0xD4)
+  jp    label_384                                                                  // 0xFB2  (0xD4)
 
-label_459:
+label_379:
   ld    y,   0x13                                                                  // 0xFB3  (0x813)
   add   my,  0xF                                                                   // 0xFB4  (0xC3F)
-  jp    c,   label_460                                                             // 0xFB5  (0x2B7)
+  jp    c,   label_380                                                             // 0xFB5  (0x2B7)
   ld    my,  0x0                                                                   // 0xFB6  (0xE30)
 
-label_460:
+label_380:
   ld    y,   0x43                                                                  // 0xFB7  (0x843)
   ld    a,   my                                                                    // 0xFB8  (0xEC3)
   ld    y,   0x13                                                                  // 0xFB9  (0x813)
   cp    my,  0x0                                                                   // 0xFBA  (0xDF0)
-  jp    nz,  label_461                                                             // 0xFBB  (0x7C6)
+  jp    nz,  label_381                                                             // 0xFBB  (0x7C6)
   ld    my,  a                                                                     // 0xFBC  (0xECC)
   ld    y,   0x14                                                                  // 0xFBD  (0x814)
   ld    x,   0x43                                                                  // 0xFBE  (0xB43)
   set   f,   0x1                                                                   // 0xFBF  (0xF41)
   adc   my,  mx                                                                    // 0xFC0  (0xA9E)
-  jp    c,   label_461                                                             // 0xFC1  (0x2C6)
-  calz  label_474                                                                  // 0xFC2  (0x5F8)
-  jp    z,   label_461                                                             // 0xFC3  (0x6C6)
+  jp    c,   label_381                                                             // 0xFC1  (0x2C6)
+  calz  label_43                                                                   // 0xFC2  (0x5F8)
+  jp    z,   label_381                                                             // 0xFC3  (0x6C6)
   ld    a,   0x3                                                                   // 0xFC4  (0xE03)
-  jp    label_464                                                                  // 0xFC5  (0xD4)
+  jp    label_384                                                                  // 0xFC5  (0xD4)
 
-label_461:
+label_381:
   ld    y,   0x8                                                                   // 0xFC6  (0x808)
   cp    my,  0xF                                                                   // 0xFC7  (0xDFF)
-  jp    nz,  label_462                                                             // 0xFC8  (0x7CD)
+  jp    nz,  label_382                                                             // 0xFC8  (0x7CD)
   ld    my,  0x0                                                                   // 0xFC9  (0xE30)
-  calz  label_474                                                                  // 0xFCA  (0x5F8)
-  jp    z,   label_462                                                             // 0xFCB  (0x6CD)
-  call  label_469                                                                  // 0xFCC  (0x4DF)
+  calz  label_43                                                                   // 0xFCA  (0x5F8)
+  jp    z,   label_382                                                             // 0xFCB  (0x6CD)
+  call  label_388                                                                  // 0xFCC  (0x4DF)
 
-label_462:
+label_382:
   ld    y,   0x9                                                                   // 0xFCD  (0x809)
   cp    my,  0xF                                                                   // 0xFCE  (0xDFF)
-  jp    nz,  label_463                                                             // 0xFCF  (0x7D3)
+  jp    nz,  label_383                                                             // 0xFCF  (0x7D3)
   ld    my,  0x0                                                                   // 0xFD0  (0xE30)
   ld    x,   0x51                                                                  // 0xFD1  (0xB51)
-  call  label_470                                                                  // 0xFD2  (0x4E8)
+  call  label_389                                                                  // 0xFD2  (0x4E8)
 
-label_463:
-  jp    label_465                                                                  // 0xFD3  (0xD6)
+label_383:
+  jp    label_385                                                                  // 0xFD3  (0xD6)
 
-label_464:
+label_384:
   ld    x,   0x5C                                                                  // 0xFD4  (0xB5C)
   ld    mx,  a                                                                     // 0xFD5  (0xEC8)
 
-label_465:
+label_385:
   ld    x,   0x5C                                                                  // 0xFD6  (0xB5C)
-
-label_466:
   cp    mx,  0x0                                                                   // 0xFD7  (0xDE0)
   ret                                                                              // 0xFD8  (0xFDF)
 
-label_467:
+label_386:
   cp    b,   my                                                                    // 0xFD9  (0xF07)
-  jp    nz,  label_468                                                             // 0xFDA  (0x7DE)
+  jp    nz,  label_387                                                             // 0xFDA  (0x7DE)
   adc   yl,  0xF                                                                   // 0xFDB  (0xA3F)
   adc   yh,  0xF                                                                   // 0xFDC  (0xA2F)
   cp    a,   my                                                                    // 0xFDD  (0xF03)
 
-label_468:
+label_387:
   ret                                                                              // 0xFDE  (0xFDF)
 
-label_469:
+label_388:
   ld    x,   0x42                                                                  // 0xFDF  (0xB42)
-  call  label_470                                                                  // 0xFE0  (0x4E8)
+  call  label_389                                                                  // 0xFE0  (0x4E8)
   ld    x,   0x50                                                                  // 0xFE1  (0xB50)
   cp    mx,  0xF                                                                   // 0xFE2  (0xDEF)
-  jp    nz,  label_471                                                             // 0xFE3  (0x7EB)
+  jp    nz,  label_390                                                             // 0xFE3  (0x7EB)
   ld    y,   0x10                                                                  // 0xFE4  (0x810)
-  calz  label_466                                                                  // 0xFE5  (0x5D7)
-  jp    nz,  label_471                                                             // 0xFE6  (0x7EB)
+  calz  label_32                                                                   // 0xFE5  (0x5D7)
+  jp    nz,  label_390                                                             // 0xFE6  (0x7EB)
   ld    x,   0x4F                                                                  // 0xFE7  (0xB4F)
 
-label_470:
+label_389:
   add   mx,  0x1                                                                   // 0xFE8  (0xC21)
-  jp    nc,  label_471                                                             // 0xFE9  (0x3EB)
+  jp    nc,  label_390                                                             // 0xFE9  (0x3EB)
   ld    mx,  0xF                                                                   // 0xFEA  (0xE2F)
 
-label_471:
+label_390:
   ret                                                                              // 0xFEB  (0xFDF)
 
-label_472:
-  calz  label_473                                                                  // 0xFEC  (0x5EF)
+label_391:
+  calz  zero_a_xp                                                                  // 0xFEC  (0x5EF)
   ld    x,   0x7C                                                                  // 0xFED  (0xB7C)
   ld    mx,  0xF                                                                   // 0xFEE  (0xE2F)
-
-label_473:
   ld    a,   0x6                                                                   // 0xFEF  (0xE06)
   ld    y,   0xD1                                                                  // 0xFF0  (0x8D1)
-  calz  label_460                                                                  // 0xFF1  (0x5B7)
+  calz  label_24                                                                   // 0xFF1  (0x5B7)
   ld    a,   0x2                                                                   // 0xFF2  (0xE02)
   ld    b,   0x4                                                                   // 0xFF3  (0xE14)
   pset  0x8                                                                        // 0xFF4  (0xE48)
-  call  label_319                                                                  // 0xFF5  (0x4A8)
-  calz  label_473                                                                  // 0xFF6  (0x5EF)
+  call  label_272                                                                  // 0xFF5  (0x4A8)
+  calz  zero_a_xp                                                                  // 0xFF6  (0x5EF)
   ld    x,   0x74                                                                  // 0xFF7  (0xB74)
-
-label_474:
   ldpx  mx,  0xF                                                                   // 0xFF8  (0xE6F)
   ld    x,   0x5D                                                                  // 0xFF9  (0xB5D)
   lbpx  mx,  0x11                                                                  // 0xFFA  (0x911)
   pset  0x4                                                                        // 0xFFB  (0xE44)
-  call  label_147                                                                  // 0xFFC  (0x465)
-
-label_475:
+  call  label_142                                                                  // 0xFFC  (0x465)
   pset  0xD                                                                        // 0xFFD  (0xE4D)
-  jp    label_420                                                                  // 0xFFE  (0xD2)
+  jp    label_347                                                                  // 0xFFE  (0xD2)
   nop7                                                                             // 0xFFF  (0xFFF)
-
+  
 // Jump table for all of the images
   ld    a,   m0                                                                    // 0x1000 (0xFA0)
   ld    b,   m1                                                                    // 0x1001 (0xFB1)
@@ -5173,7 +5000,7 @@ gfx_jp_table_jpba:
   nop7                                                                             // 0x102D (0xFFF)
   nop7                                                                             // 0x102E (0xFFF)
   nop7                                                                             // 0x102F (0xFFF)
-
+  
   // Stage 0, Babytchi
   // Seems to be the same as 0x16C0, but there's clear padding around it
   lbpx  mx,  0x0                                                                   // 0x1030 (0x900)
@@ -5192,7 +5019,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x103D (0x900)
   lbpx  mx,  0x0                                                                   // 0x103E (0x900)
   retd  0x0                                                                        // 0x103F (0x100)
-
+  
   // Stage 0, Babytchi hiding
   lbpx  mx,  0x0                                                                   // 0x1040 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1041 (0x900)
@@ -5210,7 +5037,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x104D (0x900)
   lbpx  mx,  0x0                                                                   // 0x104E (0x900)
   retd  0x0                                                                        // 0x104F (0x100)
-
+  
   // Stage 0, Babytchi eating
   lbpx  mx,  0x0                                                                   // 0x1050 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1051 (0x900)
@@ -5228,7 +5055,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x105D (0x900)
   lbpx  mx,  0x0                                                                   // 0x105E (0x900)
   retd  0x0                                                                        // 0x105F (0x100)
-
+  
   // Stage 0, Babytchi flattened
   lbpx  mx,  0x0                                                                   // 0x1060 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1061 (0x900)
@@ -5246,7 +5073,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x106D (0x900)
   lbpx  mx,  0x0                                                                   // 0x106E (0x900)
   retd  0x0                                                                        // 0x106F (0x100)
-
+  
   // Stage 0, Babytchi happy
   lbpx  mx,  0x0                                                                   // 0x1070 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1071 (0x900)
@@ -5264,7 +5091,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x107D (0x900)
   lbpx  mx,  0x0                                                                   // 0x107E (0x900)
   retd  0x0                                                                        // 0x107F (0x100)
-
+  
   // Stage 0, Babytchi looking left
   // I assume this is flipped to look right
   lbpx  mx,  0x0                                                                   // 0x1080 (0x900)
@@ -5283,7 +5110,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x108D (0x900)
   lbpx  mx,  0x0                                                                   // 0x108E (0x900)
   retd  0x0                                                                        // 0x108F (0x100)
-
+  
   // Stage 0, Babytchi angry
   lbpx  mx,  0x0                                                                   // 0x1090 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1091 (0x900)
@@ -5301,7 +5128,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x109D (0x900)
   lbpx  mx,  0x0                                                                   // 0x109E (0x900)
   retd  0x0                                                                        // 0x109F (0x100)
-
+  
   // Stage 1, Marutchi upper half
   lbpx  mx,  0x0                                                                   // 0x10A0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x10A1 (0x900)
@@ -5319,7 +5146,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x10AD (0x900)
   lbpx  mx,  0x0                                                                   // 0x10AE (0x900)
   retd  0x0                                                                        // 0x10AF (0x100)
-
+  
   // Stage 1, Marutchi lower half
   lbpx  mx,  0x0                                                                   // 0x10B0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x10B1 (0x900)
@@ -5337,7 +5164,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x10BD (0x900)
   lbpx  mx,  0x0                                                                   // 0x10BE (0x900)
   retd  0x0                                                                        // 0x10BF (0x100)
-
+  
   // Stage 1, Marutchi happy upper half
   lbpx  mx,  0x0                                                                   // 0x10C0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x10C1 (0x900)
@@ -5355,7 +5182,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x10CD (0x900)
   lbpx  mx,  0x0                                                                   // 0x10CE (0x900)
   retd  0x0                                                                        // 0x10CF (0x100)
-
+  
   // Stage 1, Marutchi eating upper half
   lbpx  mx,  0x0                                                                   // 0x10D0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x10D1 (0x900)
@@ -5373,7 +5200,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x10DD (0x900)
   lbpx  mx,  0x0                                                                   // 0x10DE (0x900)
   retd  0x0                                                                        // 0x10DF (0x100)
-
+  
   // Stage 1, Marutchi lower half
   // Not sure how this is different from 0x10B0
   lbpx  mx,  0x0                                                                   // 0x10E0 (0x900)
@@ -5392,7 +5219,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x10ED (0x900)
   lbpx  mx,  0x0                                                                   // 0x10EE (0x900)
   retd  0x0                                                                        // 0x10EF (0x100)
-
+  
   // Stage 1, Marutchi looking left, upper half
   lbpx  mx,  0x0                                                                   // 0x10F0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x10F1 (0x900)
@@ -5410,7 +5237,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x10FD (0x900)
   lbpx  mx,  0x0                                                                   // 0x10FE (0x900)
   retd  0x0                                                                        // 0x10FF (0x100)
-
+  
   // Stage 1, Marutchi sleeping, upper half
   lbpx  mx,  0x0                                                                   // 0x1100 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1101 (0x900)
@@ -5428,7 +5255,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x110D (0x900)
   lbpx  mx,  0x0                                                                   // 0x110E (0x900)
   retd  0x0                                                                        // 0x110F (0x100)
-
+  
   // Black screen. Turn on all pixels
   lbpx  mx,  0xFF                                                                  // 0x1110 (0x9FF)
   lbpx  mx,  0xFF                                                                  // 0x1111 (0x9FF)
@@ -5446,7 +5273,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0xFF                                                                  // 0x111D (0x9FF)
   lbpx  mx,  0xFF                                                                  // 0x111E (0x9FF)
   retd  0xFF                                                                       // 0x111F (0x1FF)
-
+  
   // Stage 1, Marutchi sleeping?, turned left, upper half
   lbpx  mx,  0x0                                                                   // 0x1120 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1121 (0x900)
@@ -5464,7 +5291,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x112D (0x900)
   lbpx  mx,  0x0                                                                   // 0x112E (0x900)
   retd  0x0                                                                        // 0x112F (0x100)
-
+  
   // Stage 1, Marutchi happy, upper half
   lbpx  mx,  0x0                                                                   // 0x1130 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1131 (0x900)
@@ -5482,7 +5309,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x113D (0x900)
   lbpx  mx,  0x0                                                                   // 0x113E (0x900)
   retd  0x0                                                                        // 0x113F (0x100)
-
+  
   // Stage 2a, Tamatchi upper half
   lbpx  mx,  0x0                                                                   // 0x1140 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1141 (0x900)
@@ -5500,7 +5327,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x114D (0x900)
   lbpx  mx,  0x0                                                                   // 0x114E (0x900)
   retd  0x0                                                                        // 0x114F (0x100)
-
+  
   // Stage 2a, Tamatchi lower half, left foot forward
   lbpx  mx,  0x0                                                                   // 0x1150 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1151 (0x900)
@@ -5518,7 +5345,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x1                                                                   // 0x115D (0x901)
   lbpx  mx,  0x0                                                                   // 0x115E (0x900)
   retd  0x0                                                                        // 0x115F (0x100)
-
+  
   // Stage 2a, Tamatchi lower half, feet transitioning
   lbpx  mx,  0x0                                                                   // 0x1160 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1161 (0x900)
@@ -5536,7 +5363,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x116D (0x900)
   lbpx  mx,  0x0                                                                   // 0x116E (0x900)
   retd  0x0                                                                        // 0x116F (0x100)
-
+  
   // Stage 2a, Tamatchi lower half, right foot forward
   lbpx  mx,  0x0                                                                   // 0x1170 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1171 (0x900)
@@ -5554,7 +5381,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x117D (0x900)
   lbpx  mx,  0x0                                                                   // 0x117E (0x900)
   retd  0x0                                                                        // 0x117F (0x100)
-
+  
   // Rectangular face with teeth
   // TODO: What is this?
   lbpx  mx,  0x0                                                                   // 0x1180 (0x900)
@@ -5573,7 +5400,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x99                                                                  // 0x118D (0x999)
   lbpx  mx,  0x81                                                                  // 0x118E (0x981)
   retd  0x7E                                                                       // 0x118F (0x17E)
-
+  
   // Possible base for teeth
   // TODO: What is this?
   lbpx  mx,  0x0                                                                   // 0x1190 (0x900)
@@ -5592,7 +5419,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x5                                                                   // 0x119D (0x905)
   lbpx  mx,  0x3                                                                   // 0x119E (0x903)
   retd  0x0                                                                        // 0x119F (0x100)
-
+  
   // Stage 2b, KuchiTamatchi upper half, neutral
   lbpx  mx,  0x50                                                                  // 0x11A0 (0x950)
   lbpx  mx,  0xA8                                                                  // 0x11A1 (0x9A8)
@@ -5610,7 +5437,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x11AD (0x900)
   lbpx  mx,  0x0                                                                   // 0x11AE (0x900)
   retd  0x0                                                                        // 0x11AF (0x100)
-
+  
   // Stage 2b, KuchiTamatchi upper half, squished mouth
   lbpx  mx,  0x6C                                                                  // 0x11B0 (0x96C)
   lbpx  mx,  0x92                                                                  // 0x11B1 (0x992)
@@ -5628,7 +5455,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x11BD (0x900)
   lbpx  mx,  0x0                                                                   // 0x11BE (0x900)
   retd  0x0                                                                        // 0x11BF (0x100)
-
+  
   // Stage 2b, KuchiTamatchi upper half, open mouth
   lbpx  mx,  0x44                                                                  // 0x11C0 (0x944)
   lbpx  mx,  0xAA                                                                  // 0x11C1 (0x9AA)
@@ -5646,7 +5473,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0x0                                                                   // 0x11CD (0x900)
   lbpx  mx,  0x0                                                                   // 0x11CE (0x900)
   retd  0x0                                                                        // 0x11CF (0x100)
-
+  
   // Stage 2b, KuchiTamatchi upper half, looking right, closed eyes
   lbpx  mx,  0x0                                                                   // 0x11D0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x11D1 (0x900)
@@ -5665,7 +5492,7 @@ gfx_jp_table_jpba:
   lbpx  mx,  0xA8                                                                  // 0x11DE (0x9A8)
   retd  0x50                                                                       // 0x11DF (0x150)
 
-label_478:
+label_394:
   ld    a,   0xF                                                                   // 0x11E0 (0xE0F)
   ld    xp,  a                                                                     // 0x11E1 (0xE80)
   ld    x,   0x10                                                                  // 0x11E2 (0xB10)
@@ -5688,7 +5515,7 @@ label_478:
   ldpx  mx,  0x2                                                                   // 0x11F3 (0xE62)
   ldpx  mx,  0x2                                                                   // 0x11F4 (0xE62)
   pset  0x2                                                                        // 0x11F5 (0xE42)
-  jp    label_60                                                                   // 0x11F6 (0x44)
+  jp    label_78                                                                   // 0x11F6 (0x44)
   nop7                                                                             // 0x11F7 (0xFFF)
   nop7                                                                             // 0x11F8 (0xFFF)
   nop7                                                                             // 0x11F9 (0xFFF)
@@ -5699,7 +5526,7 @@ label_478:
   nop7                                                                             // 0x11FE (0xFFF)
   nop7                                                                             // 0x11FF (0xFFF)
 
-label_479:
+label_395:
   ld    a,   0x0                                                                   // 0x1200 (0xE00)
   ld    xp,  a                                                                     // 0x1201 (0xE80)
   ld    x,   0x24                                                                  // 0x1202 (0xB24)
@@ -5733,9 +5560,9 @@ label_479:
   ldpx  a,   mx                                                                    // 0x121E (0xEE2)
   ld    a,   mx                                                                    // 0x121F (0xEC2)
   pset  0x2                                                                        // 0x1220 (0xE42)
-  jp    label_63                                                                   // 0x1221 (0x55)
+  jp    label_79                                                                   // 0x1221 (0x55)
 
-label_480:
+label_396:
   ldpx  my,  mx                                                                    // 0x1222 (0xEEE)
   ldpy  a,   a                                                                     // 0x1223 (0xEF0)
   ldpx  my,  mx                                                                    // 0x1224 (0xEEE)
@@ -5748,9 +5575,9 @@ label_480:
   ldpy  a,   a                                                                     // 0x122B (0xEF0)
   ldpx  my,  mx                                                                    // 0x122C (0xEEE)
   pset  0x2                                                                        // 0x122D (0xE42)
-  jp    label_55                                                                   // 0x122E (0x29)
+  jp    label_74                                                                   // 0x122E (0x29)
   nop7                                                                             // 0x122F (0xFFF)
-
+  
   // Stage 3a, Mametchi upper half, turned left
   lbpx  mx,  0x0                                                                   // 0x1230 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1231 (0x900)
@@ -5768,7 +5595,7 @@ label_480:
   lbpx  mx,  0xF0                                                                  // 0x123D (0x9F0)
   lbpx  mx,  0x0                                                                   // 0x123E (0x900)
   retd  0x0                                                                        // 0x123F (0x100)
-
+  
   // Stage 3a, Mametchi lower half, turned left
   lbpx  mx,  0x0                                                                   // 0x1240 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1241 (0x900)
@@ -5786,7 +5613,7 @@ label_480:
   lbpx  mx,  0x7                                                                   // 0x124D (0x907)
   lbpx  mx,  0x0                                                                   // 0x124E (0x900)
   retd  0x0                                                                        // 0x124F (0x100)
-
+  
   // Stage 3a, Mametchi upper half, front facing
   lbpx  mx,  0x0                                                                   // 0x1250 (0x900)
   lbpx  mx,  0x60                                                                  // 0x1251 (0x960)
@@ -5804,7 +5631,7 @@ label_480:
   lbpx  mx,  0x60                                                                  // 0x125D (0x960)
   lbpx  mx,  0x0                                                                   // 0x125E (0x900)
   retd  0x0                                                                        // 0x125F (0x100)
-
+  
   // Stage 3a, Mametchi lower half, right leg forward
   lbpx  mx,  0x0                                                                   // 0x1260 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1261 (0x900)
@@ -5822,7 +5649,7 @@ label_480:
   lbpx  mx,  0x1                                                                   // 0x126D (0x901)
   lbpx  mx,  0x0                                                                   // 0x126E (0x900)
   retd  0x0                                                                        // 0x126F (0x100)
-
+  
   // Stage 3a, Mametchi upper half, mouth open, eating
   lbpx  mx,  0x0                                                                   // 0x1270 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1271 (0x900)
@@ -5840,7 +5667,7 @@ label_480:
   lbpx  mx,  0xFC                                                                  // 0x127D (0x9FC)
   lbpx  mx,  0x18                                                                  // 0x127E (0x918)
   retd  0x0                                                                        // 0x127F (0x100)
-
+  
   // Stage 3a, Mametchi lower half, extended back for eating
   lbpx  mx,  0x0                                                                   // 0x1280 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1281 (0x900)
@@ -5858,7 +5685,7 @@ label_480:
   lbpx  mx,  0x7                                                                   // 0x128D (0x907)
   lbpx  mx,  0x0                                                                   // 0x128E (0x900)
   retd  0x0                                                                        // 0x128F (0x100)
-
+  
   // Stage 3a, Mametchi upper half, sleeping
   lbpx  mx,  0x0                                                                   // 0x1290 (0x900)
   lbpx  mx,  0x60                                                                  // 0x1291 (0x960)
@@ -5876,7 +5703,7 @@ label_480:
   lbpx  mx,  0x60                                                                  // 0x129D (0x960)
   lbpx  mx,  0x0                                                                   // 0x129E (0x900)
   retd  0x0                                                                        // 0x129F (0x100)
-
+  
   // Stage 3b, Ginjirotchi upper half, turned left
   lbpx  mx,  0x0                                                                   // 0x12A0 (0x900)
   lbpx  mx,  0x60                                                                  // 0x12A1 (0x960)
@@ -5894,7 +5721,7 @@ label_480:
   lbpx  mx,  0xF0                                                                  // 0x12AD (0x9F0)
   lbpx  mx,  0x0                                                                   // 0x12AE (0x900)
   retd  0x0                                                                        // 0x12AF (0x100)
-
+  
   // Stage 3b, Ginjirotchi upper half, front facing
   lbpx  mx,  0x0                                                                   // 0x12B0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x12B1 (0x900)
@@ -5912,7 +5739,7 @@ label_480:
   lbpx  mx,  0xF8                                                                  // 0x12BD (0x9F8)
   lbpx  mx,  0x0                                                                   // 0x12BE (0x900)
   retd  0x0                                                                        // 0x12BF (0x100)
-
+  
   // Stage 3b, Ginjirotchi upper half, back facing?
   lbpx  mx,  0x0                                                                   // 0x12C0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x12C1 (0x900)
@@ -5930,7 +5757,7 @@ label_480:
   lbpx  mx,  0x0                                                                   // 0x12CD (0x900)
   lbpx  mx,  0x0                                                                   // 0x12CE (0x900)
   retd  0x0                                                                        // 0x12CF (0x100)
-
+  
   // Stage 3b, Ginjirotchi bottom half
   lbpx  mx,  0x0                                                                   // 0x12D0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x12D1 (0x900)
@@ -5948,7 +5775,7 @@ label_480:
   lbpx  mx,  0x1                                                                   // 0x12DD (0x901)
   lbpx  mx,  0x0                                                                   // 0x12DE (0x900)
   retd  0x0                                                                        // 0x12DF (0x100)
-
+  
   // Stage 3b, Ginjirotchi upper half, open mouth, eating
   lbpx  mx,  0x30                                                                  // 0x12E0 (0x930)
   lbpx  mx,  0x28                                                                  // 0x12E1 (0x928)
@@ -5966,7 +5793,7 @@ label_480:
   lbpx  mx,  0xF0                                                                  // 0x12ED (0x9F0)
   lbpx  mx,  0x0                                                                   // 0x12EE (0x900)
   retd  0x0                                                                        // 0x12EF (0x100)
-
+  
   // Stage 3b, Ginjirotchi upper half, right facing, sleeping?
   lbpx  mx,  0x0                                                                   // 0x12F0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x12F1 (0x900)
@@ -5984,7 +5811,7 @@ label_480:
   lbpx  mx,  0xD0                                                                  // 0x12FD (0x9D0)
   lbpx  mx,  0x60                                                                  // 0x12FE (0x960)
   retd  0x0                                                                        // 0x12FF (0x100)
-
+  
   // Stage 3c, Maskutchi upper half, left facing, big eyes
   lbpx  mx,  0x0                                                                   // 0x1300 (0x900)
   lbpx  mx,  0xC0                                                                  // 0x1301 (0x9C0)
@@ -6002,7 +5829,7 @@ label_480:
   lbpx  mx,  0xF8                                                                  // 0x130D (0x9F8)
   lbpx  mx,  0x0                                                                   // 0x130E (0x900)
   retd  0x0                                                                        // 0x130F (0x100)
-
+  
   // Stage 3c, Maskutchi lower half, leaning right
   lbpx  mx,  0x0                                                                   // 0x1310 (0x900)
   lbpx  mx,  0x40                                                                  // 0x1311 (0x940)
@@ -6020,7 +5847,7 @@ label_480:
   lbpx  mx,  0x44                                                                  // 0x131D (0x944)
   lbpx  mx,  0x6B                                                                  // 0x131E (0x96B)
   retd  0x58                                                                       // 0x131F (0x158)
-
+  
   // Stage 3c, Maskutchi lower half, leaning left
   lbpx  mx,  0x0                                                                   // 0x1320 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1321 (0x900)
@@ -6038,7 +5865,7 @@ label_480:
   lbpx  mx,  0x71                                                                  // 0x132D (0x971)
   lbpx  mx,  0x40                                                                  // 0x132E (0x940)
   retd  0x0                                                                        // 0x132F (0x100)
-
+  
   // Tombstone top, WWW symbol
   // TODO: What is this used for?
   lbpx  mx,  0x0                                                                   // 0x1330 (0x900)
@@ -6057,7 +5884,7 @@ label_480:
   lbpx  mx,  0xFC                                                                  // 0x133D (0x9FC)
   lbpx  mx,  0x0                                                                   // 0x133E (0x900)
   retd  0x0                                                                        // 0x133F (0x100)
-
+  
   // Tombstone top, line
   lbpx  mx,  0x0                                                                   // 0x1340 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1341 (0x900)
@@ -6075,7 +5902,7 @@ label_480:
   lbpx  mx,  0xFC                                                                  // 0x134D (0x9FC)
   lbpx  mx,  0x0                                                                   // 0x134E (0x900)
   retd  0x0                                                                        // 0x134F (0x100)
-
+  
   // Stage 3c, Maskutchi upper half, front facing, small eyes
   lbpx  mx,  0x0                                                                   // 0x1350 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1351 (0x900)
@@ -6093,7 +5920,7 @@ label_480:
   lbpx  mx,  0xF8                                                                  // 0x135D (0x9F8)
   lbpx  mx,  0x0                                                                   // 0x135E (0x900)
   retd  0x0                                                                        // 0x135F (0x100)
-
+  
   // Stage 3c, Maskutchi upper half, front facing, big eyes pointing right
   lbpx  mx,  0x0                                                                   // 0x1360 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1361 (0x900)
@@ -6111,7 +5938,7 @@ label_480:
   lbpx  mx,  0xF8                                                                  // 0x136D (0x9F8)
   lbpx  mx,  0x0                                                                   // 0x136E (0x900)
   retd  0x0                                                                        // 0x136F (0x100)
-
+  
   // Stage 3c, Maskutchi upper half, left facing, small eyes
   lbpx  mx,  0x0                                                                   // 0x1370 (0x900)
   lbpx  mx,  0xC0                                                                  // 0x1371 (0x9C0)
@@ -6129,7 +5956,7 @@ label_480:
   lbpx  mx,  0xF8                                                                  // 0x137D (0x9F8)
   lbpx  mx,  0x0                                                                   // 0x137E (0x900)
   retd  0x0                                                                        // 0x137F (0x100)
-
+  
   // Stage 3d, Kuchipatchi upper half, left facing
   lbpx  mx,  0x0                                                                   // 0x1380 (0x900)
   lbpx  mx,  0xF8                                                                  // 0x1381 (0x9F8)
@@ -6147,7 +5974,7 @@ label_480:
   lbpx  mx,  0xFC                                                                  // 0x138D (0x9FC)
   lbpx  mx,  0x0                                                                   // 0x138E (0x900)
   retd  0x0                                                                        // 0x138F (0x100)
-
+  
   // Stage 3d, Kuchipatchi upper half, open mouth, happy
   lbpx  mx,  0xE7                                                                  // 0x1390 (0x9E7)
   lbpx  mx,  0xA5                                                                  // 0x1391 (0x9A5)
@@ -6165,7 +5992,7 @@ label_480:
   lbpx  mx,  0x0                                                                   // 0x139D (0x900)
   lbpx  mx,  0x0                                                                   // 0x139E (0x900)
   retd  0x0                                                                        // 0x139F (0x100)
-
+  
   // Stage 3d, Kuchipatchi upper half, sleeping?
   lbpx  mx,  0x0                                                                   // 0x13A0 (0x900)
   lbpx  mx,  0xF8                                                                  // 0x13A1 (0x9F8)
@@ -6183,7 +6010,7 @@ label_480:
   lbpx  mx,  0xFC                                                                  // 0x13AD (0x9FC)
   lbpx  mx,  0x0                                                                   // 0x13AE (0x900)
   retd  0x0                                                                        // 0x13AF (0x100)
-
+  
   // Stage 3d, Kuchipatchi upper half, front facing
   lbpx  mx,  0x0                                                                   // 0x13B0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x13B1 (0x900)
@@ -6201,7 +6028,7 @@ label_480:
   lbpx  mx,  0x0                                                                   // 0x13BD (0x900)
   lbpx  mx,  0x0                                                                   // 0x13BE (0x900)
   retd  0x0                                                                        // 0x13BF (0x100)
-
+  
   // Stage 3e, Nyorotchi lower half, leaning left
   lbpx  mx,  0x0                                                                   // 0x13C0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x13C1 (0x900)
@@ -6219,7 +6046,7 @@ label_480:
   lbpx  mx,  0x20                                                                  // 0x13CD (0x920)
   lbpx  mx,  0x40                                                                  // 0x13CE (0x940)
   retd  0x20                                                                       // 0x13CF (0x120)
-
+  
   // Stage 3e, Nyorotchi lower half, leaning right
   lbpx  mx,  0x0                                                                   // 0x13D0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x13D1 (0x900)
@@ -6237,7 +6064,7 @@ label_480:
   lbpx  mx,  0x30                                                                  // 0x13DD (0x930)
   lbpx  mx,  0x0                                                                   // 0x13DE (0x900)
   retd  0x0                                                                        // 0x13DF (0x100)
-
+  
   // Stage 3e, Nyorotchi lower half, filled in
   lbpx  mx,  0x0                                                                   // 0x13E0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x13E1 (0x900)
@@ -6255,7 +6082,7 @@ label_480:
   lbpx  mx,  0x30                                                                  // 0x13ED (0x930)
   lbpx  mx,  0x0                                                                   // 0x13EE (0x900)
   retd  0x0                                                                        // 0x13EF (0x100)
-
+  
   // Stage 4, Bill upper half
   lbpx  mx,  0x0                                                                   // 0x13F0 (0x900)
   lbpx  mx,  0xC0                                                                  // 0x13F1 (0x9C0)
@@ -6273,7 +6100,7 @@ label_480:
   lbpx  mx,  0x92                                                                  // 0x13FD (0x992)
   lbpx  mx,  0x6C                                                                  // 0x13FE (0x96C)
   retd  0x0                                                                        // 0x13FF (0x100)
-
+  
   // Stage 4, Bill lower half
   lbpx  mx,  0x0                                                                   // 0x1400 (0x900)
   lbpx  mx,  0x50                                                                  // 0x1401 (0x950)
@@ -6291,7 +6118,7 @@ label_480:
   lbpx  mx,  0x6B                                                                  // 0x140D (0x96B)
   lbpx  mx,  0x50                                                                  // 0x140E (0x950)
   retd  0x0                                                                        // 0x140F (0x100)
-
+  
   // Stage 4, Bill upper half, sad
   lbpx  mx,  0x0                                                                   // 0x1410 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1411 (0x900)
@@ -6309,7 +6136,7 @@ label_480:
   lbpx  mx,  0x24                                                                  // 0x141D (0x924)
   lbpx  mx,  0xD8                                                                  // 0x141E (0x9D8)
   retd  0x0                                                                        // 0x141F (0x100)
-
+  
   // Stage 4, Bill lower half, sad
   lbpx  mx,  0x0                                                                   // 0x1420 (0x900)
   lbpx  mx,  0x53                                                                  // 0x1421 (0x953)
@@ -6327,7 +6154,7 @@ label_480:
   lbpx  mx,  0x6F                                                                  // 0x142D (0x96F)
   lbpx  mx,  0x50                                                                  // 0x142E (0x950)
   retd  0x0                                                                        // 0x142F (0x100)
-
+  
   // Stage 4, Bill upper half, Laughing
   lbpx  mx,  0x40                                                                  // 0x1430 (0x940)
   lbpx  mx,  0xA0                                                                  // 0x1431 (0x9A0)
@@ -6345,7 +6172,7 @@ label_480:
   lbpx  mx,  0xF8                                                                  // 0x143D (0x9F8)
   lbpx  mx,  0xA0                                                                  // 0x143E (0x9A0)
   retd  0x40                                                                       // 0x143F (0x140)
-
+  
   // Stage 4, Bill upper half, sleeping
   lbpx  mx,  0x0                                                                   // 0x1440 (0x900)
   lbpx  mx,  0xC0                                                                  // 0x1441 (0x9C0)
@@ -6363,7 +6190,7 @@ label_480:
   lbpx  mx,  0x92                                                                  // 0x144D (0x992)
   lbpx  mx,  0x6C                                                                  // 0x144E (0x96C)
   retd  0x0                                                                        // 0x144F (0x100)
-
+  
   // Cloud?
   // TODO: What is this?
   lbpx  mx,  0x0                                                                   // 0x1450 (0x900)
@@ -6382,7 +6209,7 @@ label_480:
   lbpx  mx,  0x42                                                                  // 0x145D (0x942)
   lbpx  mx,  0xFC                                                                  // 0x145E (0x9FC)
   retd  0x0                                                                        // 0x145F (0x100)
-
+  
   // Egg, upper half, position 1
   lbpx  mx,  0x0                                                                   // 0x1460 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1461 (0x900)
@@ -6400,7 +6227,7 @@ label_480:
   lbpx  mx,  0x0                                                                   // 0x146D (0x900)
   lbpx  mx,  0x0                                                                   // 0x146E (0x900)
   retd  0x0                                                                        // 0x146F (0x100)
-
+  
   // Egg, lower half, position 1
   lbpx  mx,  0x0                                                                   // 0x1470 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1471 (0x900)
@@ -6418,7 +6245,7 @@ label_480:
   lbpx  mx,  0x0                                                                   // 0x147D (0x900)
   lbpx  mx,  0x0                                                                   // 0x147E (0x900)
   retd  0x0                                                                        // 0x147F (0x100)
-
+  
   // Egg, upper half, position 2
   lbpx  mx,  0x0                                                                   // 0x1480 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1481 (0x900)
@@ -6436,7 +6263,7 @@ label_480:
   lbpx  mx,  0x80                                                                  // 0x148D (0x980)
   lbpx  mx,  0x0                                                                   // 0x148E (0x900)
   retd  0x0                                                                        // 0x148F (0x100)
-
+  
   // Egg, lower half, position 2
   lbpx  mx,  0x0                                                                   // 0x1490 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1491 (0x900)
@@ -6454,7 +6281,7 @@ label_480:
   lbpx  mx,  0x3                                                                   // 0x149D (0x903)
   lbpx  mx,  0x0                                                                   // 0x149E (0x900)
   retd  0x0                                                                        // 0x149F (0x100)
-
+  
   // Egg hatching, upper half
   lbpx  mx,  0x38                                                                  // 0x14A0 (0x938)
   lbpx  mx,  0xA6                                                                  // 0x14A1 (0x9A6)
@@ -6472,7 +6299,7 @@ label_480:
   lbpx  mx,  0x16                                                                  // 0x14AD (0x916)
   lbpx  mx,  0x48                                                                  // 0x14AE (0x948)
   retd  0x1                                                                        // 0x14AF (0x101)
-
+  
   // Egg hatching, lower half
   lbpx  mx,  0x0                                                                   // 0x14B0 (0x900)
   lbpx  mx,  0x10                                                                  // 0x14B1 (0x910)
@@ -6490,7 +6317,7 @@ label_480:
   lbpx  mx,  0x0                                                                   // 0x14BD (0x900)
   lbpx  mx,  0x8                                                                   // 0x14BE (0x908)
   retd  0x0                                                                        // 0x14BF (0x100)
-
+  
   // Sparkles, large one on the left
   lbpx  mx,  0x41                                                                  // 0x14C0 (0x941)
   lbpx  mx,  0x2A                                                                  // 0x14C1 (0x92A)
@@ -6508,7 +6335,7 @@ label_480:
   lbpx  mx,  0x0                                                                   // 0x14CD (0x900)
   lbpx  mx,  0x0                                                                   // 0x14CE (0x900)
   retd  0x0                                                                        // 0x14CF (0x100)
-
+  
   // Sparkles, large one on the right
   lbpx  mx,  0x0                                                                   // 0x14D0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x14D1 (0x900)
@@ -6526,7 +6353,7 @@ label_480:
   lbpx  mx,  0x22                                                                  // 0x14DD (0x922)
   lbpx  mx,  0x0                                                                   // 0x14DE (0x900)
   retd  0x0                                                                        // 0x14DF (0x100)
-
+  
   // Angel, upper half
   lbpx  mx,  0x80                                                                  // 0x14E0 (0x980)
   lbpx  mx,  0x40                                                                  // 0x14E1 (0x940)
@@ -6544,7 +6371,7 @@ label_480:
   lbpx  mx,  0x80                                                                  // 0x14ED (0x980)
   lbpx  mx,  0x0                                                                   // 0x14EE (0x900)
   retd  0x0                                                                        // 0x14EF (0x100)
-
+  
   // Angel, lower half
   lbpx  mx,  0x7                                                                   // 0x14F0 (0x907)
   lbpx  mx,  0x8                                                                   // 0x14F1 (0x908)
@@ -6562,43 +6389,43 @@ label_480:
   lbpx  mx,  0x7                                                                   // 0x14FD (0x907)
   lbpx  mx,  0x0                                                                   // 0x14FE (0x900)
   retd  0x0                                                                        // 0x14FF (0x100)
-
+  
   // Large 0 text
   lbpx  mx,  0x3E                                                                  // 0x1500 (0x93E)
   lbpx  mx,  0x41                                                                  // 0x1501 (0x941)
   lbpx  mx,  0x41                                                                  // 0x1502 (0x941)
   retd  0x3E                                                                       // 0x1503 (0x13E)
-
+  
   // Large 1 text
   lbpx  mx,  0x0                                                                   // 0x1504 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1505 (0x900)
   lbpx  mx,  0x2                                                                   // 0x1506 (0x902)
   retd  0x7F                                                                       // 0x1507 (0x17F)
-
+  
   // Large 2 text
   lbpx  mx,  0x62                                                                  // 0x1508 (0x962)
   lbpx  mx,  0x51                                                                  // 0x1509 (0x951)
   lbpx  mx,  0x49                                                                  // 0x150A (0x949)
   retd  0x46                                                                       // 0x150B (0x146)
-
+  
   // Large 3 text
   lbpx  mx,  0x41                                                                  // 0x150C (0x941)
   lbpx  mx,  0x49                                                                  // 0x150D (0x949)
   lbpx  mx,  0x49                                                                  // 0x150E (0x949)
   retd  0x36                                                                       // 0x150F (0x136)
-
+  
   // Large 4 text
   lbpx  mx,  0x3C                                                                  // 0x1510 (0x93C)
   lbpx  mx,  0x22                                                                  // 0x1511 (0x922)
   lbpx  mx,  0x7F                                                                  // 0x1512 (0x97F)
   retd  0x20                                                                       // 0x1513 (0x120)
-
+  
   // Large 5 text
   lbpx  mx,  0x4F                                                                  // 0x1514 (0x94F)
   lbpx  mx,  0x49                                                                  // 0x1515 (0x949)
   lbpx  mx,  0x49                                                                  // 0x1516 (0x949)
   retd  0x31                                                                       // 0x1517 (0x131)
-
+  
   // Large 6 text
   lbpx  mx,  0x3E                                                                  // 0x1518 (0x93E)
   lbpx  mx,  0x49                                                                  // 0x1519 (0x949)
@@ -6610,105 +6437,106 @@ label_480:
   lbpx  mx,  0x1                                                                   // 0x151D (0x901)
   lbpx  mx,  0x71                                                                  // 0x151E (0x971)
   retd  0xF                                                                        // 0x151F (0x10F)
-
+  
   // Large 8 text
   lbpx  mx,  0x36                                                                  // 0x1520 (0x936)
   lbpx  mx,  0x49                                                                  // 0x1521 (0x949)
   lbpx  mx,  0x49                                                                  // 0x1522 (0x949)
   retd  0x36                                                                       // 0x1523 (0x136)
-
+  
   // Large 9 text
   lbpx  mx,  0x6                                                                   // 0x1524 (0x906)
   lbpx  mx,  0x49                                                                  // 0x1525 (0x949)
   lbpx  mx,  0x49                                                                  // 0x1526 (0x949)
   retd  0x3E                                                                       // 0x1527 (0x13E)
-
+  
   // Small 0 text
   lbpx  mx,  0x7C                                                                  // 0x1528 (0x97C)
   lbpx  mx,  0x44                                                                  // 0x1529 (0x944)
   retd  0x7C                                                                       // 0x152A (0x17C)
   retd  0x0                                                                        // 0x152B (0x100)
-
+  
   // Small 1 text
   lbpx  mx,  0x0                                                                   // 0x152C (0x900)
   lbpx  mx,  0x0                                                                   // 0x152D (0x900)
   retd  0x7C                                                                       // 0x152E (0x17C)
   retd  0x0                                                                        // 0x152F (0x100)
-
+  
   // Small 2 text
   lbpx  mx,  0x74                                                                  // 0x1530 (0x974)
   lbpx  mx,  0x54                                                                  // 0x1531 (0x954)
   retd  0x5C                                                                       // 0x1532 (0x15C)
   retd  0x0                                                                        // 0x1533 (0x100)
-
+  
   // Small 3 text
   lbpx  mx,  0x54                                                                  // 0x1534 (0x954)
   lbpx  mx,  0x54                                                                  // 0x1535 (0x954)
   retd  0x7C                                                                       // 0x1536 (0x17C)
   retd  0x0                                                                        // 0x1537 (0x100)
-
+  
   // Small 4 text
   lbpx  mx,  0x1C                                                                  // 0x1538 (0x91C)
   lbpx  mx,  0x10                                                                  // 0x1539 (0x910)
   retd  0x7C                                                                       // 0x153A (0x17C)
   retd  0x0                                                                        // 0x153B (0x100)
-
-  // Small 5 text
+  
+  // Small 5 text  
   lbpx  mx,  0x5C                                                                  // 0x153C (0x95C)
   lbpx  mx,  0x54                                                                  // 0x153D (0x954)
   retd  0x74                                                                       // 0x153E (0x174)
   retd  0x0                                                                        // 0x153F (0x100)
-
+  
   // Small 6 text
   lbpx  mx,  0x7C                                                                  // 0x1540 (0x97C)
   lbpx  mx,  0x54                                                                  // 0x1541 (0x954)
   retd  0x74                                                                       // 0x1542 (0x174)
   retd  0x0                                                                        // 0x1543 (0x100)
-
+  
   // Small 7 text
   lbpx  mx,  0xC                                                                   // 0x1544 (0x90C)
   lbpx  mx,  0x4                                                                   // 0x1545 (0x904)
   retd  0x7C                                                                       // 0x1546 (0x17C)
   retd  0x0                                                                        // 0x1547 (0x100)
-
+  
   // Small 8 text
   lbpx  mx,  0x7C                                                                  // 0x1548 (0x97C)
   lbpx  mx,  0x54                                                                  // 0x1549 (0x954)
   retd  0x7C                                                                       // 0x154A (0x17C)
   retd  0x0                                                                        // 0x154B (0x100)
-
+  
   // Small 9 text
   lbpx  mx,  0x5C                                                                  // 0x154C (0x95C)
   lbpx  mx,  0x54                                                                  // 0x154D (0x954)
   retd  0x7C                                                                       // 0x154E (0x17C)
   retd  0x0                                                                        // 0x154F (0x100)
-
+  
   // Filled in right pointing arrow
   lbpx  mx,  0x7C                                                                  // 0x1550 (0x97C)
   lbpx  mx,  0x38                                                                  // 0x1551 (0x938)
   retd  0x10                                                                       // 0x1552 (0x110)
   retd  0x0                                                                        // 0x1553 (0x100)
-
+  
   // Unfilled right pointing arrow
   lbpx  mx,  0x44                                                                  // 0x1554 (0x944)
   lbpx  mx,  0x28                                                                  // 0x1555 (0x928)
   retd  0x10                                                                       // 0x1556 (0x110)
   retd  0x0                                                                        // 0x1557 (0x100)
-  jp    label_481                                                                  // 0x1558 (0x64)
-  jp    label_481                                                                  // 0x1559 (0x64)
-  jp    label_482                                                                  // 0x155A (0x71)
-  jp    label_483                                                                  // 0x155B (0x7E)
-  jp    label_484                                                                  // 0x155C (0x8B)
-  jp    label_485                                                                  // 0x155D (0x98)
-  jp    label_486                                                                  // 0x155E (0xA5)
-  jp    label_487                                                                  // 0x155F (0xB2)
-  jp    label_488                                                                  // 0x1560 (0xBF)
-  jp    label_489                                                                  // 0x1561 (0xCC)
-  jp    label_490                                                                  // 0x1562 (0xD9)
-  jp    label_485                                                                  // 0x1563 (0x98)
+  jp    label_397                                                                  // 0x1558 (0x64)
+  jp    label_397                                                                  // 0x1559 (0x64)
+  jp    label_398                                                                  // 0x155A (0x71)
+  jp    label_399                                                                  // 0x155B (0x7E)
+  jp    label_400                                                                  // 0x155C (0x8B)
+  jp    label_401                                                                  // 0x155D (0x98)
+  jp    label_402                                                                  // 0x155E (0xA5)
+  jp    label_403                                                                  // 0x155F (0xB2)
+  jp    label_404                                                                  // 0x1560 (0xBF)
+  jp    label_405                                                                  // 0x1561 (0xCC)
+  jp    label_406                                                                  // 0x1562 (0xD9)
+  jp    label_401                                                                  // 0x1563 (0x98)
 
 // TODO: Unclear what any of these are. Are these not for video RAM?
-label_481:
+
+label_397:
   lbpx  mx,  0xFF                                                                  // 0x1564 (0x9FF)
   lbpx  mx,  0xFF                                                                  // 0x1565 (0x9FF)
   lbpx  mx,  0x3                                                                   // 0x1566 (0x903)
@@ -6723,7 +6551,7 @@ label_481:
   lbpx  mx,  0x11                                                                  // 0x156F (0x911)
   retd  0x0                                                                        // 0x1570 (0x100)
 
-label_482:
+label_398:
   lbpx  mx,  0x9                                                                   // 0x1571 (0x909)
   lbpx  mx,  0x14                                                                  // 0x1572 (0x914)
   lbpx  mx,  0x32                                                                  // 0x1573 (0x932)
@@ -6738,7 +6566,7 @@ label_482:
   lbpx  mx,  0x11                                                                  // 0x157C (0x911)
   retd  0x0                                                                        // 0x157D (0x100)
 
-label_483:
+label_399:
   lbpx  mx,  0x9                                                                   // 0x157E (0x909)
   lbpx  mx,  0x15                                                                  // 0x157F (0x915)
   lbpx  mx,  0x4B                                                                  // 0x1580 (0x94B)
@@ -6753,7 +6581,7 @@ label_483:
   lbpx  mx,  0x11                                                                  // 0x1589 (0x911)
   retd  0x1                                                                        // 0x158A (0x101)
 
-label_484:
+label_400:
   lbpx  mx,  0x9                                                                   // 0x158B (0x909)
   lbpx  mx,  0x15                                                                  // 0x158C (0x915)
   lbpx  mx,  0x4B                                                                  // 0x158D (0x94B)
@@ -6768,7 +6596,7 @@ label_484:
   lbpx  mx,  0x11                                                                  // 0x1596 (0x911)
   retd  0x0                                                                        // 0x1597 (0x100)
 
-label_485:
+label_401:
   lbpx  mx,  0x9                                                                   // 0x1598 (0x909)
   lbpx  mx,  0x16                                                                  // 0x1599 (0x916)
   lbpx  mx,  0x51                                                                  // 0x159A (0x951)
@@ -6783,7 +6611,7 @@ label_485:
   lbpx  mx,  0x11                                                                  // 0x15A3 (0x911)
   retd  0x1                                                                        // 0x15A4 (0x101)
 
-label_486:
+label_402:
   lbpx  mx,  0x9                                                                   // 0x15A5 (0x909)
   lbpx  mx,  0x16                                                                  // 0x15A6 (0x916)
   lbpx  mx,  0x51                                                                  // 0x15A7 (0x951)
@@ -6798,7 +6626,7 @@ label_486:
   lbpx  mx,  0x11                                                                  // 0x15B0 (0x911)
   retd  0x1                                                                        // 0x15B1 (0x101)
 
-label_487:
+label_403:
   lbpx  mx,  0xB                                                                   // 0x15B2 (0x90B)
   lbpx  mx,  0x17                                                                  // 0x15B3 (0x917)
   lbpx  mx,  0x37                                                                  // 0x15B4 (0x937)
@@ -6813,7 +6641,7 @@ label_487:
   lbpx  mx,  0x23                                                                  // 0x15BD (0x923)
   retd  0x1                                                                        // 0x15BE (0x101)
 
-label_488:
+label_404:
   lbpx  mx,  0x9                                                                   // 0x15BF (0x909)
   lbpx  mx,  0x16                                                                  // 0x15C0 (0x916)
   lbpx  mx,  0x3C                                                                  // 0x15C1 (0x93C)
@@ -6828,7 +6656,7 @@ label_488:
   lbpx  mx,  0x43                                                                  // 0x15CA (0x943)
   retd  0x1                                                                        // 0x15CB (0x101)
 
-label_489:
+label_405:
   lbpx  mx,  0x9                                                                   // 0x15CC (0x909)
   lbpx  mx,  0x16                                                                  // 0x15CD (0x916)
   lbpx  mx,  0x3C                                                                  // 0x15CE (0x93C)
@@ -6843,7 +6671,7 @@ label_489:
   lbpx  mx,  0x11                                                                  // 0x15D7 (0x911)
   retd  0x0                                                                        // 0x15D8 (0x100)
 
-label_490:
+label_406:
   lbpx  mx,  0xA                                                                   // 0x15D9 (0x90A)
   lbpx  mx,  0x16                                                                  // 0x15DA (0x916)
   lbpx  mx,  0x2D                                                                  // 0x15DB (0x92D)
@@ -6883,7 +6711,7 @@ label_490:
   retd  0x91                                                                       // 0x15FD (0x191)
   nop7                                                                             // 0x15FE (0xFFF)
   nop7                                                                             // 0x15FF (0xFFF)
-
+  
   // Large, centered 0 text
   // Probably used for the first digit of the hour
   lbpx  mx,  0x0                                                                   // 0x1600 (0x900)
@@ -6894,7 +6722,7 @@ label_490:
   lbpx  mx,  0x7C                                                                  // 0x1605 (0x97C)
   lbpx  mx,  0x0                                                                   // 0x1606 (0x900)
   retd  0x0                                                                        // 0x1607 (0x100)
-
+  
   // Large, centered 1 text
   lbpx  mx,  0x0                                                                   // 0x1608 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1609 (0x900)
@@ -6904,7 +6732,7 @@ label_490:
   lbpx  mx,  0x0                                                                   // 0x160D (0x900)
   lbpx  mx,  0x0                                                                   // 0x160E (0x900)
   retd  0x0                                                                        // 0x160F (0x100)
-
+  
   // Large, centered 2 text
   lbpx  mx,  0x0                                                                   // 0x1610 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1611 (0x900)
@@ -6914,7 +6742,7 @@ label_490:
   lbpx  mx,  0x8C                                                                  // 0x1615 (0x98C)
   lbpx  mx,  0x0                                                                   // 0x1616 (0x900)
   retd  0x0                                                                        // 0x1617 (0x100)
-
+  
   // Large, centered 3 text
   lbpx  mx,  0x0                                                                   // 0x1618 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1619 (0x900)
@@ -6924,7 +6752,7 @@ label_490:
   lbpx  mx,  0x6C                                                                  // 0x161D (0x96C)
   lbpx  mx,  0x0                                                                   // 0x161E (0x900)
   retd  0x0                                                                        // 0x161F (0x100)
-
+  
   // Large, centered 4 text
   lbpx  mx,  0x0                                                                   // 0x1620 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1621 (0x900)
@@ -6934,7 +6762,7 @@ label_490:
   lbpx  mx,  0x20                                                                  // 0x1625 (0x920)
   lbpx  mx,  0x0                                                                   // 0x1626 (0x900)
   retd  0x0                                                                        // 0x1627 (0x100)
-
+  
   // Large, centered 5 text
   lbpx  mx,  0x0                                                                   // 0x1628 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1629 (0x900)
@@ -6944,7 +6772,7 @@ label_490:
   lbpx  mx,  0x62                                                                  // 0x162D (0x962)
   lbpx  mx,  0x0                                                                   // 0x162E (0x900)
   retd  0x0                                                                        // 0x162F (0x100)
-
+  
   // Large, centered 6 text
   lbpx  mx,  0x0                                                                   // 0x1630 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1631 (0x900)
@@ -6954,7 +6782,7 @@ label_490:
   lbpx  mx,  0x64                                                                  // 0x1635 (0x964)
   lbpx  mx,  0x0                                                                   // 0x1636 (0x900)
   retd  0x0                                                                        // 0x1637 (0x100)
-
+  
   // Large, centered 7 text
   lbpx  mx,  0x0                                                                   // 0x1638 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1639 (0x900)
@@ -6964,7 +6792,7 @@ label_490:
   lbpx  mx,  0xE                                                                   // 0x163D (0x90E)
   lbpx  mx,  0x0                                                                   // 0x163E (0x900)
   retd  0x0                                                                        // 0x163F (0x100)
-
+  
   // Large, centered 8 text
   lbpx  mx,  0x0                                                                   // 0x1640 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1641 (0x900)
@@ -6974,7 +6802,7 @@ label_490:
   lbpx  mx,  0x6C                                                                  // 0x1645 (0x96C)
   lbpx  mx,  0x0                                                                   // 0x1646 (0x900)
   retd  0x0                                                                        // 0x1647 (0x100)
-
+  
   // Large, centered 9 text
   lbpx  mx,  0x0                                                                   // 0x1648 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1649 (0x900)
@@ -6984,7 +6812,7 @@ label_490:
   lbpx  mx,  0x7C                                                                  // 0x164D (0x97C)
   lbpx  mx,  0x0                                                                   // 0x164E (0x900)
   retd  0x0                                                                        // 0x164F (0x100)
-
+  
   // AM vertical text
   lbpx  mx,  0x0                                                                   // 0x1650 (0x900)
   lbpx  mx,  0xEE                                                                  // 0x1651 (0x9EE)
@@ -6994,7 +6822,7 @@ label_490:
   lbpx  mx,  0xEF                                                                  // 0x1655 (0x9EF)
   lbpx  mx,  0xEE                                                                  // 0x1656 (0x9EE)
   retd  0x0                                                                        // 0x1657 (0x100)
-
+  
   // PM vertical text
   lbpx  mx,  0x0                                                                   // 0x1658 (0x900)
   lbpx  mx,  0xEF                                                                  // 0x1659 (0x9EF)
@@ -7004,7 +6832,7 @@ label_490:
   lbpx  mx,  0xE5                                                                  // 0x165D (0x9E5)
   lbpx  mx,  0xE2                                                                  // 0x165E (0x9E2)
   retd  0x0                                                                        // 0x165F (0x100)
-
+  
   // S| text - Beginning of SET
   lbpx  mx,  0x0                                                                   // 0x1660 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1661 (0x900)
@@ -7014,7 +6842,7 @@ label_490:
   lbpx  mx,  0x64                                                                  // 0x1665 (0x964)
   lbpx  mx,  0x0                                                                   // 0x1666 (0x900)
   retd  0xFE                                                                       // 0x1667 (0x1FE)
-
+  
   // ET text - Ending of SET
   lbpx  mx,  0x92                                                                  // 0x1668 (0x992)
   lbpx  mx,  0x92                                                                  // 0x1669 (0x992)
@@ -7024,7 +6852,7 @@ label_490:
   lbpx  mx,  0x2                                                                   // 0x166D (0x902)
   lbpx  mx,  0x0                                                                   // 0x166E (0x900)
   retd  0x0                                                                        // 0x166F (0x100)
-
+  
   // OI text
   // TODO: What is this for?
   lbpx  mx,  0x0                                                                   // 0x1670 (0x900)
@@ -7035,7 +6863,7 @@ label_490:
   lbpx  mx,  0x3C                                                                  // 0x1675 (0x93C)
   lbpx  mx,  0x0                                                                   // 0x1676 (0x900)
   retd  0x7E                                                                       // 0x1677 (0x17E)
-
+  
   // VS game result text
   lbpx  mx,  0x0                                                                   // 0x1678 (0x900)
   lbpx  mx,  0x3E                                                                  // 0x1679 (0x93E)
@@ -7045,7 +6873,7 @@ label_490:
   lbpx  mx,  0xCE                                                                  // 0x167D (0x9CE)
   lbpx  mx,  0x92                                                                  // 0x167E (0x992)
   retd  0xE6                                                                       // 0x167F (0x1E6)
-
+  
   // Bread food, complete
   lbpx  mx,  0xC                                                                   // 0x1680 (0x90C)
   lbpx  mx,  0xF2                                                                  // 0x1681 (0x9F2)
@@ -7055,7 +6883,7 @@ label_490:
   lbpx  mx,  0x8E                                                                  // 0x1685 (0x98E)
   lbpx  mx,  0xF2                                                                  // 0x1686 (0x9F2)
   retd  0xC                                                                        // 0x1687 (0x10C)
-
+  
   // Bread food, first bite
   lbpx  mx,  0xC                                                                   // 0x1688 (0x90C)
   lbpx  mx,  0xF2                                                                  // 0x1689 (0x9F2)
@@ -7065,7 +6893,7 @@ label_490:
   lbpx  mx,  0x88                                                                  // 0x168D (0x988)
   lbpx  mx,  0xF8                                                                  // 0x168E (0x9F8)
   retd  0x0                                                                        // 0x168F (0x100)
-
+  
   // Bread food, second bite
   lbpx  mx,  0x0                                                                   // 0x1690 (0x900)
   lbpx  mx,  0xF0                                                                  // 0x1691 (0x9F0)
@@ -7075,7 +6903,7 @@ label_490:
   lbpx  mx,  0xA0                                                                  // 0x1695 (0x9A0)
   lbpx  mx,  0xE0                                                                  // 0x1696 (0x9E0)
   retd  0x0                                                                        // 0x1697 (0x100)
-
+  
   // Clear/empty section
   lbpx  mx,  0x0                                                                   // 0x1698 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1699 (0x900)
@@ -7085,7 +6913,7 @@ label_490:
   lbpx  mx,  0x0                                                                   // 0x169D (0x900)
   lbpx  mx,  0x0                                                                   // 0x169E (0x900)
   retd  0x0                                                                        // 0x169F (0x100)
-
+  
   // Snack food, complete
   lbpx  mx,  0x4                                                                   // 0x16A0 (0x904)
   lbpx  mx,  0x6                                                                   // 0x16A1 (0x906)
@@ -7095,7 +6923,7 @@ label_490:
   lbpx  mx,  0xFC                                                                  // 0x16A5 (0x9FC)
   lbpx  mx,  0x60                                                                  // 0x16A6 (0x960)
   retd  0x20                                                                       // 0x16A7 (0x120)
-
+  
   // Snack food, first bite
   lbpx  mx,  0x0                                                                   // 0x16A8 (0x900)
   lbpx  mx,  0x0                                                                   // 0x16A9 (0x900)
@@ -7105,7 +6933,7 @@ label_490:
   lbpx  mx,  0xFC                                                                  // 0x16AD (0x9FC)
   lbpx  mx,  0x60                                                                  // 0x16AE (0x960)
   retd  0x20                                                                       // 0x16AF (0x120)
-
+  
   // Snack food, second bite
   lbpx  mx,  0x0                                                                   // 0x16B0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x16B1 (0x900)
@@ -7115,7 +6943,7 @@ label_490:
   lbpx  mx,  0xF0                                                                  // 0x16B5 (0x9F0)
   lbpx  mx,  0x60                                                                  // 0x16B6 (0x960)
   retd  0x20                                                                       // 0x16B7 (0x120)
-
+  
   // Most of "FF"
   // TODO: What is this for?
   lbpx  mx,  0xA                                                                   // 0x16B8 (0x90A)
@@ -7126,7 +6954,7 @@ label_490:
   lbpx  mx,  0xA                                                                   // 0x16BD (0x90A)
   lbpx  mx,  0xA                                                                   // 0x16BE (0x90A)
   retd  0x2                                                                        // 0x16BF (0x102)
-
+  
   // Stage 0, babytchi
   lbpx  mx,  0x0                                                                   // 0x16C0 (0x900)
   lbpx  mx,  0x3C                                                                  // 0x16C1 (0x93C)
@@ -7136,7 +6964,7 @@ label_490:
   lbpx  mx,  0x7A                                                                  // 0x16C5 (0x97A)
   lbpx  mx,  0x3C                                                                  // 0x16C6 (0x93C)
   retd  0x0                                                                        // 0x16C7 (0x100)
-
+  
   // yr lowercase, year indicator
   lbpx  mx,  0x0                                                                   // 0x16C8 (0x900)
   lbpx  mx,  0x9C                                                                  // 0x16C9 (0x99C)
@@ -7146,7 +6974,7 @@ label_490:
   lbpx  mx,  0x7C                                                                  // 0x16CD (0x97C)
   lbpx  mx,  0x8                                                                   // 0x16CE (0x908)
   retd  0x4                                                                        // 0x16CF (0x104)
-
+  
   // Scale icon
   lbpx  mx,  0x0                                                                   // 0x16D0 (0x900)
   lbpx  mx,  0x86                                                                  // 0x16D1 (0x986)
@@ -7156,7 +6984,7 @@ label_490:
   lbpx  mx,  0x94                                                                  // 0x16D5 (0x994)
   lbpx  mx,  0xF4                                                                  // 0x16D6 (0x9F4)
   retd  0x86                                                                       // 0x16D7 (0x186)
-
+  
   // OZ uppercase, weight indicator
   lbpx  mx,  0x0                                                                   // 0x16D8 (0x900)
   lbpx  mx,  0xFC                                                                  // 0x16D9 (0x9FC)
@@ -7166,7 +6994,7 @@ label_490:
   lbpx  mx,  0xC4                                                                  // 0x16DD (0x9C4)
   lbpx  mx,  0xB4                                                                  // 0x16DE (0x9B4)
   retd  0x8C                                                                       // 0x16DF (0x18C)
-
+  
   // Filled in heart, satisfied
   lbpx  mx,  0x1C                                                                  // 0x16E0 (0x91C)
   lbpx  mx,  0x32                                                                  // 0x16E1 (0x932)
@@ -7176,7 +7004,7 @@ label_490:
   lbpx  mx,  0x3E                                                                  // 0x16E5 (0x93E)
   lbpx  mx,  0x1C                                                                  // 0x16E6 (0x91C)
   retd  0x0                                                                        // 0x16E7 (0x100)
-
+  
   // Empty heart, unsatisfied
   lbpx  mx,  0x1C                                                                  // 0x16E8 (0x91C)
   lbpx  mx,  0x22                                                                  // 0x16E9 (0x922)
@@ -7186,7 +7014,7 @@ label_490:
   lbpx  mx,  0x22                                                                  // 0x16ED (0x922)
   lbpx  mx,  0x1C                                                                  // 0x16EE (0x91C)
   retd  0x0                                                                        // 0x16EF (0x100)
-
+  
   // Stinky poop, right arrows
   lbpx  mx,  0x5                                                                   // 0x16F0 (0x905)
   lbpx  mx,  0xC2                                                                  // 0x16F1 (0x9C2)
@@ -7196,7 +7024,7 @@ label_490:
   lbpx  mx,  0xE0                                                                  // 0x16F5 (0x9E0)
   lbpx  mx,  0xCA                                                                  // 0x16F6 (0x9CA)
   retd  0x4                                                                        // 0x16F7 (0x104)
-
+  
   // Stinky poop, left arrows
   lbpx  mx,  0x4                                                                   // 0x16F8 (0x904)
   lbpx  mx,  0xCA                                                                  // 0x16F9 (0x9CA)
@@ -7206,7 +7034,7 @@ label_490:
   lbpx  mx,  0xA0                                                                  // 0x16FD (0x9A0)
   lbpx  mx,  0xC2                                                                  // 0x16FE (0x9C2)
   retd  0x5                                                                        // 0x16FF (0x105)
-
+  
   // Big Z with black background, sleeping
   lbpx  mx,  0xFF                                                                  // 0x1700 (0x9FF)
   lbpx  mx,  0x3B                                                                  // 0x1701 (0x93B)
@@ -7216,7 +7044,7 @@ label_490:
   lbpx  mx,  0xFF                                                                  // 0x1705 (0x9FF)
   lbpx  mx,  0xFF                                                                  // 0x1706 (0x9FF)
   retd  0xFF                                                                       // 0x1707 (0x1FF)
-
+  
   // Smaller Z with dots and black background, sleeping
   lbpx  mx,  0xDF                                                                  // 0x1708 (0x9DF)
   lbpx  mx,  0xFF                                                                  // 0x1709 (0x9FF)
@@ -7226,7 +7054,7 @@ label_490:
   lbpx  mx,  0xEA                                                                  // 0x170D (0x9EA)
   lbpx  mx,  0xEC                                                                  // 0x170E (0x9EC)
   retd  0xFF                                                                       // 0x170F (0x1FF)
-
+  
   // Sickness skull
   lbpx  mx,  0x0                                                                   // 0x1710 (0x900)
   lbpx  mx,  0x3C                                                                  // 0x1711 (0x93C)
@@ -7236,7 +7064,7 @@ label_490:
   lbpx  mx,  0x76                                                                  // 0x1715 (0x976)
   lbpx  mx,  0xF6                                                                  // 0x1716 (0x9F6)
   retd  0x3C                                                                       // 0x1717 (0x13C)
-
+  
   // Success sparkle
   lbpx  mx,  0x8                                                                   // 0x1718 (0x908)
   lbpx  mx,  0x42                                                                  // 0x1719 (0x942)
@@ -7246,7 +7074,7 @@ label_490:
   lbpx  mx,  0x18                                                                  // 0x171D (0x918)
   lbpx  mx,  0x42                                                                  // 0x171E (0x942)
   retd  0x10                                                                       // 0x171F (0x110)
-
+  
   // Angry ticks
   lbpx  mx,  0x0                                                                   // 0x1720 (0x900)
   lbpx  mx,  0x40                                                                  // 0x1721 (0x940)
@@ -7256,7 +7084,7 @@ label_490:
   lbpx  mx,  0x1F                                                                  // 0x1725 (0x91F)
   lbpx  mx,  0x1E                                                                  // 0x1726 (0x91E)
   retd  0x6                                                                        // 0x1727 (0x106)
-
+  
   // Smaller ticks
   // TODO: What is this used for?
   lbpx  mx,  0x0                                                                   // 0x1728 (0x900)
@@ -7267,7 +7095,7 @@ label_490:
   lbpx  mx,  0x0                                                                   // 0x172D (0x900)
   lbpx  mx,  0x0                                                                   // 0x172E (0x900)
   retd  0x0                                                                        // 0x172F (0x100)
-
+  
   // Left filled in arrow
   lbpx  mx,  0x0                                                                   // 0x1730 (0x900)
   lbpx  mx,  0x10                                                                  // 0x1731 (0x910)
@@ -7277,7 +7105,7 @@ label_490:
   lbpx  mx,  0x38                                                                  // 0x1735 (0x938)
   lbpx  mx,  0x38                                                                  // 0x1736 (0x938)
   retd  0x0                                                                        // 0x1737 (0x100)
-
+  
   // Right filled in arrow
   lbpx  mx,  0x0                                                                   // 0x1738 (0x900)
   lbpx  mx,  0x38                                                                  // 0x1739 (0x938)
@@ -7287,7 +7115,7 @@ label_490:
   lbpx  mx,  0x38                                                                  // 0x173D (0x938)
   lbpx  mx,  0x10                                                                  // 0x173E (0x910)
   retd  0x0                                                                        // 0x173F (0x100)
-
+  
   // Me cut off. Start of Meal
   lbpx  mx,  0x7E                                                                  // 0x1740 (0x97E)
   lbpx  mx,  0x2                                                                   // 0x1741 (0x902)
@@ -7297,7 +7125,7 @@ label_490:
   lbpx  mx,  0x0                                                                   // 0x1745 (0x900)
   lbpx  mx,  0x38                                                                  // 0x1746 (0x938)
   retd  0x54                                                                       // 0x1747 (0x154)
-
+  
   // ea cut off. Middle of Meal
   lbpx  mx,  0x54                                                                  // 0x1748 (0x954)
   lbpx  mx,  0x58                                                                  // 0x1749 (0x958)
@@ -7307,7 +7135,7 @@ label_490:
   lbpx  mx,  0x54                                                                  // 0x174D (0x954)
   lbpx  mx,  0x3C                                                                  // 0x174E (0x93C)
   retd  0x40                                                                       // 0x174F (0x140)
-
+  
   // l. end of Meal
   lbpx  mx,  0x0                                                                   // 0x1750 (0x900)
   lbpx  mx,  0x7E                                                                  // 0x1751 (0x97E)
@@ -7317,7 +7145,7 @@ label_490:
   lbpx  mx,  0x0                                                                   // 0x1755 (0x900)
   lbpx  mx,  0x0                                                                   // 0x1756 (0x900)
   retd  0x0                                                                        // 0x1757 (0x100)
-
+  
   // Sn cut off. Start of Snack
   lbpx  mx,  0x26                                                                  // 0x1758 (0x926)
   lbpx  mx,  0x49                                                                  // 0x1759 (0x949)
@@ -7327,7 +7155,7 @@ label_490:
   lbpx  mx,  0x7C                                                                  // 0x175D (0x97C)
   lbpx  mx,  0x4                                                                   // 0x175E (0x904)
   retd  0x4                                                                        // 0x175F (0x104)
-
+  
   // na cut off. Middle of Snack
   lbpx  mx,  0x7C                                                                  // 0x1760 (0x97C)
   lbpx  mx,  0x0                                                                   // 0x1761 (0x900)
@@ -7337,7 +7165,7 @@ label_490:
   lbpx  mx,  0x3C                                                                  // 0x1765 (0x93C)
   lbpx  mx,  0x40                                                                  // 0x1766 (0x940)
   retd  0x38                                                                       // 0x1767 (0x138)
-
+  
   // ck cut off. End of Snack
   lbpx  mx,  0x44                                                                  // 0x1768 (0x944)
   lbpx  mx,  0x44                                                                  // 0x1769 (0x944)
@@ -7347,7 +7175,7 @@ label_490:
   lbpx  mx,  0x10                                                                  // 0x176D (0x910)
   lbpx  mx,  0x68                                                                  // 0x176E (0x968)
   retd  0x0                                                                        // 0x176F (0x100)
-
+  
   // Hu. Start of Hungry
   lbpx  mx,  0x7F                                                                  // 0x1770 (0x97F)
   lbpx  mx,  0x8                                                                   // 0x1771 (0x908)
@@ -7357,7 +7185,7 @@ label_490:
   lbpx  mx,  0x7C                                                                  // 0x1775 (0x97C)
   lbpx  mx,  0x40                                                                  // 0x1776 (0x940)
   retd  0x7C                                                                       // 0x1777 (0x17C)
-
+  
   // ng. Middle of Hungry
   lbpx  mx,  0x0                                                                   // 0x1778 (0x900)
   lbpx  mx,  0x7C                                                                  // 0x1779 (0x97C)
@@ -7367,7 +7195,7 @@ label_490:
   lbpx  mx,  0xBC                                                                  // 0x177D (0x9BC)
   lbpx  mx,  0xA4                                                                  // 0x177E (0x9A4)
   retd  0xFC                                                                       // 0x177F (0x1FC)
-
+  
   // ry. End of Hungry
   lbpx  mx,  0x0                                                                   // 0x1780 (0x900)
   lbpx  mx,  0x7C                                                                  // 0x1781 (0x97C)
@@ -7377,7 +7205,7 @@ label_490:
   lbpx  mx,  0x9C                                                                  // 0x1785 (0x99C)
   lbpx  mx,  0xA0                                                                  // 0x1786 (0x9A0)
   retd  0x7C                                                                       // 0x1787 (0x17C)
-
+  
   // Ha cut off. Start of Happy
   lbpx  mx,  0x0                                                                   // 0x1788 (0x900)
   lbpx  mx,  0x7F                                                                  // 0x1789 (0x97F)
@@ -7387,7 +7215,7 @@ label_490:
   lbpx  mx,  0x0                                                                   // 0x178D (0x900)
   lbpx  mx,  0x30                                                                  // 0x178E (0x930)
   retd  0x54                                                                       // 0x178F (0x154)
-
+  
   // ap cut off. Middle of Happy
   lbpx  mx,  0x54                                                                  // 0x1790 (0x954)
   lbpx  mx,  0x3C                                                                  // 0x1791 (0x93C)
@@ -7397,7 +7225,7 @@ label_490:
   lbpx  mx,  0x24                                                                  // 0x1795 (0x924)
   lbpx  mx,  0x3C                                                                  // 0x1796 (0x93C)
   retd  0x0                                                                        // 0x1797 (0x100)
-
+  
   // py. End of Happy
   lbpx  mx,  0xFC                                                                  // 0x1798 (0x9FC)
   lbpx  mx,  0x24                                                                  // 0x1799 (0x924)
@@ -7407,7 +7235,7 @@ label_490:
   lbpx  mx,  0xA0                                                                  // 0x179D (0x9A0)
   lbpx  mx,  0x7C                                                                  // 0x179E (0x97C)
   retd  0x0                                                                        // 0x179F (0x100)
-
+  
   // Di. Start of Dicipline
   lbpx  mx,  0x0                                                                   // 0x17A0 (0x900)
   lbpx  mx,  0x7F                                                                  // 0x17A1 (0x97F)
@@ -7417,7 +7245,7 @@ label_490:
   lbpx  mx,  0x0                                                                   // 0x17A5 (0x900)
   lbpx  mx,  0x74                                                                  // 0x17A6 (0x974)
   retd  0x0                                                                        // 0x17A7 (0x100)
-
+  
   // sci. Middle of Dicipline
   lbpx  mx,  0x5C                                                                  // 0x17A8 (0x95C)
   lbpx  mx,  0x74                                                                  // 0x17A9 (0x974)
@@ -7427,7 +7255,7 @@ label_490:
   lbpx  mx,  0x0                                                                   // 0x17AD (0x900)
   lbpx  mx,  0x74                                                                  // 0x17AE (0x974)
   retd  0x0                                                                        // 0x17AF (0x100)
-
+  
   // pli. Middle of Dicipline
   lbpx  mx,  0xFC                                                                  // 0x17B0 (0x9FC)
   lbpx  mx,  0x24                                                                  // 0x17B1 (0x924)
@@ -7437,7 +7265,7 @@ label_490:
   lbpx  mx,  0x0                                                                   // 0x17B5 (0x900)
   lbpx  mx,  0x74                                                                  // 0x17B6 (0x974)
   retd  0x0                                                                        // 0x17B7 (0x100)
-
+  
   // ne. End of Dicipline
   lbpx  mx,  0x7C                                                                  // 0x17B8 (0x97C)
   lbpx  mx,  0x4                                                                   // 0x17B9 (0x904)
@@ -7447,7 +7275,7 @@ label_490:
   lbpx  mx,  0x54                                                                  // 0x17BD (0x954)
   lbpx  mx,  0x5C                                                                  // 0x17BE (0x95C)
   retd  0x0                                                                        // 0x17BF (0x100)
-
+  
   // Wide O
   // TODO: What is this used for?
   lbpx  mx,  0x0                                                                   // 0x17C0 (0x900)
@@ -7458,7 +7286,7 @@ label_490:
   lbpx  mx,  0x3C                                                                  // 0x17C5 (0x93C)
   lbpx  mx,  0x0                                                                   // 0x17C6 (0x900)
   retd  0x0                                                                        // 0x17C7 (0x100)
-
+  
   // Wide N
   // TODO: What is this used for?
   lbpx  mx,  0x0                                                                   // 0x17C8 (0x900)
@@ -7469,7 +7297,7 @@ label_490:
   lbpx  mx,  0x40                                                                  // 0x17CD (0x940)
   lbpx  mx,  0x7E                                                                  // 0x17CE (0x97E)
   retd  0x0                                                                        // 0x17CF (0x100)
-
+  
   // Big Z with clear background. Sleeping
   lbpx  mx,  0x0                                                                   // 0x17D0 (0x900)
   lbpx  mx,  0xC4                                                                  // 0x17D1 (0x9C4)
@@ -7479,7 +7307,7 @@ label_490:
   lbpx  mx,  0x0                                                                   // 0x17D5 (0x900)
   lbpx  mx,  0x0                                                                   // 0x17D6 (0x900)
   retd  0x0                                                                        // 0x17D7 (0x100)
-
+  
   // Little Z with dots and clear background. Sleeping
   lbpx  mx,  0x20                                                                  // 0x17D8 (0x920)
   lbpx  mx,  0x0                                                                   // 0x17D9 (0x900)
@@ -7489,7 +7317,7 @@ label_490:
   lbpx  mx,  0x15                                                                  // 0x17DD (0x915)
   lbpx  mx,  0x13                                                                  // 0x17DE (0x913)
   retd  0x0                                                                        // 0x17DF (0x100)
-
+  
   // The remander of these are blank
   lbpx  mx,  0x0                                                                   // 0x17E0 (0x900)
   lbpx  mx,  0x0                                                                   // 0x17E1 (0x900)
