@@ -8,7 +8,8 @@ Only clock timer and prog timer interrupts are specially handled. All other inte
 | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 0x0 (M0) | Lower PC for graphics draw                                                                                                    |
 | 0x1 (M1) | Upper PC for graphics draw                                                                                                    |
-| 0x2 (M2) | Value <= 7 that indicates which graphics page is used                                                                         |
+| 0x2 (M2) | Value ANDed with 7 that indicates which graphics page is used                                                                 |
+| 0x022/3  | Stores XL, XH at 0x2C. Unsure if important |
 | 0x07D    | Possible some sort of counter until rerender happens? Is cleared before rendering, and set to 0xF after. 0 means in rendering |
 |          |                                                                                                                               |
 
