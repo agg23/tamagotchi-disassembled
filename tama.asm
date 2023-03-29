@@ -171,7 +171,7 @@ clear_page_0x100:
 
 //
 // Clears 8 nibbles at a time until b + 0xF becomes 0
-// Starts at {A, 0}
+// Starts at {A, 8'h0}
 // Returns
 //
 clear_8_starting_at_a_xp:
@@ -204,10 +204,10 @@ calz_copy_buf_and_render_misc:
   call  copy_buf_and_render_misc                                                   // 0x55   (0x400)
 
 //
-// Copies video cache data from {1, 0x02B, 0x02A} to VRAM at 0xE00/0xE80
+// Copies video buffer data from {1, 0x02B, 0x02A} to VRAM at 0xE00/0xE80
 // Returns
 //
-copy_video_cache_to_vram:
+copy_video_buf_to_vram:
   calz  zero_a_xp                                                                  // 0x56   (0x5EF)
   ld    x,   0x2A                                                                  // 0x57   (0xB2A)
   ld    yl,  mx                                                                    // 0x58   (0xE9A)
@@ -374,37 +374,69 @@ check_0x04A_highbit:
 
 label_24:
   calz  zero_b_xp                                                                  // 0xB7   (0x5F2)
-  jp    label_27                                                                   // 0xB8   (0xBF)
+  jp    if_0x7B_set_clear_0x32_store_yhl                                           // 0xB8   (0xBF)
+  
+// TODO: I don't think this is reachable
   calz  zero_a_xp                                                                  // 0xB9   (0x5EF)
-  jp    label_27                                                                   // 0xBA   (0xBF)
+  jp    if_0x7B_set_clear_0x32_store_yhl                                           // 0xBA   (0xBF)
 
 label_25:
   ld    y,   0x94                                                                  // 0xBB   (0x894)
 
-label_26:
+//
+// Checks if 0x07B is set, if so:
+// Clears 0x032, copies YHL to 0x036/7
+// Sets 0x058 to A, 0x059 to 0xF
+// 0x07D is disabled during this operation
+// Returns
+//
+if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF:
   ld    b,   0xF                                                                   // 0xBC   (0xE1F)
   ld    a,   0x0                                                                   // 0xBD   (0xE00)
   ld    xp,  a                                                                     // 0xBE   (0xE80)
 
-label_27:
+//
+// Checks if 0x?7B is set, if so:
+// Clears 0x?32, copies YHL to 0x?36/7
+// Sets 0x?58/9 to A, B
+// 0x07D is disabled during this operation
+// Returns
+//
+if_0x7B_set_clear_0x32_store_yhl:
+  // X is 0x?7B
   ld    x,   0x7B                                                                  // 0xBF   (0xB7B)
   cp    mx,  0x0                                                                   // 0xC0   (0xDE0)
-  jp    z,   label_29                                                              // 0xC1   (0x6CD)
+  // If 0x?7B is 0, return
+  jp    z,   if_0x7B_set_clear_0x32_store_yhl_ret                                  // 0xC1   (0x6CD)
 
-label_28:
+//
+// Clears 0x?32, copies YHL to 0x?36/7
+// Sets 0x?58/9 to A, B
+// 0x07D is disabled during this operation
+// Returns
+//
+clear_0x32_store_yhl:
+  // X is 0x?32
   ld    x,   0x32                                                                  // 0xC2   (0xB32)
   calz  clear_0x07D                                                                // 0xC3   (0x512)
+  // Set 0x?32 to 0
   lbpx  mx,  0x0                                                                   // 0xC4   (0x900)
+  // X is 0x?36
   ld    x,   0x36                                                                  // 0xC5   (0xB36)
+  // Set 0?036 to yl
   ld    mx,  yl                                                                    // 0xC6   (0xEBA)
   ldpx  a,   a                                                                     // 0xC7   (0xEE0)
+  // Set 0x?37 to yh
   ld    mx,  yh                                                                    // 0xC8   (0xEB6)
+  // X is 0x?58
   ld    x,   0x58                                                                  // 0xC9   (0xB58)
+  // Set 0x?58 to A
   ldpx  mx,  a                                                                     // 0xCA   (0xEE8)
+  // Set 0x?59 to B
   ld    mx,  b                                                                     // 0xCB   (0xEC9)
   calz  set_f_0x07D                                                                // 0xCC   (0x509)
 
-label_29:
+if_0x7B_set_clear_0x32_store_yhl_ret:
   ret                                                                              // 0xCD   (0xFDF)
 
 label_30:
@@ -592,10 +624,12 @@ clock_timer_int_skip_add:
   ld    mx,  0x1                                                                   // 0x138  (0xE21)
   ld    x,   0x10                                                                  // 0x139  (0xB10)
   // Add 1 to 0x010
+  // Looks like this is incrementing the second
   add   mx,  0x1                                                                   // 0x13A  (0xC21)
   // Increment X
   ldpx  a,   a                                                                     // 0x13B  (0xEE0)
   // Add carry from 0x010 add to 0x011
+  // Second digit of second
   adc   mx,  0x0                                                                   // 0x13C  (0xC60)
   // Check if 0x011 is 6
   cp    mx,  0x6                                                                   // 0x13D  (0xDE6)
@@ -618,25 +652,34 @@ label_50:
   call  label_312                                                                  // 0x148  (0x47A)
 
 label_51:
+  // Clear decimal 
   rst   f,   0xB                                                                   // 0x149  (0xF5B)
 
 label_52:
   ld    a,   0x0                                                                   // 0x14A  (0xE00)
   ld    xp,  a                                                                     // 0x14B  (0xE80)
+  // X is 0x02F
   ld    x,   0x2F                                                                  // 0x14C  (0xB2F)
   add   mx,  0x1                                                                   // 0x14D  (0xC21)
   ldpx  a,   a                                                                     // 0x14E  (0xEE0)
+  // If 0x02F carried, add 1 to 0x030
   acpx  mx,  a                                                                     // 0x14F  (0xF28)
+  // If 0x030 carried, add 1 to 0x031
   adc   mx,  0x0                                                                   // 0x150  (0xC60)
   jp    nc,  int_restore_ret                                                       // 0x151  (0x35B)
   ld    a,   0xF                                                                   // 0x152  (0xE0F)
   ld    xp,  a                                                                     // 0x153  (0xE80)
+  // X is 0xF70
   ld    x,   0x70                                                                  // 0x154  (0xB70)
+  // AND with CPU voltage switch
   fan   mx,  0x3                                                                   // 0x155  (0xDA3)
+  // If voltage is < 3.1V, jump
   jp    z,   int_restore_ret                                                       // 0x156  (0x65B)
-  call  label_65                                                                   // 0x157  (0x4E5)
+  call  check_svd_voltage                                                          // 0x157  (0x4E5)
+  // If voltage is normal, jump
   jp    z,   int_restore_ret                                                       // 0x158  (0x65B)
   ld    x,   0x70                                                                  // 0x159  (0xB70)
+  // Clear all CPU voltage settings
   ld    mx,  0x0                                                                   // 0x15A  (0xE20)
 
 int_restore_ret:
@@ -800,16 +843,33 @@ label_63:
   or    mx,  0x8                                                                   // 0x1E1  (0xCE8)
   ret                                                                              // 0x1E2  (0xFDF)
 
-label_64:
+//
+// Check SVD voltage
+// Sets Zero if voltage is normal
+// Sets XP to F
+// Returns
+//
+check_svd_voltage_set_xp_f:
   ld    a,   0xF                                                                   // 0x1E3  (0xE0F)
   ld    xp,  a                                                                     // 0x1E4  (0xE80)
 
-label_65:
+//
+// Check SVD voltage
+// Sets Zero if voltage is normal
+// Returns
+//
+check_svd_voltage:
+  // All paths set XP to 0xF
+  // X is 0xF73
   ld    x,   0x73                                                                  // 0x1E5  (0xB73)
+  // Turn on SVD circuit at the 2 setting (-3.1 V)
   ld    mx,  0x6                                                                   // 0x1E6  (0xE26)
   nop5                                                                             // 0x1E7  (0xFFB)
+  // Read the current voltage status
   ld    a,   mx                                                                    // 0x1E8  (0xEC2)
+  // Disable the SVD circuit
   ld    mx,  0x0                                                                   // 0x1E9  (0xE20)
+  // Check if voltage is low (0x8 would be set)
   and   a,   0x8                                                                   // 0x1EA  (0xC88)
   ret                                                                              // 0x1EB  (0xFDF)
 
@@ -842,7 +902,7 @@ label_69:
   ret                                                                              // 0x1FF  (0xFDF)
 
 label_70:
-  calz  copy_video_cache_to_vram                                                   // 0x200  (0x556)
+  calz  copy_video_buf_to_vram                                                     // 0x200  (0x556)
   calz  copy_0x026_7_to_8_9                                                        // 0x201  (0x521)
   cp    a,   0x5                                                                   // 0x202  (0xDC5)
   jp    z,   label_71                                                              // 0x203  (0x606)
@@ -854,24 +914,33 @@ label_71:
   calz  zero_a_xp                                                                  // 0x207  (0x5EF)
   ld    a,   0x2                                                                   // 0x208  (0xE02)
   ld    yp,  a                                                                     // 0x209  (0xE90)
+  // X is 0x010
   ld    x,   0x10                                                                  // 0x20A  (0xB10)
+  // Y is 0x272
   ld    y,   0x72                                                                  // 0x20B  (0x872)
-  call  label_73                                                                   // 0x20C  (0x427)
+  call  springboard_copy_6_mx_my                                                   // 0x20C  (0x427)
+  // Clear all flags
   rst   f,   0x0                                                                   // 0x20D  (0xF50)
   ld    a,   0xF                                                                   // 0x20E  (0xE0F)
   ld    sph, a                                                                     // 0x20F  (0xFE0)
   ld    spl, a                                                                     // 0x210  (0xFF0)
-  call  label_77                                                                   // 0x211  (0x442)
+  // Set SP to 0xFF
+  call  springboard_set_init_mem_and_int                                           // 0x211  (0x442)
   ld    a,   0x0                                                                   // 0x212  (0xE00)
   ld    yp,  a                                                                     // 0x213  (0xE90)
   ld    a,   0x2                                                                   // 0x214  (0xE02)
   ld    xp,  a                                                                     // 0x215  (0xE80)
+  // Y is 0x010
   ld    y,   0x10                                                                  // 0x216  (0x810)
+  // X is 0x272
   ld    x,   0x72                                                                  // 0x217  (0xB72)
-  call  label_73                                                                   // 0x218  (0x427)
+  // Copy 6 nibbles from 0x272 to 0x010
+  call  springboard_copy_6_mx_my                                                   // 0x218  (0x427)
   calz  set_f_0x07D                                                                // 0x219  (0x509)
+  // Y is 0x080
   ld    y,   0x80                                                                  // 0x21A  (0x880)
-  calz  label_26                                                                   // 0x21B  (0x5BC)
+  // 0x07B was not touched by above intialization
+  calz  if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF                          // 0x21B  (0x5BC)
   pset  0x7                                                                        // 0x21C  (0xE47)
   call  label_232                                                                  // 0x21D  (0x461)
   pset  0x4                                                                        // 0x21E  (0xE44)
@@ -886,65 +955,88 @@ label_72:
   pset  0x5                                                                        // 0x225  (0xE45)
   jp    label_159                                                                  // 0x226  (0x17)
 
-label_73:
+springboard_copy_6_mx_my:
   pset  0x12                                                                       // 0x227  (0xE52)
-  jp    label_396                                                                  // 0x228  (0x22)
+  jp    copy_6_mx_my                                                               // 0x228  (0x22)
 
-label_74:
+//
+// Special return for copy_6_mx_my so it can safely return from the 1 bank to 0
+//
+copy_6_mx_my_bank0_ret:
   ret                                                                              // 0x229  (0xFDF)
 
 reset_vect_cont:
   pset  0x1                                                                        // 0x22A  (0xE41)
-  call  label_64                                                                   // 0x22B  (0x4E3)
-  jp    nz,  label_76                                                              // 0x22C  (0x72F)
+  call  check_svd_voltage_set_xp_f                                                 // 0x22B  (0x4E3)
+  // If voltage is low, jump
+  jp    nz,  reset_vect_skip_voltage                                               // 0x22C  (0x72F)
+  // X is 0xF70
   ld    x,   0x70                                                                  // 0x22D  (0xB70)
+  // Set oscillation freq. 32kHz, and voltage >3.1 V
   ld    mx,  0x1                                                                   // 0x22E  (0xE21)
 
-label_76:
+reset_vect_skip_voltage:
   ld    a,   0xF                                                                   // 0x22F  (0xE0F)
   ld    xp,  a                                                                     // 0x230  (0xE80)
+  // X is 0xF40
   ld    x,   0x40                                                                  // 0x231  (0xB40)
   ld    a,   0x2                                                                   // 0x232  (0xE02)
   ld    yp,  a                                                                     // 0x233  (0xE90)
+  // Y is 0x270
   ld    y,   0x70                                                                  // 0x234  (0x870)
+  // Copy 0xF40 to 0x270. The K0 current input values
   ld    my,  mx                                                                    // 0x235  (0xECE)
+  // Get only the first 3 bits
   and   my,  0x7                                                                   // 0x236  (0xCB7)
-  call  label_77                                                                   // 0x237  (0x442)
+  call  springboard_set_init_mem_and_int                                           // 0x237  (0x442)
   calz  set_f_0x07D                                                                // 0x238  (0x509)
+  // Y was not changed, so Y is 0x280
   ld    y,   0x80                                                                  // 0x239  (0x880)
-  calz  label_26                                                                   // 0x23A  (0x5BC)
+  // 0x80 is copied into 0x036/7
+  calz  if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF                          // 0x23A  (0x5BC)
   ld    a,   0x2                                                                   // 0x23B  (0xE02)
   ld    xp,  a                                                                     // 0x23C  (0xE80)
+  // X is 0x270
   ld    x,   0x70                                                                  // 0x23D  (0xB70)
   cp    mx,  0x3                                                                   // 0x23E  (0xDE3)
+  // If middle button was pressed, jump
   jp    z,   label_80                                                              // 0x23F  (0x656)
   pset  0x9                                                                        // 0x240  (0xE49)
   jp    label_294                                                                  // 0x241  (0x7F)
 
-label_77:
+springboard_set_init_mem_and_int:
   pset  0x11                                                                       // 0x242  (0xE51)
-  jp    label_394                                                                  // 0x243  (0xE0)
+  jp    set_init_mem_and_int                                                       // 0x243  (0xE0)
 
-label_78:
+// 
+// Continuation of set_init_mem_and_int
+// Clears memory, including VRAM
+//
+set_init_mem_and_int_cont_mem_clear:
   ld    a,   0x0                                                                   // 0x244  (0xE00)
   ld    b,   0xE                                                                   // 0x245  (0xE1E)
+  // Clear 14 * 8 = 112 nibbles from 0x000
   calz  clear_8_starting_at_a_xp                                                   // 0x246  (0x545)
   ld    a,   0x1                                                                   // 0x247  (0xE01)
   ld    b,   0x0                                                                   // 0x248  (0xE10)
+  // Clear 128 nibbles from 0x100
   calz  clear_8_starting_at_a_xp                                                   // 0x249  (0x545)
   ld    a,   0x2                                                                   // 0x24A  (0xE02)
   ld    b,   0x7                                                                   // 0x24B  (0xE17)
+  // Clear 7 * 8 = 56 nibbles from 0x200
   calz  clear_8_starting_at_a_xp                                                   // 0x24C  (0x545)
   ld    a,   0xE                                                                   // 0x24D  (0xE0E)
   ld    b,   0x5                                                                   // 0x24E  (0xE15)
+  // Clear 5 * 8 = 40 nibbles from 0xE50
   calz  clear_8_starting_at_a_xp                                                   // 0x24F  (0x545)
   ld    b,   0x5                                                                   // 0x250  (0xE15)
   ld    x,   0x80                                                                  // 0x251  (0xB80)
+  // Clear 40 nibbles from 0xE80
   calz  loop_clear_8                                                               // 0x252  (0x547)
   pset  0x12                                                                       // 0x253  (0xE52)
-  jp    label_395                                                                  // 0x254  (0x0)
+  jp    set_init_mem_and_int_cont_set_mem                                          // 0x254  (0x0)
 
-label_79:
+set_init_mem_and_int_bank0_ret:
   ret                                                                              // 0x255  (0xFDF)
 
 label_80:
@@ -990,7 +1082,7 @@ label_82:
 label_83:
   pset  0x7                                                                        // 0x278  (0xE47)
   call  label_242                                                                  // 0x279  (0x4E1)
-  calz  copy_video_cache_to_vram                                                   // 0x27A  (0x556)
+  calz  copy_video_buf_to_vram                                                     // 0x27A  (0x556)
 
 label_84:
   calz  copy_0x026_7_to_8_9                                                        // 0x27B  (0x521)
@@ -1057,7 +1149,7 @@ label_91:
   call  render_clock_with_b_0                                                      // 0x2AA  (0x4EF)
   dec   m5                                                                         // 0x2AB  (0xF75)
   jp    nz,  label_91                                                              // 0x2AC  (0x7A4)
-  calz  copy_video_cache_to_vram                                                   // 0x2AD  (0x556)
+  calz  copy_video_buf_to_vram                                                     // 0x2AD  (0x556)
   pset  0xF                                                                        // 0x2AE  (0xE4F)
   call  label_357                                                                  // 0x2AF  (0x400)
   jp    nz,  label_93                                                              // 0x2B0  (0x7C0)
@@ -1158,7 +1250,8 @@ label_100:
   nop7                                                                             // 0x2FD  (0xFFF)
   nop7                                                                             // 0x2FE  (0xFFF)
   nop7                                                                             // 0x2FF  (0xFFF)
-  ret                                                                              // 0x300  (0xFDF)
+// Jump table for label_101
+  ret                                                                              // 0x300  (0xFDF)  
   jp    label_102                                                                  // 0x301  (0xC)
   jp    label_106                                                                  // 0x302  (0x1C)
   jp    label_107                                                                  // 0x303  (0x24)
@@ -1260,11 +1353,11 @@ label_112:
   ld    a,   0x3                                                                   // 0x34B  (0xE03)
   ld    y,   0xAE                                                                  // 0x34C  (0x8AE)
   calz  label_24                                                                   // 0x34D  (0x5B7)
-  call  jp_label_284                                                               // 0x34E  (0x4FC)
+  call  jp_copy_video_buf_8x                                                       // 0x34E  (0x4FC)
   ld    b,   0x3                                                                   // 0x34F  (0xE13)
   pset  0x8                                                                        // 0x350  (0xE48)
   call  label_271                                                                  // 0x351  (0x49E)
-  call  jp_label_284                                                               // 0x352  (0x4FC)
+  call  jp_copy_video_buf_8x                                                       // 0x352  (0x4FC)
   calz  zero_a_xp                                                                  // 0x353  (0x5EF)
   ld    x,   0x50                                                                  // 0x354  (0xB50)
   ld    a,   mx                                                                    // 0x355  (0xEC2)
@@ -1307,7 +1400,7 @@ label_115:
 
 label_116:
   calz  label_38                                                                   // 0x374  (0x5EC)
-  call  jp_label_284                                                               // 0x375  (0x4FC)
+  call  jp_copy_video_buf_8x                                                       // 0x375  (0x4FC)
   calz  zero_a_xp                                                                  // 0x376  (0x5EF)
   ld    x,   0x74                                                                  // 0x377  (0xB74)
   ldpx  mx,  0x0                                                                   // 0x378  (0xE60)
@@ -1319,16 +1412,16 @@ label_116:
   ld    a,   mx                                                                    // 0x37E  (0xEC2)
   ld    m6,  a                                                                     // 0x37F  (0xF86)
   ld    y,   0xBF                                                                  // 0x380  (0x8BF)
-  calz  label_26                                                                   // 0x381  (0x5BC)
+  calz  if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF                          // 0x381  (0x5BC)
   call  label_123                                                                  // 0x382  (0x4D2)
   call  label_123                                                                  // 0x383  (0x4D2)
   call  label_123                                                                  // 0x384  (0x4D2)
   call  label_123                                                                  // 0x385  (0x4D2)
   ld    y,   0xC4                                                                  // 0x386  (0x8C4)
-  calz  label_26                                                                   // 0x387  (0x5BC)
+  calz  if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF                          // 0x387  (0x5BC)
   call  label_123                                                                  // 0x388  (0x4D2)
   ld    y,   0xC9                                                                  // 0x389  (0x8C9)
-  calz  label_26                                                                   // 0x38A  (0x5BC)
+  calz  if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF                          // 0x38A  (0x5BC)
   call  label_123                                                                  // 0x38B  (0x4D2)
   calz  zero_a_xp                                                                  // 0x38C  (0x5EF)
   ld    x,   0x5D                                                                  // 0x38D  (0xB5D)
@@ -1353,7 +1446,7 @@ label_117:
 
 label_118:
   ld    y,   0xCE                                                                  // 0x39E  (0x8CE)
-  calz  label_26                                                                   // 0x39F  (0x5BC)
+  calz  if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF                          // 0x39F  (0x5BC)
   calz  copy_0x026_7_to_8_9                                                        // 0x3A0  (0x521)
 
 label_119:
@@ -1445,7 +1538,7 @@ label_126:
   ld    x,   0x3A                                                                  // 0x3E8  (0xB3A)
   lbpx  mx,  0x20                                                                  // 0x3E9  (0x920)
   call  label_127                                                                  // 0x3EA  (0x4ED)
-  calz  copy_video_cache_to_vram                                                   // 0x3EB  (0x556)
+  calz  copy_video_buf_to_vram                                                     // 0x3EB  (0x556)
   ret                                                                              // 0x3EC  (0xFDF)
 
 label_127:
@@ -1470,9 +1563,9 @@ label_128:
 //
 // Jumps to label_284
 //
-jp_label_284:
+jp_copy_video_buf_8x:
   pset  0x9                                                                        // 0x3FC  (0xE49)
-  jp    label_284                                                                  // 0x3FD  (0x6)
+  jp    copy_video_buf_8x                                                          // 0x3FD  (0x6)
   nop7                                                                             // 0x3FE  (0xFFF)
   nop7                                                                             // 0x3FF  (0xFFF)
 
@@ -1806,7 +1899,7 @@ label_155:
   nop7                                                                             // 0x4FF  (0xFFF)
 
 label_156:
-  calz  copy_video_cache_to_vram                                                   // 0x500  (0x556)
+  calz  copy_video_buf_to_vram                                                     // 0x500  (0x556)
   calz  zero_a_xp                                                                  // 0x501  (0x5EF)
   ld    x,   0x2A                                                                  // 0x502  (0xB2A)
   add   mx,  b                                                                     // 0x503  (0xA89)
@@ -1907,7 +2000,7 @@ label_166:
   xor   mx,  0xF                                                                   // 0x54E  (0xD2F)
   ld    b,   0xF                                                                   // 0x54F  (0xE1F)
   ld    y,   0x97                                                                  // 0x550  (0x897)
-  calz  label_28                                                                   // 0x551  (0x5C2)
+  calz  clear_0x32_store_yhl                                                       // 0x551  (0x5C2)
   jp    label_159                                                                  // 0x552  (0x17)
 
 label_167:
@@ -1992,7 +2085,7 @@ label_175:
   calz  label_30                                                                   // 0x591  (0x5CE)
   lbpx  mx,  0xC4                                                                  // 0x592  (0x9C4)
   call  label_181                                                                  // 0x593  (0x4A6)
-  calz  copy_video_cache_to_vram                                                   // 0x594  (0x556)
+  calz  copy_video_buf_to_vram                                                     // 0x594  (0x556)
   ret                                                                              // 0x595  (0xFDF)
 
 label_176:
@@ -2229,9 +2322,9 @@ label_197:
   lbpx  mx,  0x1D                                                                  // 0x63E  (0x91D)
   lbpx  mx,  0xFF                                                                  // 0x63F  (0x9FF)
   ld    y,   0xD6                                                                  // 0x640  (0x8D6)
-  calz  label_26                                                                   // 0x641  (0x5BC)
+  calz  if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF                          // 0x641  (0x5BC)
   calz  label_34                                                                   // 0x642  (0x5DE)
-  calz  copy_video_cache_to_vram                                                   // 0x643  (0x556)
+  calz  copy_video_buf_to_vram                                                     // 0x643  (0x556)
   ld    x,   0xD                                                                   // 0x644  (0xB0D)
   calz  copy_xhl_to_0x022_or_loop_0x023                                            // 0x645  (0x53C)
   ld    b,   0xC                                                                   // 0x646  (0xE1C)
@@ -2274,7 +2367,7 @@ label_199:
 
 label_200:
   ld    y,   0x97                                                                  // 0x667  (0x897)
-  calz  label_26                                                                   // 0x668  (0x5BC)
+  calz  if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF                          // 0x668  (0x5BC)
   calz  clear_page_0x100                                                           // 0x669  (0x540)
   pset  0x4                                                                        // 0x66A  (0xE44)
   call  label_145                                                                  // 0x66B  (0x486)
@@ -2345,9 +2438,9 @@ label_204:
   ld    x,   0x9C                                                                  // 0x6A4  (0xB9C)
   ld    mx,  b                                                                     // 0x6A5  (0xEC9)
   ld    y,   0xE5                                                                  // 0x6A6  (0x8E5)
-  calz  label_26                                                                   // 0x6A7  (0x5BC)
+  calz  if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF                          // 0x6A7  (0x5BC)
   calz  label_34                                                                   // 0x6A8  (0x5DE)
-  calz  copy_video_cache_to_vram                                                   // 0x6A9  (0x556)
+  calz  copy_video_buf_to_vram                                                     // 0x6A9  (0x556)
   ld    x,   0x52                                                                  // 0x6AA  (0xB52)
   calz  copy_xhl_to_0x022_or_loop_0x023                                            // 0x6AB  (0x53C)
   calz  zero_a_xp                                                                  // 0x6AC  (0x5EF)
@@ -2387,14 +2480,14 @@ label_207:
 
 label_208:
   ld    y,   0x83                                                                  // 0x6C8  (0x883)
-  calz  label_26                                                                   // 0x6C9  (0x5BC)
+  calz  if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF                          // 0x6C9  (0x5BC)
   ld    a,   0x7                                                                   // 0x6CA  (0xE07)
   ld    y,   0x6                                                                   // 0x6CB  (0x806)
   jp    label_210                                                                  // 0x6CC  (0xD1)
 
 label_209:
   ld    y,   0x9E                                                                  // 0x6CD  (0x89E)
-  calz  label_26                                                                   // 0x6CE  (0x5BC)
+  calz  if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF                          // 0x6CE  (0x5BC)
   ld    a,   0x8                                                                   // 0x6CF  (0xE08)
   ld    y,   0x3                                                                   // 0x6D0  (0x803)
 
@@ -2464,6 +2557,8 @@ label_219:
   ret                                                                              // 0x6FD  (0xFDF)
   nop7                                                                             // 0x6FE  (0xFFF)
   nop7                                                                             // 0x6FF  (0xFFF)
+  
+// Unclear what points to this jump table
   pset  0x4                                                                        // 0x700  (0xE44)
   jp    label_155                                                                  // 0x701  (0xE7)
   pset  0x7                                                                        // 0x702  (0xE47)
@@ -2800,13 +2895,13 @@ label_242:
   ld    mx,  a                                                                     // 0x7F2  (0xEC8)
   ld    x,   0xB9                                                                  // 0x7F3  (0xBB9)
   ld    mx,  b                                                                     // 0x7F4  (0xEC9)
-  rlc   b,   mx                                                                    // 0x7F5  (0xAF5)
+  rlc   b                                                                          // 0x7F5  (0xAF5)
   ld    x,   0xCB                                                                  // 0x7F6  (0xBCB)
   ld    mx,  b                                                                     // 0x7F7  (0xEC9)
-  rlc   b,   mx                                                                    // 0x7F8  (0xAF5)
+  rlc   b                                                                          // 0x7F8  (0xAF5)
   ld    x,   0xCD                                                                  // 0x7F9  (0xBCD)
   ld    mx,  b                                                                     // 0x7FA  (0xEC9)
-  rlc   b,   mx                                                                    // 0x7FB  (0xAF5)
+  rlc   b                                                                          // 0x7FB  (0xAF5)
   ld    x,   0xCF                                                                  // 0x7FC  (0xBCF)
   ld    mx,  b                                                                     // 0x7FD  (0xEC9)
   ret                                                                              // 0x7FE  (0xFDF)
@@ -2868,7 +2963,7 @@ label_248:
   call  label_258                                                                  // 0x81D  (0x467)
 
 label_249:
-  calz  copy_video_cache_to_vram                                                   // 0x81E  (0x556)
+  calz  copy_video_buf_to_vram                                                     // 0x81E  (0x556)
   calz  copy_0x026_7_to_8_9                                                        // 0x81F  (0x521)
   ld    x,   0x57                                                                  // 0x820  (0xB57)
   ld    mx,  0xF                                                                   // 0x821  (0xE2F)
@@ -3148,7 +3243,7 @@ label_280:
   calz  copy_0x026_7_to_8_9                                                        // 0x8F5  (0x521)
   ld    x,   0x57                                                                  // 0x8F6  (0xB57)
   cp    mx,  0x0                                                                   // 0x8F7  (0xDE0)
-  jp    z,   label_281                                                             // 0x8F8  (0x6FF)
+  jp    z,   ret_280                                                               // 0x8F8  (0x6FF)
   ld    x,   0x74                                                                  // 0x8F9  (0xB74)
   cp    mx,  0x0                                                                   // 0x8FA  (0xDE0)
   jp    z,   label_275                                                             // 0x8FB  (0x6B9)
@@ -3156,7 +3251,7 @@ label_280:
   jp    z,   label_275                                                             // 0x8FD  (0x6B9)
   calz  label_25                                                                   // 0x8FE  (0x5BB)
 
-label_281:
+ret_280:
   ret                                                                              // 0x8FF  (0xFDF)
 
 label_282:
@@ -3169,7 +3264,13 @@ label_282:
 label_283:
   ret                                                                              // 0x905  (0xFDF)
 
-label_284:
+//
+// 8 times, copy video buffer data to VRAM
+// Clears 0x100 page afterwards (where the video cache is)
+// Leaves m2 = 8, m3 = 0
+// TODO: I don't really understand this
+// Returns
+copy_video_buf_8x:
   ld    a,   0x0                                                                   // 0x906  (0xE00)
   ld    m2,  a                                                                     // 0x907  (0xF82)
   ld    a,   0x8                                                                   // 0x908  (0xE08)
@@ -3177,7 +3278,7 @@ label_284:
 
 loop_284:
   call  or_0x100_ab                                                                // 0x90A  (0x413)
-  calz  copy_video_cache_to_vram                                                   // 0x90B  (0x556)
+  calz  copy_video_buf_to_vram                                                     // 0x90B  (0x556)
   ld    x,   0x1                                                                   // 0x90C  (0xB01)
   calz  copy_xhl_to_0x022_or_loop_0x023                                            // 0x90D  (0x53C)
   inc   m2                                                                         // 0x90E  (0xF62)
@@ -3712,7 +3813,7 @@ label_301:
 
 label_302:
   ld    y,   0xF0                                                                  // 0xAE7  (0x8F0)
-  calz  label_26                                                                   // 0xAE8  (0x5BC)
+  calz  if_0x7B_set_clear_0x32_store_yhl_set_0x059_to_0xF                          // 0xAE8  (0x5BC)
 
 label_303:
   ld    a,   0x8                                                                   // 0xAE9  (0xE08)
@@ -3732,7 +3833,7 @@ label_305:
   lbpx  mx,  0x0                                                                   // 0xAF3  (0x900)
 
 label_306:
-  calz  copy_video_cache_to_vram                                                   // 0xAF4  (0x556)
+  calz  copy_video_buf_to_vram                                                     // 0xAF4  (0x556)
   calz  zero_a_xp                                                                  // 0xAF5  (0x5EF)
   ld    a,   m0                                                                    // 0xAF6  (0xFA0)
   ld    x,   0x2B                                                                  // 0xAF7  (0xB2B)
@@ -4733,7 +4834,7 @@ label_354:
   lbpx  mx,  0x27                                                                  // 0xE70  (0x927)
   pset  0x7                                                                        // 0xE71  (0xE47)
   call  label_233                                                                  // 0xE72  (0x492)
-  calz  copy_video_cache_to_vram                                                   // 0xE73  (0x556)
+  calz  copy_video_buf_to_vram                                                     // 0xE73  (0x556)
   pset  0xF                                                                        // 0xE74  (0xE4F)
   call  label_357                                                                  // 0xE75  (0x400)
   jp    z,   label_353                                                             // 0xE76  (0x664)
@@ -5754,30 +5855,53 @@ gfx_jp_table_jpba:
   lbpx  mx,  0xA8                                                                  // 0x11DE (0x9A8)
   retd  0x50                                                                       // 0x11DF (0x150)
 
-label_394:
+//
+// Initializes 0xF** configuration
+// Clears memory
+// Returns
+set_init_mem_and_int:
   ld    a,   0xF                                                                   // 0x11E0 (0xE0F)
   ld    xp,  a                                                                     // 0x11E1 (0xE80)
+  // X is 0xF10 (clock timer interrupt mask)
   ld    x,   0x10                                                                  // 0x11E2 (0xB10)
+  // Enable 1Hz interrupt
   ldpx  mx,  0x8                                                                   // 0x11E3 (0xE68)
+  // Disable stopwatch interrupt
   ldpx  mx,  0x0                                                                   // 0x11E4 (0xE60)
+  // Enable prog timer interrupt
   ldpx  mx,  0x1                                                                   // 0x11E5 (0xE61)
+  // Disable serial interrupt
   ldpx  mx,  0x0                                                                   // 0x11E6 (0xE60)
+  // Disable input K0 interupts
   ldpx  mx,  0x0                                                                   // 0x11E7 (0xE60)
+  // Disable input K1 interrupts
   ldpx  mx,  0x0                                                                   // 0x11E8 (0xE60)
+  // X is 0xF26
   ld    x,   0x26                                                                  // 0x11E9 (0xB26)
+  // Set prog timer reload low nibble to 0x7
   lbpx  mx,  0x7                                                                   // 0x11EA (0x907)
+  // X is 0xF54
   ld    x,   0x54                                                                  // 0x11EB (0xB54)
+  // Disable buzzer, and output ports
   ldpx  mx,  0xF                                                                   // 0x11EC (0xE6F)
+  // X is 0xF71
   ld    x,   0x71                                                                  // 0x11ED (0xB71)
+  // Turn off all LCD pixels
   ldpx  mx,  0x8                                                                   // 0x11EE (0xE68)
+  // Set LCD to medium intensity
   ldpx  mx,  0x8                                                                   // 0x11EF (0xE68)
+  // X is 0xF76
   ld    x,   0x76                                                                  // 0x11F0 (0xB76)
+  // Reset clock and watchdog timers
   ldpx  mx,  0x3                                                                   // 0x11F1 (0xE63)
+  // Reset stopwatch timer
   ldpx  mx,  0x2                                                                   // 0x11F2 (0xE62)
+  // Reset prog timer
   ldpx  mx,  0x2                                                                   // 0x11F3 (0xE62)
+  // Set prog timer to 256Hz
   ldpx  mx,  0x2                                                                   // 0x11F4 (0xE62)
   pset  0x2                                                                        // 0x11F5 (0xE42)
-  jp    label_78                                                                   // 0x11F6 (0x44)
+  jp    set_init_mem_and_int_cont_mem_clear                                        // 0x11F6 (0x44)
   nop7                                                                             // 0x11F7 (0xFFF)
   nop7                                                                             // 0x11F8 (0xFFF)
   nop7                                                                             // 0x11F9 (0xFFF)
@@ -5788,9 +5912,15 @@ label_394:
   nop7                                                                             // 0x11FE (0xFFF)
   nop7                                                                             // 0x11FF (0xFFF)
 
-label_395:
+//
+// Continuation of set_init_mem_and_int
+// Sets memory initial values
+// Starts timers and clears factors
+//
+set_init_mem_and_int_cont_set_mem:
   ld    a,   0x0                                                                   // 0x1200 (0xE00)
   ld    xp,  a                                                                     // 0x1201 (0xE80)
+  // X is 0x024
   ld    x,   0x24                                                                  // 0x1202 (0xB24)
   lbpx  mx,  0x0                                                                   // 0x1203 (0x900)
   ld    x,   0x14                                                                  // 0x1204 (0xB14)
@@ -5813,18 +5943,29 @@ label_395:
   ld    mx,  0x5                                                                   // 0x1215 (0xE25)
   ld    a,   0xF                                                                   // 0x1216 (0xE0F)
   ld    xp,  a                                                                     // 0x1217 (0xE80)
+  // X is 0xF71
   ld    x,   0x71                                                                  // 0x1218 (0xB71)
+  // Allow LCD pixels to display normally
   ld    mx,  0x0                                                                   // 0x1219 (0xE20)
+  // X is 0xF78
   ld    x,   0x78                                                                  // 0x121A (0xB78)
+  // Start prog timer
   ld    mx,  0x1                                                                   // 0x121B (0xE21)
+  // X is 0xF00
   ld    x,   0x0                                                                   // 0x121C (0xB00)
+  // Clear clock factors
   ldpx  a,   mx                                                                    // 0x121D (0xEE2)
+  // Clear stopwatch factors
   ldpx  a,   mx                                                                    // 0x121E (0xEE2)
+  // Clear prog timer factor
   ld    a,   mx                                                                    // 0x121F (0xEC2)
   pset  0x2                                                                        // 0x1220 (0xE42)
-  jp    label_79                                                                   // 0x1221 (0x55)
+  jp    set_init_mem_and_int_bank0_ret                                             // 0x1221 (0x55)
 
-label_396:
+//
+// Copies 6 nibbles from MX to MY, incrementing both
+// Returns
+copy_6_mx_my:
   ldpx  my,  mx                                                                    // 0x1222 (0xEEE)
   ldpy  a,   a                                                                     // 0x1223 (0xEF0)
   ldpx  my,  mx                                                                    // 0x1224 (0xEEE)
@@ -5837,7 +5978,7 @@ label_396:
   ldpy  a,   a                                                                     // 0x122B (0xEF0)
   ldpx  my,  mx                                                                    // 0x122C (0xEEE)
   pset  0x2                                                                        // 0x122D (0xE42)
-  jp    label_74                                                                   // 0x122E (0x29)
+  jp    copy_6_mx_my_bank0_ret                                                     // 0x122E (0x29)
   nop7                                                                             // 0x122F (0xFFF)
   
   // Stage 3a, Mametchi upper half, turned left

@@ -4,14 +4,16 @@ Only clock timer and prog timer interrupts are specially handled. All other inte
 
 # Memory
 
-| Address  | Description                                                                                                                   |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 0x0 (M0) | Lower PC for graphics draw                                                                                                    |
-| 0x1 (M1) | Upper PC for graphics draw                                                                                                    |
-| 0x2 (M2) | Value ANDed with 7 that indicates which graphics page is used                                                                 |
-| 0x022/3  | Stores XL, XH at 0x2C. Unsure if important |
-| 0x07D    | Possible some sort of counter until rerender happens? Is cleared before rendering, and set to 0xF after. 0 means in rendering |
-|          |                                                                                                                               |
+| Address    | Description                                                                                                                   |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 0x0 (M0)   | Lower PC for graphics draw                                                                                                    |
+| 0x1 (M1)   | Upper PC for graphics draw                                                                                                    |
+| 0x2 (M2)   | Value ANDed with 7 that indicates which graphics page is used                                                                 |
+| 0x010      | Lower digit of seconds                                                                                                        |
+| 0x011      | Upper digit of seconds |
+| 0x022/3    | Stores XL, XH at 0x2C. Unsure if important                                                                                    |
+| 0x07D      | Possible some sort of counter until rerender happens? Is cleared before rendering, and set to 0xF after. 0 means in rendering |
+| 0x100 page | Seems to store video buffer data before copying to VRAM                                                                       |
 
 # Graphics
 
