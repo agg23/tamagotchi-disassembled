@@ -4,16 +4,31 @@ Only clock timer and prog timer interrupts are specially handled. All other inte
 
 # Memory
 
-| Address    | Description                                                                                                                   |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 0x0 (M0)   | Lower PC for graphics draw                                                                                                    |
-| 0x1 (M1)   | Upper PC for graphics draw                                                                                                    |
-| 0x2 (M2)   | Value ANDed with 7 that indicates which graphics page is used                                                                 |
-| 0x010      | Lower digit of seconds                                                                                                        |
-| 0x011      | Upper digit of seconds |
-| 0x022/3    | Stores XL, XH at 0x2C. Unsure if important                                                                                    |
-| 0x07D      | Possible some sort of counter until rerender happens? Is cleared before rendering, and set to 0xF after. 0 means in rendering |
-| 0x100 page | Seems to store video buffer data before copying to VRAM                                                                       |
+| Address     | Description                                                                                                                   |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 0x0 (M0)    | Lower PC for graphics draw                                                                                                    |
+| 0x1 (M1)    | Upper PC for graphics draw                                                                                                    |
+| 0x2 (M2)    | Value ANDed with 7 that indicates which graphics page is used                                                                 |
+| 0x010       | Lower digit of seconds                                                                                                        |
+| 0x011       | Upper digit of seconds                                                                                                        |
+| 0x022/3     | Stores XL, XH at 0x2C. Unsure if important                                                                                    |
+| 0x026/0x03D | The previous tick's button input                                                                                              |
+| 0x032/3     | Delay until next buzzer change?                                                                                               |
+| 0x034       | Appears to store buzzer frequency settings (see 0x1CE)                                                                        |
+| 0x035       | Appears to store buzzer envelope settings (see 0x1CF)                                                                         |
+| 0x036/7     | Next buzzer JPBA address?                                                                                                     |
+| 0x07D       | Possible some sort of counter until rerender happens? Is cleared before rendering, and set to 0xF after. 0 means in rendering |
+| 0x100 page  | Seems to store video buffer data before copying to VRAM                                                                       |
+
+# Buzzer Logic
+
+1. Every prog timer tick, the very first thing it does is configure buzzer
+2. 0x032 is decremented, and if that didn't carry, 0x033 is decremented (both via adds)
+3. If 0x033 didn't carry, jump to loop_59
+4. Set A, B to be 0x036/7. Increment 0x036 by 2. If overflowed, increment 0x037
+5. Visit jump table using A and B, overwriting 0x032-4, and sometimes 0x036/7
+6. If XL is 6, or 0x059 is 0xF, or 0x058 - 1 carries and interactions with 0x059 causes carry, set buzzer settings
+7. If none of those occured, reset 0x036/7 to 0x7D
 
 # Graphics
 

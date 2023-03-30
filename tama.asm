@@ -372,7 +372,15 @@ check_0x04A_highbit:
   fan   mx,  0x8                                                                   // 0xB5   (0xDA8)
   ret                                                                              // 0xB6   (0xFDF)
 
-label_24:
+//
+// Checks if 0x07B is set, if so:
+// Clears 0x032, copies YHL to 0x036/7
+// Zeros B
+// Sets 0x058/9 to A, B
+// 0x07D is disabled during this operation
+// Returns
+//
+xp_0_if_0x7B_set_clear_0x32_store_yhl:
   calz  zero_b_xp                                                                  // 0xB7   (0x5F2)
   jp    if_0x7B_set_clear_0x32_store_yhl                                           // 0xB8   (0xBF)
   
@@ -380,7 +388,14 @@ label_24:
   calz  zero_a_xp                                                                  // 0xB9   (0x5EF)
   jp    if_0x7B_set_clear_0x32_store_yhl                                           // 0xBA   (0xBF)
 
-label_25:
+//
+// Checks if 0x07B is set, if so:
+// Clears 0x032, copies 0x94 to 0x036/7
+// Sets 0x058 to A, 0x059 to 0xF
+// 0x07D is disabled during this operation
+// Returns
+//
+if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF:
   ld    y,   0x94                                                                  // 0xBB   (0x894)
 
 //
@@ -423,7 +438,7 @@ clear_0x32_store_yhl:
   lbpx  mx,  0x0                                                                   // 0xC4   (0x900)
   // X is 0x?36
   ld    x,   0x36                                                                  // 0xC5   (0xB36)
-  // Set 0?036 to yl
+  // Set 0x?36 to yl
   ld    mx,  yl                                                                    // 0xC6   (0xEBA)
   ldpx  a,   a                                                                     // 0xC7   (0xEE0)
   // Set 0x?37 to yh
@@ -488,7 +503,7 @@ label_37:
 label_38:
   ld    a,   0x0                                                                   // 0xEC   (0xE00)
 
-label_39:
+springboard_label_238:
   pset  0x7                                                                        // 0xED   (0xE47)
   jp    label_238                                                                  // 0xEE   (0xC0)
 
@@ -717,129 +732,223 @@ prog_timer_int:
   push  xh                                                                         // 0x173  (0xFC5)
   push  xl                                                                         // 0x174  (0xFC6)
   rst   f,   0xB                                                                   // 0x175  (0xF5B)
-  call  label_59                                                                   // 0x176  (0x4A0)
+  call  configure_buzzer                                                           // 0x176  (0x4A0)
   ld    a,   0xF                                                                   // 0x177  (0xE0F)
   ld    xp,  a                                                                     // 0x178  (0xE80)
+  // X is 0xF02
   ld    x,   0x2                                                                   // 0x179  (0xB02)
+  // Clear prog timer factor flags
   ld    a,   mx                                                                    // 0x17A  (0xEC2)
+  // X is 0xF40
   ld    x,   0x40                                                                  // 0x17B  (0xB40)
+  // Store current button input in B
   ld    b,   mx                                                                    // 0x17C  (0xEC6)
+  // Get the off bits (the buttons that are pressed)
   xor   b,   0xF                                                                   // 0x17D  (0xD1F)
+  // The top bit is unused
   and   b,   0x7                                                                   // 0x17E  (0xC97)
   ld    a,   0x0                                                                   // 0x17F  (0xE00)
   ld    xp,  a                                                                     // 0x180  (0xE80)
+  // X is 0x05A
   ld    x,   0x5A                                                                  // 0x181  (0xB5A)
+  // Increment 0x05A
   add   mx,  0x1                                                                   // 0x182  (0xC21)
+  // X is 0x022
   ld    x,   0x22                                                                  // 0x183  (0xB22)
+  // Decrement 0x022
   add   mx,  0xF                                                                   // 0x184  (0xC2F)
   ldpx  a,   a                                                                     // 0x185  (0xEE0)
+  // Decrement 0x023, unless previous add carried
   adc   mx,  0xF                                                                   // 0x186  (0xC6F)
-  jp    c,   label_56                                                              // 0x187  (0x28A)
+  // If carried, jump
+  jp    c,   prog_timer_int_skip_clear_0x022                                       // 0x187  (0x28A)
   ld    x,   0x22                                                                  // 0x188  (0xB22)
+  // Clear 0x022
   lbpx  mx,  0x0                                                                   // 0x189  (0x900)
 
-label_56:
+prog_timer_int_skip_clear_0x022:
+  // X is 0x026
   ld    x,   0x26                                                                  // 0x18A  (0xB26)
+  // A = 0x026, the previous button input
   ld    a,   mx                                                                    // 0x18B  (0xEC2)
+  // Store current button input into 0x026
   ldpx  mx,  b                                                                     // 0x18C  (0xEE9)
+  // Find differences between last input and current input
   xor   a,   b                                                                     // 0x18D  (0xAE1)
   and   a,   b                                                                     // 0x18E  (0xAC1)
+  // OR this value with 0x027
   or    mx,  a                                                                     // 0x18F  (0xAD8)
+  // X is 0x03D
   ld    x,   0x3D                                                                  // 0x190  (0xB3D)
   cp    mx,  b                                                                     // 0x191  (0xF09)
-  jp    z,   label_57                                                              // 0x192  (0x697)
+  // If 0x03D == the current pressed buttons
+  jp    z,   prog_timer_int_check_button_hold                                      // 0x192  (0x697)
+  // Update 0x03D to the latest pressed buttons
   ld    mx,  b                                                                     // 0x193  (0xEC9)
   ld    x,   0x3E                                                                  // 0x194  (0xB3E)
+  // Clear 0x03E
   ld    mx,  0x0                                                                   // 0x195  (0xE20)
-  jp    label_58                                                                   // 0x196  (0x9F)
+  jp    prog_timer_int_ret                                                         // 0x196  (0x9F)
 
-label_57:
+prog_timer_int_check_button_hold:
+  // X is 0x03E
   ld    x,   0x3E                                                                  // 0x197  (0xB3E)
+  // Increment 0x03E
   add   mx,  0x1                                                                   // 0x198  (0xC21)
-  jp    nz,  label_58                                                              // 0x199  (0x79F)
+  // If 0x03E isn't 0, return
+  jp    nz,  prog_timer_int_ret                                                    // 0x199  (0x79F)
+  // Set 0x03E to 8
+  // Got the same button value for 8 ticks
   ld    mx,  0x8                                                                   // 0x19A  (0xE28)
+  // X is 0x03F
   ld    x,   0x3F                                                                  // 0x19B  (0xB3F)
+  // AND current button value with 0x03F
   and   b,   mx                                                                    // 0x19C  (0xAC6)
+  // X is 0x027
   ld    x,   0x27                                                                  // 0x19D  (0xB27)
+  // Store this ANDed value into 0x027
   or    mx,  b                                                                     // 0x19E  (0xAD9)
 
-label_58:
+prog_timer_int_ret:
   jp    int_restore_ret                                                            // 0x19F  (0x5B)
 
-label_59:
+//
+// Configure buzzer
+// Looks like buzzer code is polled (timer based on 0x032/3), and it plays the previously 
+// loaded sound effect, and loads the next one
+// Returns
+//
+configure_buzzer:
   ld    a,   0x0                                                                   // 0x1A0  (0xE00)
   ld    xp,  a                                                                     // 0x1A1  (0xE80)
+  // X is 0x032
   ld    x,   0x32                                                                  // 0x1A2  (0xB32)
+  // Decrement 0x032
   add   mx,  0xF                                                                   // 0x1A3  (0xC2F)
   ldpx  a,   a                                                                     // 0x1A4  (0xEE0)
+  // Decrement 0x033, unless previous add carried
   adc   mx,  0xF                                                                   // 0x1A5  (0xC6F)
-  jp    nc,  label_60                                                              // 0x1A6  (0x3AB)
+  // If add didn't carry, jump
+  jp    nc,  loop_59                                                               // 0x1A6  (0x3AB)
+  // X is 0x034
   ld    x,   0x34                                                                  // 0x1A7  (0xB34)
   fan   mx,  0x8                                                                   // 0x1A8  (0xDA8)
-  jp    nz,  label_62                                                              // 0x1A9  (0x7D7)
+  // If high bit is set, jump
+  jp    nz,  dec_0x038_off_load_prot_buzzer                                        // 0x1A9  (0x7D7)
   ret                                                                              // 0x1AA  (0xFDF)
 
-label_60:
+loop_59:
+  // XP is 0
+  // X is 0x036
   ld    x,   0x36                                                                  // 0x1AB  (0xB36)
+  // A = 0x036
   ld    a,   mx                                                                    // 0x1AC  (0xEC2)
+  // Increment 0x036 by 2
   add   mx,  0x2                                                                   // 0x1AD  (0xC22)
   ldpx  a,   a                                                                     // 0x1AE  (0xEE0)
+  // B = 0x037
   ld    b,   mx                                                                    // 0x1AF  (0xEC6)
+  // If prev add overflowed, add 1 to 0x037
   adc   mx,  0x0                                                                   // 0x1B0  (0xC60)
+  // X is 0x032
   ld    x,   0x32                                                                  // 0x1B1  (0xB32)
   pset  0xE                                                                        // 0x1B2  (0xE4E)
-  call  jp_table_0xE00_2                                                           // 0x1B3  (0x47C)
+  call  jp_table_0xE7D_buzzer                                                      // 0x1B3  (0x47C)
   cp    xl,  0x6                                                                   // 0x1B4  (0xA56)
-  jp    z,   label_61                                                              // 0x1B5  (0x6C1)
+  // If XL is 6, jump
+  // This happens when we only loaded 4 nibbles, rather than 6
+  jp    z,   buzzer_control                                                        // 0x1B5  (0x6C1)
+  // X is 0x059
   ld    x,   0x59                                                                  // 0x1B6  (0xB59)
   cp    mx,  0xF                                                                   // 0x1B7  (0xDEF)
-  jp    z,   label_61                                                              // 0x1B8  (0x6C1)
+  // If 0x59 is 0xF, jump
+  jp    z,   buzzer_control                                                        // 0x1B8  (0x6C1)
+  // X is 0x058
   ld    x,   0x58                                                                  // 0x1B9  (0xB58)
+  // Subtract 1
   add   mx,  0xF                                                                   // 0x1BA  (0xC2F)
   ldpx  a,   a                                                                     // 0x1BB  (0xEE0)
+  // Subtract 1 if no carry
   adc   mx,  0xF                                                                   // 0x1BC  (0xC6F)
-  jp    c,   label_61                                                              // 0x1BD  (0x2C1)
+  // If carry, jump
+  jp    c,   buzzer_control                                                        // 0x1BD  (0x2C1)
+  // X is 0x036
   ld    x,   0x36                                                                  // 0x1BE  (0xB36)
+  // Set 0x036/7 to 0x7D
   lbpx  mx,  0x7D                                                                  // 0x1BF  (0x97D)
-  jp    label_60                                                                   // 0x1C0  (0xAB)
+  jp    loop_59                                                                    // 0x1C0  (0xAB)
 
-label_61:
+//
+// Buzzer control
+// Returns
+//
+buzzer_control:
+  // XP is 0
+  // X is 0x034
   ld    x,   0x34                                                                  // 0x1C1  (0xB34)
   fan   mx,  0x8                                                                   // 0x1C2  (0xDA8)
-  jp    nz,  label_62                                                              // 0x1C3  (0x7D7)
+  // If high bit set, jump. This means it was a one-shot buzzer call
+  jp    nz,  dec_0x038_off_load_prot_buzzer                                        // 0x1C3  (0x7D7)
+  // X is 0x038
   ld    x,   0x38                                                                  // 0x1C4  (0xB38)
+  // Store 0x58 into 0x038/9
   lbpx  mx,  0x58                                                                  // 0x1C5  (0x958)
   ld    a,   0xF                                                                   // 0x1C6  (0xE0F)
   ld    xp,  a                                                                     // 0x1C7  (0xE80)
+  // X is 0xF71
   ld    x,   0x71                                                                  // 0x1C8  (0xB71)
+  // Turn on heavy load protection mode
   or    mx,  0x1                                                                   // 0x1C9  (0xCE1)
   push  xp                                                                         // 0x1CA  (0xFC4)
   ld    a,   0x0                                                                   // 0x1CB  (0xE00)
   ld    xp,  a                                                                     // 0x1CC  (0xE80)
+  // X is 0x034
   ld    x,   0x34                                                                  // 0x1CD  (0xB34)
+  // A = 0x034
   ldpx  a,   mx                                                                    // 0x1CE  (0xEE2)
+  // B = 0x035
   ld    b,   mx                                                                    // 0x1CF  (0xEC6)
   pop   xp                                                                         // 0x1D0  (0xFD4)
+  // X is 0xF74
   ld    x,   0x74                                                                  // 0x1D1  (0xB74)
+  // Set buzzer frequency to 0x034
   ldpx  mx,  a                                                                     // 0x1D2  (0xEE8)
+  // Set buzzer envelope to 0x035
   ld    mx,  b                                                                     // 0x1D3  (0xEC9)
+  // X is 0xF54
   ld    x,   0x54                                                                  // 0x1D4  (0xB54)
+  // Turn on buzzer output port
   and   mx,  0x7                                                                   // 0x1D5  (0xCA7)
   ret                                                                              // 0x1D6  (0xFDF)
 
-label_62:
+//
+// Decrements 0x038 and maybe 0x039
+// Sometimes turns off heavy load protection
+// Turn off buzzer
+// Returns
+//
+dec_0x038_off_load_prot_buzzer:
+  // XP is 0
+  // X is 0x038
   ld    x,   0x38                                                                  // 0x1D7  (0xB38)
+  // Subtract 1 from 0x038
   add   mx,  0xF                                                                   // 0x1D8  (0xC2F)
   ldpx  a,   a                                                                     // 0x1D9  (0xEE0)
+  // Subtract 1 from 0x039 unless previous add overflowed (which is most of the time)
   adc   mx,  0xF                                                                   // 0x1DA  (0xC6F)
   ld    a,   0xF                                                                   // 0x1DB  (0xE0F)
   ld    xp,  a                                                                     // 0x1DC  (0xE80)
-  jp    c,   label_63                                                              // 0x1DD  (0x2E0)
+  // If carry is set (add overflowed, which is most of the time), jump
+  jp    c,   skip_load_prot_dec_0x038_off_load_prot_buzzer                         // 0x1DD  (0x2E0)
+  // X is 0xF71
   ld    x,   0x71                                                                  // 0x1DE  (0xB71)
+  // Disable Heavy load protection
   and   mx,  0xE                                                                   // 0x1DF  (0xCAE)
 
-label_63:
+skip_load_prot_dec_0x038_off_load_prot_buzzer:
+  // X is 0xF54
   ld    x,   0x54                                                                  // 0x1E0  (0xB54)
+  // Turn off buzzer output port
   or    mx,  0x8                                                                   // 0x1E1  (0xCE8)
   ret                                                                              // 0x1E2  (0xFDF)
 
@@ -1089,7 +1198,7 @@ label_84:
   ld    b,   m0                                                                    // 0x27C  (0xFB0)
   cp    a,   b                                                                     // 0x27D  (0xF01)
   jp    nz,  label_84                                                              // 0x27E  (0x77B)
-  calz  label_25                                                                   // 0x27F  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x27F  (0x5BB)
   ret                                                                              // 0x280  (0xFDF)
 
 label_85:
@@ -1118,7 +1227,7 @@ label_87:
 
 label_88:
   ld    a,   0x0                                                                   // 0x293  (0xE00)
-  calz  label_39                                                                   // 0x294  (0x5ED)
+  calz  springboard_label_238                                                      // 0x294  (0x5ED)
   calz  clear_page_0x100                                                           // 0x295  (0x540)
   calz  copy_0x026_7_to_8_9                                                        // 0x296  (0x521)
 
@@ -1173,7 +1282,7 @@ label_92:
 
 label_93:
   pset  0x3                                                                        // 0x2C0  (0xE43)
-  call  label_101                                                                  // 0x2C1  (0x407)
+  call  jump_table_0x300                                                           // 0x2C1  (0x407)
   jp    label_88                                                                   // 0x2C2  (0x93)
 
 label_94:
@@ -1192,7 +1301,7 @@ label_95:
   ld    x,   0x29                                                                  // 0x2CD  (0xB29)
   fan   mx,  0x4                                                                   // 0x2CE  (0xDA4)
   jp    z,   label_96                                                              // 0x2CF  (0x6D9)
-  calz  label_25                                                                   // 0x2D0  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x2D0  (0x5BB)
   ld    x,   0x76                                                                  // 0x2D1  (0xB76)
   ld    a,   mx                                                                    // 0x2D2  (0xEC2)
   ld    x,   0x75                                                                  // 0x2D3  (0xB75)
@@ -1205,7 +1314,7 @@ label_95:
 label_96:
   fan   mx,  0x2                                                                   // 0x2D9  (0xDA2)
   jp    z,   label_97                                                              // 0x2DA  (0x6DF)
-  calz  label_25                                                                   // 0x2DB  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x2DB  (0x5BB)
   rst   f,   0xE                                                                   // 0x2DC  (0xF5E)
   set   f,   0x2                                                                   // 0x2DD  (0xF42)
   jp    label_100                                                                  // 0x2DE  (0xF0)
@@ -1213,7 +1322,7 @@ label_96:
 label_97:
   fan   mx,  0x1                                                                   // 0x2DF  (0xDA1)
   jp    z,   label_98                                                              // 0x2E0  (0x6E5)
-  calz  label_25                                                                   // 0x2E1  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x2E1  (0x5BB)
   set   f,   0x1                                                                   // 0x2E2  (0xF41)
   set   f,   0x2                                                                   // 0x2E3  (0xF42)
   jp    label_100                                                                  // 0x2E4  (0xF0)
@@ -1250,7 +1359,7 @@ label_100:
   nop7                                                                             // 0x2FD  (0xFFF)
   nop7                                                                             // 0x2FE  (0xFFF)
   nop7                                                                             // 0x2FF  (0xFFF)
-// Jump table for label_101
+// Jump table for jump_table_0x300
   ret                                                                              // 0x300  (0xFDF)  
   jp    label_102                                                                  // 0x301  (0xC)
   jp    label_106                                                                  // 0x302  (0x1C)
@@ -1259,10 +1368,14 @@ label_100:
   jp    label_112                                                                  // 0x305  (0x4B)
   jp    label_116                                                                  // 0x306  (0x74)
 
-label_101:
+jump_table_0x300:
+  // Zero B
   calz  zero_b_xp                                                                  // 0x307  (0x5F2)
+  // Set X to 0x05C
   ld    x,   0x5C                                                                  // 0x308  (0xB5C)
+  // A = 0x05C
   ld    a,   mx                                                                    // 0x309  (0xEC2)
+  // Clear 0x05C
   ld    mx,  0x0                                                                   // 0x30A  (0xE20)
   jpba                                                                             // 0x30B  (0xFE8)
 
@@ -1278,16 +1391,18 @@ label_102:
   jp    z,   label_104                                                             // 0x314  (0x617)
   lbpx  mx,  0x0                                                                   // 0x315  (0x900)
 
-label_103:
-  jp    label_105                                                                  // 0x316  (0x18)
+jp_105:
+  jp    set_buzzer_0xA5                                                            // 0x316  (0x18)
 
 label_104:
   lbpx  mx,  0x3D                                                                  // 0x317  (0x93D)
 
-label_105:
+set_buzzer_0xA5:
   ld    a,   0x8                                                                   // 0x318  (0xE08)
   ld    y,   0xA5                                                                  // 0x319  (0x8A5)
-  calz  label_24                                                                   // 0x31A  (0x5B7)
+  // Set buzzer 0x036/7 to 0xA5
+  // Set 0x058 to 0x8
+  calz  xp_0_if_0x7B_set_clear_0x32_store_yhl                                      // 0x31A  (0x5B7)
   ret                                                                              // 0x31B  (0xFDF)
 
 label_106:
@@ -1298,7 +1413,7 @@ label_106:
   cp    mx,  0x1                                                                   // 0x320  (0xDE1)
   jp    nz,  label_108                                                             // 0x321  (0x727)
   ld    my,  0xD                                                                   // 0x322  (0xE3D)
-  jp    label_105                                                                  // 0x323  (0x18)
+  jp    set_buzzer_0xA5                                                            // 0x323  (0x18)
 
 label_107:
   ld    a,   0x2                                                                   // 0x324  (0xE02)
@@ -1307,7 +1422,7 @@ label_107:
 
 label_108:
   ld    my,  0x1                                                                   // 0x327  (0xE31)
-  jp    label_103                                                                  // 0x328  (0x16)
+  jp    jp_105                                                                     // 0x328  (0x16)
 
 label_109:
   ld    x,   0x4B                                                                  // 0x329  (0xB4B)
@@ -1352,7 +1467,7 @@ label_111:
 label_112:
   ld    a,   0x3                                                                   // 0x34B  (0xE03)
   ld    y,   0xAE                                                                  // 0x34C  (0x8AE)
-  calz  label_24                                                                   // 0x34D  (0x5B7)
+  calz  xp_0_if_0x7B_set_clear_0x32_store_yhl                                      // 0x34D  (0x5B7)
   call  jp_copy_video_buf_8x                                                       // 0x34E  (0x4FC)
   ld    b,   0x3                                                                   // 0x34F  (0xE13)
   pset  0x8                                                                        // 0x350  (0xE48)
@@ -1467,7 +1582,7 @@ label_119:
   pset  0x2                                                                        // 0x3AF  (0xE42)
   call  label_70                                                                   // 0x3B0  (0x400)
   jp    z,   label_119                                                             // 0x3B1  (0x6A1)
-  calz  label_25                                                                   // 0x3B2  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x3B2  (0x5BB)
   calz  one_a_xp                                                                   // 0x3B3  (0x5F5)
   ld    x,   0xD0                                                                  // 0x3B4  (0xBD0)
   ld    b,   0x1                                                                   // 0x3B5  (0xE11)
@@ -1496,7 +1611,7 @@ label_121:
   pset  0x2                                                                        // 0x3C8  (0xE42)
   call  label_70                                                                   // 0x3C9  (0x400)
   jp    z,   label_121                                                             // 0x3CA  (0x6C8)
-  calz  label_25                                                                   // 0x3CB  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x3CB  (0x5BB)
   ld    b,   0xE                                                                   // 0x3CC  (0xE1E)
   pset  0x5                                                                        // 0x3CD  (0xE45)
   call  label_156                                                                  // 0x3CE  (0x400)
@@ -1909,7 +2024,7 @@ label_156:
   ret                                                                              // 0x507  (0xFDF)
 
 label_157:
-  calz  label_25                                                                   // 0x508  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x508  (0x5BB)
   calz  label_38                                                                   // 0x509  (0x5EC)
   calz  label_30                                                                   // 0x50A  (0x5CE)
   call  label_176                                                                  // 0x50B  (0x496)
@@ -1948,7 +2063,7 @@ label_161:
   ldpx  a,   mx                                                                    // 0x524  (0xEE2)
   ld    x,   0x75                                                                  // 0x525  (0xB75)
   ldpx  mx,  a                                                                     // 0x526  (0xEE8)
-  calz  label_39                                                                   // 0x527  (0x5ED)
+  calz  springboard_label_238                                                      // 0x527  (0x5ED)
 
 label_162:
   calz  zero_a_xp                                                                  // 0x528  (0x5EF)
@@ -1975,7 +2090,7 @@ label_163:
   jp    nz,  label_159                                                             // 0x53B  (0x717)
   fan   b,   0x2                                                                   // 0x53C  (0xD92)
   jp    nz,  label_164                                                             // 0x53D  (0x743)
-  calz  label_39                                                                   // 0x53E  (0x5ED)
+  calz  springboard_label_238                                                      // 0x53E  (0x5ED)
   calz  clear_page_0x100                                                           // 0x53F  (0x540)
   call  label_176                                                                  // 0x540  (0x496)
   calz  label_13                                                                   // 0x541  (0x552)
@@ -1992,7 +2107,7 @@ label_164:
 
 label_165:
   pset  0x3                                                                        // 0x54A  (0xE43)
-  call  label_101                                                                  // 0x54B  (0x407)
+  call  jump_table_0x300                                                           // 0x54B  (0x407)
   jp    label_159                                                                  // 0x54C  (0x17)
 
 label_166:
@@ -2000,13 +2115,14 @@ label_166:
   xor   mx,  0xF                                                                   // 0x54E  (0xD2F)
   ld    b,   0xF                                                                   // 0x54F  (0xE1F)
   ld    y,   0x97                                                                  // 0x550  (0x897)
+  // Set buzzer 0x036/7 to 0x97
   calz  clear_0x32_store_yhl                                                       // 0x551  (0x5C2)
   jp    label_159                                                                  // 0x552  (0x17)
 
 label_167:
-  calz  label_25                                                                   // 0x553  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x553  (0x5BB)
   ld    a,   0x0                                                                   // 0x554  (0xE00)
-  calz  label_39                                                                   // 0x555  (0x5ED)
+  calz  springboard_label_238                                                      // 0x555  (0x5ED)
   calz  clear_page_0x100                                                           // 0x556  (0x540)
   calz  one_a_xp                                                                   // 0x557  (0x5F5)
   ld    x,   0xE0                                                                  // 0x558  (0xBE0)
@@ -2041,7 +2157,7 @@ label_170:
   jp    nz,  label_174                                                             // 0x56F  (0x786)
   fan   mx,  0x2                                                                   // 0x570  (0xDA2)
   jp    z,   label_171                                                             // 0x571  (0x676)
-  calz  label_25                                                                   // 0x572  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x572  (0x5BB)
   calz  label_35                                                                   // 0x573  (0x5E2)
   ld    x,   0x2E                                                                  // 0x574  (0xB2E)
   ld    mx,  0xF                                                                   // 0x575  (0xE2F)
@@ -2050,7 +2166,7 @@ label_171:
   ld    x,   0x29                                                                  // 0x576  (0xB29)
   fan   mx,  0x4                                                                   // 0x577  (0xDA4)
   jp    z,   label_172                                                             // 0x578  (0x682)
-  calz  label_25                                                                   // 0x579  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x579  (0x5BB)
   ld    x,   0x14                                                                  // 0x57A  (0xB14)
   ldpx  a,   mx                                                                    // 0x57B  (0xEE2)
   ldpx  b,   mx                                                                    // 0x57C  (0xEE6)
@@ -2069,7 +2185,7 @@ label_173:
   jp    label_169                                                                  // 0x585  (0x6C)
 
 label_174:
-  calz  label_25                                                                   // 0x586  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x586  (0x5BB)
   ld    x,   0x3F                                                                  // 0x587  (0xB3F)
   ld    mx,  0x0                                                                   // 0x588  (0xE20)
   ld    x,   0x15                                                                  // 0x589  (0xB15)
@@ -2390,7 +2506,7 @@ label_201:
   ld    x,   0x80                                                                  // 0x67A  (0xB80)
   add   mx,  0xF                                                                   // 0x67B  (0xC2F)
   jp    nz,  label_200                                                             // 0x67C  (0x767)
-  calz  label_25                                                                   // 0x67D  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x67D  (0x5BB)
   calz  clear_page_0x100                                                           // 0x67E  (0x540)
   calz  zero_a_xp                                                                  // 0x67F  (0x5EF)
   ld    x,   0x84                                                                  // 0x680  (0xB84)
@@ -2474,7 +2590,7 @@ label_206:
   jp    z,   label_197                                                             // 0x6C4  (0x626)
 
 label_207:
-  calz  label_25                                                                   // 0x6C5  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x6C5  (0x5BB)
   pset  0x5                                                                        // 0x6C6  (0xE45)
   jp    label_159                                                                  // 0x6C7  (0x17)
 
@@ -2977,7 +3093,7 @@ label_250:
   jp    nz,  label_252                                                             // 0x827  (0x733)
   fan   b,   0x6                                                                   // 0x828  (0xD96)
   jp    z,   label_250                                                             // 0x829  (0x622)
-  calz  label_25                                                                   // 0x82A  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x82A  (0x5BB)
   ld    x,   0x80                                                                  // 0x82B  (0xB80)
   add   mx,  0x1                                                                   // 0x82C  (0xC21)
   cp    mx,  0x4                                                                   // 0x82D  (0xDE4)
@@ -2990,7 +3106,7 @@ label_251:
   jp    z,   label_248                                                             // 0x832  (0x617)
 
 label_252:
-  calz  label_25                                                                   // 0x833  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x833  (0x5BB)
   pset  0x5                                                                        // 0x834  (0xE45)
   jp    label_160                                                                  // 0x835  (0x1A)
 
@@ -3249,7 +3365,7 @@ label_280:
   jp    z,   label_275                                                             // 0x8FB  (0x6B9)
   fan   b,   0x7                                                                   // 0x8FC  (0xD97)
   jp    z,   label_275                                                             // 0x8FD  (0x6B9)
-  calz  label_25                                                                   // 0x8FE  (0x5BB)
+  calz  if_0x7B_set_clear_0x32_store_0x94_to_0x036_7_set_0x059_to_0xF              // 0x8FE  (0x5BB)
 
 ret_280:
   ret                                                                              // 0x8FF  (0xFDF)
@@ -3437,12 +3553,15 @@ label_294:
   call  label_142                                                                  // 0x982  (0x465)
   calz  label_38                                                                   // 0x983  (0x5EC)
 
-label_295:
+// This is possibly the startup loop waiting for the user to set the time?
+loop_294:
   calz  clear_page_0x100                                                           // 0x984  (0x540)
   calz  label_13                                                                   // 0x985  (0x552)
   calz  copy_0x026_7_to_8_9                                                        // 0x986  (0x521)
+  // Check if 0x029 has the second bit set
   fan   mx,  0x2                                                                   // 0x987  (0xDA2)
-  jp    z,   label_295                                                             // 0x988  (0x684)
+  // If unset, loop
+  jp    z,   loop_294                                                              // 0x988  (0x684)
   pset  0x5                                                                        // 0x989  (0xE45)
   jp    label_167                                                                  // 0x98A  (0x53)
   
@@ -4846,7 +4965,11 @@ label_355:
   ldpx  mx,  a                                                                     // 0xE7A  (0xEE8)
   ret                                                                              // 0xE7B  (0xFDF)
 
-jp_table_0xE00_2:
+//
+// Jump table to write to 0x032-5 or 7
+// Returns
+//
+jp_table_0xE7D_buzzer:
   jpba                                                                             // 0xE7C  (0xFE8)
 
   lbpx  mx,  0xFF                                                                  // 0xE7D  (0x9FF)
@@ -5090,7 +5213,7 @@ label_365:
 
 label_366:
   ld    a,   0x1                                                                   // 0xF59  (0xE01)
-  jp    label_384                                                                  // 0xF5A  (0xD4)
+  jp    set_0x5C_to_a                                                              // 0xF5A  (0xD4)
 
 label_367:
   ld    x,   0x49                                                                  // 0xF5B  (0xB49)
@@ -5127,7 +5250,7 @@ label_370:
 
 label_371:
   ld    a,   0x6                                                                   // 0xF74  (0xE06)
-  jp    label_384                                                                  // 0xF75  (0xD4)
+  jp    set_0x5C_to_a                                                              // 0xF75  (0xD4)
 
 label_372:
   ld    y,   0x10                                                                  // 0xF76  (0x810)
@@ -5137,7 +5260,7 @@ label_372:
   cp    mx,  0xF                                                                   // 0xF7A  (0xDEF)
   jp    nc,  label_373                                                             // 0xF7B  (0x37E)
   ld    a,   0x5                                                                   // 0xF7C  (0xE05)
-  jp    label_384                                                                  // 0xF7D  (0xD4)
+  jp    set_0x5C_to_a                                                              // 0xF7D  (0xD4)
 
 label_373:
   ld    x,   0x4E                                                                  // 0xF7E  (0xB4E)
@@ -5148,7 +5271,7 @@ label_374:
   calz  label_31                                                                   // 0xF81  (0x5D4)
   jp    nz,  label_375                                                             // 0xF82  (0x785)
   ld    a,   0x4                                                                   // 0xF83  (0xE04)
-  jp    label_384                                                                  // 0xF84  (0xD4)
+  jp    set_0x5C_to_a                                                              // 0xF84  (0xD4)
 
 label_375:
   calz  bit_high_at_0x048                                                          // 0xF85  (0x5FD)
@@ -5177,7 +5300,7 @@ label_376:
   jp    c,   label_377                                                             // 0xF9A  (0x29E)
   ld    mx,  0x0                                                                   // 0xF9B  (0xE20)
   ld    a,   0x2                                                                   // 0xF9C  (0xE02)
-  jp    label_384                                                                  // 0xF9D  (0xD4)
+  jp    set_0x5C_to_a                                                              // 0xF9D  (0xD4)
 
 label_377:
   ld    y,   0x13                                                                  // 0xF9E  (0x813)
@@ -5202,7 +5325,7 @@ label_378:
   jp    c,   label_379                                                             // 0xFAF  (0x2B3)
   ld    mx,  0x0                                                                   // 0xFB0  (0xE20)
   ld    a,   0x2                                                                   // 0xFB1  (0xE02)
-  jp    label_384                                                                  // 0xFB2  (0xD4)
+  jp    set_0x5C_to_a                                                              // 0xFB2  (0xD4)
 
 label_379:
   ld    y,   0x13                                                                  // 0xFB3  (0x813)
@@ -5225,7 +5348,7 @@ label_380:
   calz  check_0xX5D_is_1                                                           // 0xFC2  (0x5F8)
   jp    z,   label_381                                                             // 0xFC3  (0x6C6)
   ld    a,   0x3                                                                   // 0xFC4  (0xE03)
-  jp    label_384                                                                  // 0xFC5  (0xD4)
+  jp    set_0x5C_to_a                                                              // 0xFC5  (0xD4)
 
 label_381:
   ld    y,   0x8                                                                   // 0xFC6  (0x808)
@@ -5247,7 +5370,12 @@ label_382:
 label_383:
   jp    label_385                                                                  // 0xFD3  (0xD6)
 
-label_384:
+//
+// Set 0x?5C to A
+// Sets flags by comparing 0x?5C to 0
+// Returns
+//
+set_0x5C_to_a:
   ld    x,   0x5C                                                                  // 0xFD4  (0xB5C)
   ld    mx,  a                                                                     // 0xFD5  (0xEC8)
 
@@ -5291,7 +5419,7 @@ label_391:
   ld    mx,  0xF                                                                   // 0xFEE  (0xE2F)
   ld    a,   0x6                                                                   // 0xFEF  (0xE06)
   ld    y,   0xD1                                                                  // 0xFF0  (0x8D1)
-  calz  label_24                                                                   // 0xFF1  (0x5B7)
+  calz  xp_0_if_0x7B_set_clear_0x32_store_yhl                                      // 0xFF1  (0x5B7)
   ld    a,   0x2                                                                   // 0xFF2  (0xE02)
   ld    b,   0x4                                                                   // 0xFF3  (0xE14)
   pset  0x8                                                                        // 0xFF4  (0xE48)
