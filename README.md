@@ -10,6 +10,14 @@ The disassembly can be found in [tama.asm](./tama.asm).
 
 Besides what is in the source code itself, I maintained a list of interesting findings in [Useful Addresses](./Useful%20Addresses.md)
 
+## Tools
+
+Several tools are provided:
+
+* Assembler
+* Disassembler
+* Image extraction - Inspired by https://github.com/jcrona/tamatool
+
 ## Licensing
 
 The Tamagotchi ROM and source code is property of Bandai, and is not subject to the licensing of this repo. The disassembly is presented here for educational purpsoses only.
