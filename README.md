@@ -16,7 +16,7 @@ Several tools are provided:
 
 * Assembler
 * Disassembler
-* Image extraction - Inspired by https://github.com/jcrona/tamatool
+* Image extraction - Inspired by [jcrona/tamatool](https://github.com/jcrona/tamatool)
 
 ## Licensing
 
